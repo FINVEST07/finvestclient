@@ -93,29 +93,7 @@ const Testimonials = () => {
           />
         </div>
 
-        <div
-          className="mt-16 bg-blue-100 rounded-2xl p-8 md:p-12 animate-fade-in"
-          style={{ animationDelay: "400ms" }}
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="md:w-2/3 mb-8 md:mb-0">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 font-playfair text-blue-900">
-                Ready to start your financial journey?
-              </h3>
-              <p className="text-finance-slate max-w-2xl">
-                Our team of expert financial advisors is ready to help you
-                achieve your goals with personalized strategies and dedicated
-                support.
-              </p>
-            </div>
-            <a
-              href="#contact"
-              className="inline-flex items-center py-3 px-6 bg-blue-900 text-white rounded-md hover:bg-finance-gold/90 transition-colors font-medium shadow-md"
-            >
-              Schedule a Consultation
-            </a>
-          </div>
-        </div>
+        
       </div>
     </section>
   );
