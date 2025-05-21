@@ -160,7 +160,7 @@ const Footer = ({ setLoginOpen }) => {
                   href="tel:+919892204806"
                   className="text-white/70 hover:text-finance-gold transition-colors"
                 >
-                  +91 9892204806
+                  +91&nbsp;9892204806
                 </a>
               </li>
             </ul>
