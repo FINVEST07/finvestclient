@@ -21,6 +21,8 @@ const Applicationform = () => {
 
   const [update, setUpdate] = useState("");
 
+  const [isAgreed, setIsAgreed] = useState(false);
+
   const [formData, setFormData] = useState({
     mobile: "",
     altMobile: "",
@@ -332,6 +334,8 @@ const Applicationform = () => {
               handleChange={handleChange}
               formData={formData}
               update={update}
+              setIsAgreed={setIsAgreed}
+              isAgreed={isAgreed}
             />
           )}
           <div className="flex justify-between mt-6">
@@ -363,13 +367,13 @@ const Applicationform = () => {
             )}
           </div>
         </form>
-        {currentStep === 3 && (
+        {currentStep === 3  && (
           <button
             onClick={(e) => {
               handleApply(e);
             }}
-            disabled={update == "false"}
-            className="bg-[#252C3D] rounded-md py-2 text-white w-full mt-2"
+            disabled={update == "false" || !isAgreed}
+            className={`${isAgreed ? "bg-[#252C3D]" : "bg-gray-500"}  rounded-md py-2 text-white w-full mt-2`}
           >
             Apply
           </button>

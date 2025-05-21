@@ -25,7 +25,7 @@ const fileFields = [
   { name: "qualificationcertificate", label: "Qualification Certificate" },
 ];
 
-const DocumentFormSection = ({ handleChange, formData, update }) => {
+const DocumentFormSection = ({ handleChange, formData, update , setIsAgreed , isAgreed}) => {
   const [selectedDoc, setSelectedDoc] = useState("");
   const [customDocName, setCustomDocName] = useState("");
   const [error, setError] = useState("");
@@ -249,6 +249,22 @@ const DocumentFormSection = ({ handleChange, formData, update }) => {
             return null;
           })}
         </div>
+      </div>
+      <div className="flex space-x-2">
+        <input
+          type="checkbox"
+          id="declaration"
+          checked={isAgreed}
+          onChange={(e) => {
+            setIsAgreed(e.target.checked);
+            setError("");
+          }}
+          className="h-8 w-8 text-blue-900 border-gray-300 rounded focus:ring-blue-900"
+        />
+        <label htmlFor="declaration" className="text-sm text-gray-700">
+          I agree to allow the company to store my documents and information for
+          the purpose of availing future loan, investment, insurance are more....
+        </label>
       </div>
     </div>
   );
