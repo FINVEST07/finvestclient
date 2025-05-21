@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,6 +22,17 @@ const ContactForm = ({ setLoginOpen }) => {
   });
 
   const emailcookie = Cookie.get("finvest");
+
+  const [responsetext, setResponsetext] = useState("");
+
+  useEffect(() => {
+    if (responsetext) {
+      const timer = setTimeout(() => {
+        setResponsetext("");
+      }, 3000); // Clear responsetext after 3 seconds
+      return () => clearTimeout(timer); // Cleanup on unmount or responsetext change
+    }
+  }, [responsetext]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -47,6 +58,8 @@ const ContactForm = ({ setLoginOpen }) => {
 
       toast.success(response.data.message);
 
+      setResponsetext("Thank you for Enquiry😊");
+
       setFormData({
         firstName: "",
         lastName: "",
@@ -60,14 +73,6 @@ const ContactForm = ({ setLoginOpen }) => {
       toast.error("Something Went Wrong");
     }
   };
-
-  // const handleAppointment = async () => {
-  //   if (!emailcookie) {
-  //     toast("Please Register First")
-  //     setLoginOpen(true);
-  //     return;
-  //   }
-  // };
 
   return (
     <section id="contact" className="section-padding bg-white">
@@ -151,8 +156,8 @@ const ContactForm = ({ setLoginOpen }) => {
                   <option value="" disabled>
                     Select a service
                   </option>
-                  <option value="loans">Loans</option>
-                  <option value="insurance">Insurances</option>
+                  <option value="loan">Loan</option>
+                  <option value="insurance">Insurance</option>
                   <option value="investment">Investment</option>
                 </select>
               </div>
@@ -170,26 +175,15 @@ const ContactForm = ({ setLoginOpen }) => {
                 />
               </div>
 
+              {responsetext && <p className="text-center text-base md:text-xl xl:text-2xl my-1">{responsetext}</p>}
+
               {/* Button */}
               <Button
                 type="submit"
-                disabled={status === "loading"}
                 className="w-full bg-blue-900 hover:bg-blue-900/90 text-white"
               >
-                {status === "loading" ? "Submitting..." : "Submit Inquiry"}
+                Submit Inquiry
               </Button>
-
-              {/* Feedback Message */}
-              {status === "success" && (
-                <p className="text-green-600 mt-4">
-                  Your inquiry was submitted successfully!
-                </p>
-              )}
-              {status === "error" && (
-                <p className="text-red-600 mt-4">
-                  Something went wrong. Please try again.
-                </p>
-              )}
             </form>
           </Card>
 
@@ -209,13 +203,12 @@ const ContactForm = ({ setLoginOpen }) => {
                 <ContactInfo
                   icon={<PhoneIcon className="h-5 w-5 text-blue-900" />}
                   title="Call Us"
-                  text="+91 9892204806"
-                  link="tel:+919892204806"
+                  text="+91 9892204806 / +91 9892204806"
                 />
                 <ContactInfo
                   icon={<MapPin className="h-5 w-5 text-blue-900" />}
                   title="Office Address"
-                  text="G2, Mecca Tower, Gaothan Lane No 1\nBehind Paaneri, S.V. Road, Andheri West"
+                  text="G2, Mecca Tower, Gaothan Lane No 1 Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058"
                 />
                 <ContactInfo
                   icon={<Clock className="h-5 w-5 text-blue-900" />}

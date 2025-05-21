@@ -72,7 +72,7 @@ const Navbar = ({ setLoginOpen }) => {
                 className="bg-blue-900 rounded-full w-10 h-10 flex justify-center items-center cursor-pointer"
               >
                 <span className="text-white text-xl font-semibold">
-                  {emailcookie.slice(0, 1)}
+                  {emailcookie.slice(0, 1).toUpperCase()}
                 </span>
               </div>
             ) : (
@@ -102,6 +102,7 @@ const Navbar = ({ setLoginOpen }) => {
                     setIsOpen(false);
                      window.location.reload();
                   }}
+                  className="cursor-pointer"
                 >
                   Log Out
                 </span>
@@ -136,7 +137,7 @@ const Navbar = ({ setLoginOpen }) => {
           <div className=" flex flex-col space-y-4  pb-3">
             <div className="absolute right-[4%] flex flex-col space-y-2 ml-auto">
               {emailcookie && (
-                <div className="bg-[#000] rounded-full w-10 h-10 ml-au flex justify-center items-center">
+                <div className="bg-blue-900 rounded-full w-10 h-10 ml-au flex justify-center items-center">
                   <span className="text-white text-lg">
                     {emailcookie.slice(0, 1)}
                   </span>

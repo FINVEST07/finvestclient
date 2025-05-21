@@ -68,7 +68,7 @@ const Testimonials = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Testimonial
-            content="The business loan I received allowed me to expand my company and double our revenue. Their rates were competitive and the process was seamless."
+            content="The Working Capital loan I received allowed me to expand my company and double our revenue. Their rates were competitive and the process was seamless."
             author="Nikita Rai"
             position="Entrepreneur"
             rating={5}

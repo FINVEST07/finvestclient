@@ -41,7 +41,7 @@ const Footer = ({ setLoginOpen }) => {
             </a>
             <p className="text-white/70 mb-6">
               Providing expert financial advisory services and loan solutions
-              since 2010. Your trusted partner for a secure financial future.
+              since 2013. Your trusted partner for a secure financial future.
             </p>
             <div className="flex space-x-4">
               <a
@@ -139,7 +139,7 @@ const Footer = ({ setLoginOpen }) => {
             <ul className="space-y-3">
               <li className="text-white/70">
                 G2, Mecca Tower, Gaothan Lane No 1<br />
-                Behind Paaneri, S.V. Road, Andheri West <br />
+                Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058 <br />
               </li>
               <li>
                 <a

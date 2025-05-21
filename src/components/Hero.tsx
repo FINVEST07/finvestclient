@@ -34,22 +34,14 @@ const Hero = () => {
               Personalized investment strategies and loan solutions to help you achieve your financial goals with confidence and peace of mind.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button className="btn-primary flex items-center group bg-blue-900">
-                Get Free Consultation
-                <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button variant="outline" className="btn-secondary">
-                Explore Services
-              </Button>
-            </div>
+           
             
             <div className="pt-6 flex flex-col sm:flex-row gap-6 sm:gap-12 text-finance-slate">
               <div className="flex items-center">
                 <div className="mr-3 bg-blue-900/5 p-2 rounded-full">
                   <TrendingUp className="h-5 w-5 text-blue-900" />
                 </div>
-                <span>15+ Years Experience</span>
+                <span>12+ Years Experience</span>
               </div>
               <div className="flex items-center">
                 <div className="mr-3 bg-blue-900/5 p-2 rounded-full">
@@ -64,7 +56,8 @@ const Hero = () => {
           <div className="lg:w-1/2 relative">
             <div className="rounded-2xl overflow-hidden shadow-2xl animate-fade-in">
               <img
-                src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+                // src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+                src='/heroimg.jpg'
                 alt="Financial advisor helping client"
                 className="w-full h-auto object-cover"
                 loading="lazy"

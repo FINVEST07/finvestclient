@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import ToastContainerComponent from "./ToastContainerComponent";
 import Cookie from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = ({ setLoginOpen, loginopen }) => {
   const [step, setStep] = useState("form"); // 'form' or 'verify'
@@ -27,6 +28,8 @@ const Login = ({ setLoginOpen, loginopen }) => {
   const [timer, setTimer] = useState(0);
   const [otpbox, setOtpBox] = useState(false);
   const [logintimer, setLoginTimer] = useState(0);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showLoginPassword, setShowLoginPassword] = useState(false); // State for login password visibility
 
   const [sectionopen, setSectionOpen] = useState("register");
 
@@ -99,7 +102,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
         }
       );
 
-      if (sendOtpResponse.status != 200) {
+      if (sendOtpResponse.status !== 200) {
         toast.error(sendOtpResponse.data.message);
         return;
       }
@@ -125,7 +128,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
           }
         );
 
-        if (loginresponse.status != 200) {
+        if (loginresponse.status !== 200) {
           toast.error(loginresponse.data.message);
         }
 
@@ -152,7 +155,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
           }
         );
 
-        if (loginresponse.status != 200) {
+        if (loginresponse.status !== 200) {
           toast.error(loginresponse.data.message);
         }
 
@@ -194,7 +197,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
         }
       );
 
-      if (response.status != 200) {
+      if (response.status !== 200) {
         toast.error(response.data.message);
         return;
       }
@@ -221,7 +224,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
         }
       );
 
-      if (response.status != 200) {
+      if (response.status !== 200) {
         toast.error(response.data.message);
         return;
       }
@@ -264,7 +267,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
                   | <span onClick={() => setSectionOpen("login")}>Login</span>
                 </h2>
 
-                {sectionopen == "register" ? (
+                {sectionopen === "register" ? (
                   <form onSubmit={sendOtp}>
                     <input
                       type="text"
@@ -293,16 +296,28 @@ const Login = ({ setLoginOpen, loginopen }) => {
                       className="w-full p-2 mb-3 border rounded-lg"
                       required
                     />
-                    <input
-                      type="password"
-                      name="password"
-                      placeholder="Enter Password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full p-2 mb-3 border rounded-lg"
-                      required
-                    />
-
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Enter Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="w-full p-2 mb-3 border rounded-lg"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5 text-gray-500" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-gray-500" />
+                        )}
+                      </button>
+                    </div>
                     {error && <p className="text-red-600">{error}</p>}
                     <input
                       type="submit"
@@ -323,7 +338,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
                     />
                     {loginwithotp ? (
                       <>
-                        <div className="flex gap-2  mb-3">
+                        <div className="flex gap-2 mb-3">
                           <input
                             type="text"
                             name="otp"
@@ -331,7 +346,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
                             value={loginformdata.otp}
                             onChange={handleLoginFormChnage}
                             disabled={!loginotpgenerated}
-                            className="w-full p-2  border rounded-lg"
+                            className="w-full p-2 border rounded-lg"
                             required
                           />
                           <button
@@ -342,7 +357,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
                             Send OTP
                           </button>
                         </div>
-
                         <p
                           onClick={() => setLoginWithOtp(false)}
                           className="text-right text-blue-900 cursor-pointer"
@@ -355,15 +369,28 @@ const Login = ({ setLoginOpen, loginopen }) => {
                       </>
                     ) : (
                       <>
-                        <input
-                          type="password"
-                          name="password"
-                          placeholder="Enter Password"
-                          value={loginformdata.password}
-                          onChange={handleLoginFormChnage}
-                          className="w-full p-2 mb-3 border rounded-lg"
-                          required
-                        />
+                        <div className="relative">
+                          <input
+                            type={showLoginPassword ? "text" : "password"}
+                            name="password"
+                            placeholder="Enter Password"
+                            value={loginformdata.password}
+                            onChange={handleLoginFormChnage}
+                            className="w-full p-2 mb-3 border rounded-lg"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowLoginPassword(!showLoginPassword)}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                          >
+                            {showLoginPassword ? (
+                              <EyeOff className="h-5 w-5 text-gray-500" />
+                            ) : (
+                              <Eye className="h-5 w-5 text-gray-500" />
+                            )}
+                          </button>
+                        </div>
                         <p
                           onClick={() => setLoginWithOtp(true)}
                           className="text-right text-blue-900 cursor-pointer"
@@ -372,10 +399,9 @@ const Login = ({ setLoginOpen, loginopen }) => {
                         </p>
                       </>
                     )}
-
                     <button
                       disabled={loginwithotp && !loginotpgenerated}
-                      className="w-full mt-2 bg-blue-900 text-white py-2 rounded-lg hover:bg-[#020305] transition"
+                      className="w-full mt-2 bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-700 transition"
                       onClick={Handlelogin}
                     >
                       Login
