@@ -136,7 +136,7 @@ const Footer = ({ setLoginOpen }) => {
 
           <div>
             <h4 className="text-lg font-medium mb-6">Contact Us</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3 text-base">
               <li className="text-white/70">
                 G2, Mecca Tower, Gaothan Lane No 1<br />
                 Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058 <br />
