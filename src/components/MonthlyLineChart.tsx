@@ -86,6 +86,12 @@ const MonthlyLineChart = () => {
             stroke="#ffc658"
             strokeWidth={2}
           />
+          <Line
+            type="monotone"
+            dataKey="enquiries"
+            stroke="#f61a88"
+            strokeWidth={2}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

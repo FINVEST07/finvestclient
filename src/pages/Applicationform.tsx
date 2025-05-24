@@ -26,6 +26,7 @@ const Applicationform = () => {
   const [formData, setFormData] = useState({
     mobile: "",
     altMobile: "",
+    city: "",
     currentAddress: "",
     permanentAddress: "",
     sameAsCurrent: false,
@@ -153,6 +154,27 @@ const Applicationform = () => {
   const saveData = async (e) => {
     e.preventDefault();
     try {
+      const missingFields = [];
+
+      if (formData.city === "") missingFields.push("City");
+      if (formData.currentAddress === "") missingFields.push("Current Address");
+      if (formData.permanentAddress === "")
+        missingFields.push("Permanent Address");
+      if (formData.qualification === "") missingFields.push("Qualification");
+      if (formData.profession === "") missingFields.push("Profession");
+      if (formData.incomeType === "") missingFields.push("Employment Type");
+      if (formData.purchaseCost === "") missingFields.push("Purchase Cost");
+      if (formData.existingLoans === "") missingFields.push("Existing Loans");
+      if (formData.newLoanAmount === "") missingFields.push("New Loan Amount Required");
+      if (formData.existingLoans === "") missingFields.push("Existing Loans");
+      if (formData.savings === "") missingFields.push("Savings / Net Worth");
+
+      if (missingFields.length > 0) {
+        toast.error(
+          `Following fields are missing: ${missingFields.join(", ")}`
+        );
+        return false;
+      }
       setLoading(true);
       const form = new FormData();
       const textPayload = {};
@@ -209,10 +231,11 @@ const Applicationform = () => {
 
       if (response.status !== 200) {
         toast.error(response.data.message);
-        return;
+        return false;
       }
 
       toast.success(response.data.message);
+      return true;
     } catch (error) {
       console.error("Error saving multipart form data:", error);
       toast.error("Error Uploading!!");
@@ -292,8 +315,11 @@ const Applicationform = () => {
   };
 
   const handleNext = async (e) => {
-    await saveData(e);
-    setCurrentStep((prev) => prev + 1);
+    const success = await saveData(e);
+    //@ts-expect-error err
+    if (success) {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const handlePrev = () => {
@@ -367,13 +393,15 @@ const Applicationform = () => {
             )}
           </div>
         </form>
-        {currentStep === 3  && (
+        {currentStep === 3 && (
           <button
             onClick={(e) => {
               handleApply(e);
             }}
             disabled={update == "false" || !isAgreed}
-            className={`${isAgreed ? "bg-[#252C3D]" : "bg-gray-500"}  rounded-md py-2 text-white w-full mt-2`}
+            className={`${
+              isAgreed ? "bg-[#252C3D]" : "bg-gray-500"
+            }  rounded-md py-2 text-white w-full mt-2`}
           >
             Apply
           </button>

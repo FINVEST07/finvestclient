@@ -116,7 +116,7 @@ const Footer = ({ setLoginOpen }) => {
                 onClick={serviceclicked}
                 className="text-white/70 cursor-pointer"
               >
-                Loans
+                Loan
               </li>
 
               <li
@@ -129,7 +129,7 @@ const Footer = ({ setLoginOpen }) => {
                 onClick={serviceclicked}
                 className="text-white/70 cursor-pointer"
               >
-                Investments
+                Investment
               </li>
             </ul>
           </div>
@@ -138,7 +138,7 @@ const Footer = ({ setLoginOpen }) => {
             <h4 className="text-lg font-medium mb-6">Contact Us</h4>
             <ul className="space-y-3 text-base">
               <li className="text-white/70">
-                G2, Mecca Tower, Gaothan Lane No 1
+                G2, Mecca Tower, Gaothan Lane No 1,
                 Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058 <br />
               </li>
               <li>
@@ -149,12 +149,12 @@ const Footer = ({ setLoginOpen }) => {
                   officefinvestcorp@gmail.com
                 </a>
               </li>
-              <li>
+              <li className="flex gap-0">
                 <a
                   className="text-white/70 hover:text-finance-gold transition-colors"
                   href="tel:+919324592709"
                 >
-                  +91 9324592709 &nbsp;&nbsp;/&nbsp;&nbsp;
+                  +91&nbsp;9324592709&nbsp;/&nbsp;
                 </a>
                 <a
                   href="tel:+919892204806"
@@ -170,12 +170,6 @@ const Footer = ({ setLoginOpen }) => {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/70 text-sm mb-4 md:mb-0">
             © {new Date().getFullYear()} FinvestCorp. All rights reserved.
-          </p>
-          <p className="text-white/70 text-sm">
-            <a href="https:t-rexinfotech.in" target="_blank">
-              {" "}
-              Powered by @T-REX Infotech
-            </a>
           </p>
           <div className="flex space-x-6">
             <a

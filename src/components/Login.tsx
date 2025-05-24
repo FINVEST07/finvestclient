@@ -428,7 +428,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
                 />
                 <button
                   onClick={verifyOtp}
-                  className="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-[#020305] transition"
+                  className="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 transition"
                 >
                   Verify OTP
                 </button>

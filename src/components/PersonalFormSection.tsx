@@ -25,7 +25,7 @@ const PersonalFormSection = ({ handleChange, formData , handleSubmit}) => {
           onChange={handleChange}
           value={formData.panNumber}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          required
+         
 
         />
       </div>

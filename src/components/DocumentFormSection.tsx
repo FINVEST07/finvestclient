@@ -262,8 +262,8 @@ const DocumentFormSection = ({ handleChange, formData, update , setIsAgreed , is
           className="h-8 w-8 text-blue-900 border-gray-300 rounded focus:ring-blue-900"
         />
         <label htmlFor="declaration" className="text-sm text-gray-700">
-          I agree to allow the company to store my documents and information for
-          the purpose of availing future loan, investment, insurance are more....
+          I agree and give my consent to allow the company to store my documents and information for
+          the purpose of availing future services. all the information i declare all the informations are correct
         </label>
       </div>
     </div>

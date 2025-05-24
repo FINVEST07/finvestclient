@@ -101,7 +101,7 @@ const ProfessionalFormSection = ({
           <div>
             <label>
               Purchase Cost / Market Value&nbsp;
-              {/* <span className="text-red-600">*</span> */}
+              <span className="text-red-600">*</span>
             </label>
 
             <input
@@ -115,7 +115,7 @@ const ProfessionalFormSection = ({
           <div>
             <label>
               Existing Loans&nbsp;
-              {/* <span className="text-red-600">*</span> */}
+              <span className="text-red-600">*</span>
             </label>
             <input
               name="existingLoans"
@@ -130,7 +130,7 @@ const ProfessionalFormSection = ({
           <div>
             <label>
               New Loan Amount Required&nbsp;
-              {/* <span className="text-red-600">*</span> */}
+              <span className="text-red-600">*</span>
             </label>
             <input
               name="newLoanAmount"
@@ -147,7 +147,7 @@ const ProfessionalFormSection = ({
       <div>
         <label>
           Savings / Net Worth&nbsp;
-          {/* <span className="text-red-600">*</span> */}
+          <span className="text-red-600">*</span>
         </label>
         <input
           name="savings"

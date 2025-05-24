@@ -6,8 +6,6 @@ import PersonalFormSection from "@/components/PersonalFormSection";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 
-
-
 const Customerdashboard = () => {
   const cookie = Cookie.get("finvest");
   const emailcookie = cookie ? cookie.split("$")[0] : "";
@@ -166,7 +164,7 @@ const Customerdashboard = () => {
         toast.error("Required fields are missing !!");
         return;
       }
-      if (formData.panNumber?.length != 10) {
+      if (formData.panNumber != "" && formData.panNumber?.length != 10) {
         toast.error("PanNumber is incorrect !!");
         return;
       }
@@ -214,8 +212,6 @@ const Customerdashboard = () => {
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
-
-  
 
   return (
     <div className="bg-[#EBECEC] min-h-screen">
@@ -338,7 +334,7 @@ const Customerdashboard = () => {
                             {index + 1}
                           </td>
                           <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
-                            {item.applicationId}
+                            {item.applicationId.toUpperCase()}
                           </td>
                           <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                             {formatDate(item.createdAt)}
@@ -352,10 +348,22 @@ const Customerdashboard = () => {
                           <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                             {item.status}
                           </td>
+                          <td className="hidden lg:block">
+                            <a
+                              href={`/applicationform?applicationId=${item.applicationId}`}
+                              target="_blank"
+                              className="m-4"
+                            >
+                              <button className="bg-green-500 text-sm mt-4 py-2 px-4 rounded-md text-white">
+                                View&nbsp;Application
+                              </button>
+                            </a>
+                          </td>
                         </tr>
                         <a
                           href={`/applicationform?applicationId=${item.applicationId}`}
                           target="_blank"
+                          className="m-4 lg:hidden"
                         >
                           <button className="bg-green-500 text-sm mt-4 py-2 px-4 rounded-md text-white">
                             View&nbsp;Application

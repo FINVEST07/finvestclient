@@ -176,7 +176,7 @@ const AdminApplications = () => {
       ),
       width: "100px",
     },
-    // { name: "C_ID", selector: (row) => row.customer_id, width: "100px" },
+    { name: "Customer Name", selector: (row) => row.fullName, width: "180px" },
 
     {
       name: "Application ID",
@@ -186,7 +186,7 @@ const AdminApplications = () => {
           target="_blank"
           href={`/applicationform?update=false&type=${row.servicetype}&customerId=${row.customer_id}`}
         >
-          {row.applicationId}
+          {row.applicationId.toUpperCase()}
         </a>
       ),
       width: "150px",

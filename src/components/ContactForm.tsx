@@ -203,12 +203,12 @@ const ContactForm = ({ setLoginOpen }) => {
                 <ContactInfo
                   icon={<PhoneIcon className="h-5 w-5 text-blue-900" />}
                   title="Call Us"
-                  text="+91 9892204806 / +91 9892204806"
+                  text="+91 9324592709 / +91 9892204806"
                 />
                 <ContactInfo
                   icon={<MapPin className="h-5 w-5 text-blue-900" />}
                   title="Office Address"
-                  text="G2, Mecca Tower, Gaothan Lane No 1 Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058"
+                  text="G2, Mecca Tower, Gaothan Lane No 1, Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058"
                 />
                 <ContactInfo
                   icon={<Clock className="h-5 w-5 text-blue-900" />}
