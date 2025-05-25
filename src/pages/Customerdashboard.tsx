@@ -1,15 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Cookie from "js-cookie";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PersonalFormSection from "@/components/PersonalFormSection";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 
 const Customerdashboard = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const urlEmail = searchParams.get("email");
+  const urlCustomerId = searchParams.get("customer_id");
+
   const cookie = Cookie.get("finvest");
   const emailcookie = cookie ? cookie.split("$")[0] : "";
   const mobilecookie = cookie ? cookie.split("$")[1] : "";
+
+  // Use email from URL if customer_id is present, otherwise use cookie email
+  const emailToUse = urlCustomerId ? urlEmail : emailcookie;
 
   const [formopen, setFormOpen] = useState(false);
   const [customer, setCustomer] = useState({
@@ -40,10 +48,9 @@ const Customerdashboard = () => {
     fatherName: "",
     motherName: "",
     dob: "",
-    email: emailcookie || "",
+    email: emailToUse || "",
     mobile: mobilecookie || "",
   });
-
   const services = [
     {
       type: 1,
@@ -117,11 +124,13 @@ const Customerdashboard = () => {
 
   const loadData = useCallback(async () => {
     try {
+      if (!emailToUse) return;
+
       // Fetch customer data
       const customerRes = await axios.get(
         `${import.meta.env.VITE_API_URI}getsinglecustomer`,
         {
-          params: { email: emailcookie },
+          params: { email: emailToUse },
         }
       );
 
@@ -135,7 +144,7 @@ const Customerdashboard = () => {
       const applicationRes = await axios.get(
         `${import.meta.env.VITE_API_URI}getapplication`,
         {
-          params: { email: emailcookie },
+          params: { email: emailToUse },
         }
       );
 
@@ -147,7 +156,7 @@ const Customerdashboard = () => {
     } catch (error) {
       console.error("An error occurred while loading data:", error);
     }
-  }, [emailcookie]);
+  }, [emailToUse]);
 
   useEffect(() => {
     loadData();

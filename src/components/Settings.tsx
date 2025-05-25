@@ -11,6 +11,12 @@ const Settings = () => {
   const [addBoxOpen, setAddBoxOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // State for delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  const [update , setUpdate] = useState(false);
+
   const [formdata, setFormData] = useState({
     fullName: "",
     email: "",
@@ -49,30 +55,56 @@ const Settings = () => {
     );
   };
 
-  const handledelete = async (id) => {
+  // Show confirmation dialog before delete
+  const handleDeleteClick = (id, fullName) => {
+    setItemToDelete({ id, fullName });
+    setDeleteConfirmOpen(true);
+  };
+
+  // Confirm delete action
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URI}deleteemloyeepartner`,
         {
-          id: id,
+          id: itemToDelete.id,
         }
       );
 
       if (response.status != 200) {
-        alert(response.data.message);
+        toast.error(response.data.message || "Failed to reject request");
         return;
       }
 
       loadData();
-      alert(response.data.message);
+      toast.success(response.data.message || "Request rejected successfully");
     } catch (error) {
-      alert("Something Went Wrong!");
+      toast.error("Something went wrong!");
+    } finally {
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
     }
+  };
+
+  // Cancel delete action
+  const cancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setItemToDelete(null);
   };
 
   const assigndata = (applicationId) => {
     const filtered = adminsrequestlist.filter(
       (item) => item.applicationId == applicationId
+    );
+
+    setCurrentData(filtered[0]);
+  };
+
+  const assignadmindata = (email) => {
+    const filtered = adminlist.filter(
+      (item) => item.email == email
     );
 
     setCurrentData(filtered[0]);
@@ -86,14 +118,13 @@ const Settings = () => {
     return `${day} ${month} ${year}`;
   };
 
-
   const columns = [
     {
       name: "",
       cell: (row) => (
         <button
           className="px-4 py-2 bg-red-800 rounded text-white"
-          onClick={() => handledelete(row.applicationId)}
+          onClick={() => handleDeleteClick(row.applicationId, row.fullName)}
         >
           Reject
         </button>
@@ -117,12 +148,8 @@ const Settings = () => {
     },
     {
       name: "Date",
-      cell: (row) => (
-        <p>
-          {formatDate(row.createdAt)}
-        </p>
-      ),
-      width: "100px",
+      cell: (row) => <p>{formatDate(row.createdAt)}</p>,
+      width: "120px",
     },
     {
       name: "Name",
@@ -151,7 +178,22 @@ const Settings = () => {
   ];
 
   const admincolumns = [
-    { name: "Name", selector: (row) => row.adminname, width: "150px" },
+    {
+      name: "Name",
+      cell: (row) => (
+        <span
+          className="underline text-blue-600 cursor-pointer"
+          onClick={() => {
+            setAddBoxOpen(true);
+            assignadmindata(row.email);
+            setUpdate(true)
+          }}
+        >
+          {row.adminname}
+        </span>
+      ),
+      width: "150px",
+    },
     {
       name: "Mobile",
       selector: (row) => row.mobile,
@@ -259,6 +301,7 @@ const Settings = () => {
         `${import.meta.env.VITE_API_URI}addadmin`,
         {
           payload: currentData,
+          update : update
         }
       );
 
@@ -311,6 +354,8 @@ const Settings = () => {
           customStyles={customStyles}
         />
       </div>
+
+      {/* Add/Edit Admin Modal */}
       {addBoxOpen && (
         <div className="bg-slate-900 rounded-lg border-2 border-[#fff] absolute w-[30%] px-[2%] py-6 left-[46%] top-[20vh] flex flex-col gap-4">
           <CloseIcon />
@@ -322,7 +367,7 @@ const Settings = () => {
               name="fullName"
               onChange={handleFormChange}
               // @ts-expect-error err
-              value={currentData.fullName}
+              value={currentData.fullName || currentData.adminname}
               required
               className="border border-gray-300 rounded-md p-2"
             />
@@ -366,6 +411,7 @@ const Settings = () => {
               <option value="">Select a option</option>
               <option value="2">Employee</option>
               <option value="3">Partner</option>
+              <option value="4">Guest</option>
             </select>
           </div>
 
@@ -375,6 +421,38 @@ const Settings = () => {
           >
             Add
           </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[400px] mx-4">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              Confirm Rejection
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to reject the request from{" "}
+              <span className="font-semibold text-gray-800">
+                {itemToDelete?.fullName}
+              </span>
+              ? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                Yes, Reject
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

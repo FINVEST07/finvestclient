@@ -8,17 +8,20 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 
 const AdminApplications = () => {
   const [applicationList, setApplicationList] = useState([]);
+  const [processingApplications, setProcessingApplications] = useState([]);
+  const [completedApplications, setCompletedApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adminRank, setAdminRank] = useState(null);
   const [email, setEmail] = useState(null);
   const [admins, setAdmins] = useState([]);
   const [forwardboxopen, setForwardBoxOpen] = useState(false);
-  const [forwardadmin , setForwardAdmin] = useState("")
-  const [currentApplicationId , setCurrentApplicationId ] = useState("");
+  const [forwardadmin, setForwardAdmin] = useState("");
+  const [currentApplicationId, setCurrentApplicationId] = useState("");
+  const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
+  const [applicationToComplete, setApplicationToComplete] = useState("");
 
   const navigate = useNavigate();
 
- 
   const CloseIcon = () => {
     return (
       <svg
@@ -59,6 +62,15 @@ const AdminApplications = () => {
 
       setApplicationList(payload || []);
 
+      // Filter applications by status
+      const processing =
+        payload?.filter((app) => app.status === "Processing") || [];
+      const completed =
+        payload?.filter((app) => app.status === "Completed") || [];
+
+      setProcessingApplications(processing);
+      setCompletedApplications(completed);
+
       const adminresponse = await axios.get(
         `${import.meta.env.VITE_API_URI}getadmins`,
         {
@@ -74,6 +86,8 @@ const AdminApplications = () => {
     } catch (error) {
       console.error("Error loading users", error);
       setApplicationList([]);
+      setProcessingApplications([]);
+      setCompletedApplications([]);
     } finally {
       setLoading(false);
     }
@@ -82,9 +96,6 @@ const AdminApplications = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  
- 
 
   function formatDate(isoString) {
     const date = new Date(isoString);
@@ -114,6 +125,8 @@ const AdminApplications = () => {
 
       if (response.data.status) {
         toast.success(response.data.message);
+        setConfirmCompleteOpen(false);
+        setApplicationToComplete("");
         loadData();
       }
     } catch (error) {
@@ -122,13 +135,18 @@ const AdminApplications = () => {
     }
   };
 
+  const handleCompleteClick = (applicationId) => {
+    setApplicationToComplete(applicationId);
+    setConfirmCompleteOpen(true);
+  };
+
   const handleForward = async () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URI}forwardapplication`,
         {
           email: forwardadmin,
-          applicationId : currentApplicationId
+          applicationId: currentApplicationId,
         }
       );
 
@@ -137,18 +155,19 @@ const AdminApplications = () => {
         return;
       }
 
-      toast.error(response.data.message);
+      toast.success(response.data.message);
       setCurrentApplicationId("");
       setForwardAdmin("");
+      setForwardBoxOpen(false);
       loadData();
     } catch (error) {
       console.error(error);
       toast.error("Something Went Wrong");
     }
-    
   };
 
-  const columns = [
+  // Columns for processing applications (with Forward and Complete buttons)
+  const processingColumns = [
     {
       name: "",
       cell: (row) => (
@@ -156,7 +175,7 @@ const AdminApplications = () => {
           className="px-4 py-2 bg-blue-800 rounded text-white"
           onClick={() => {
             setForwardBoxOpen(true);
-            setCurrentApplicationId(row.applicationId)
+            setCurrentApplicationId(row.applicationId);
           }}
         >
           Forward
@@ -169,15 +188,26 @@ const AdminApplications = () => {
       cell: (row) => (
         <button
           className="px-4 py-2 text-2xl rounded text-white"
-          onClick={() => handleComplete(row.applicationId)}
+          onClick={() => handleCompleteClick(row.applicationId)}
         >
           ✅
         </button>
       ),
       width: "100px",
     },
-    { name: "Customer Name", selector: (row) => row.fullName, width: "180px" },
-
+    {
+      name: "Customer Name",
+      cell: (row) => (
+        <a
+          className="underline text-blue-600"
+          target="_blank"
+          href={`/customerdashboard?email=${row.email}&customer_id=${row.customer_id}`}
+        >
+          {row.fullName}
+        </a>
+      ),
+      width: "180px",
+    },
     {
       name: "Application ID",
       cell: (row) => (
@@ -202,41 +232,50 @@ const AdminApplications = () => {
     { name: "AADHAAR", selector: (row) => row.aadhaarNumber, width: "150px" },
     { name: "Service", selector: (row) => row.servicename },
     { name: "Loan Amount", selector: (row) => row?.newLoanAmount },
+    { name: "Status", selector: (row) => row.status, width: "120px" },
   ];
 
-  // const docFields = [
-  //   { name: "Customer Photo", key: "photo" },
-  //   { name: "PAN Card", key: "pancard" },
-  //   { name: "Aadhar Card", key: "aadharcard" },
-  //   { name: "Passport", key: "passport" },
-  //   { name: "Visa", key: "visa" },
-  //   { name: "CDC", key: "cdc" },
-  //   { name: "Rent Agreement", key: "rentagreement" },
-  //   { name: "Salary Slip", key: "salaryslip" },
-  //   { name: "Bank Statement", key: "bankstatement" },
-  //   { name: "Form 16", key: "form16" },
-  //   { name: "ITR", key: "itr" },
-  //   { name: "Sale Agreement", key: "saleagreement" },
-  //   { name: "Share Certificate", key: "sharecertificate" },
-  //   { name: "Electricity Bill", key: "electricitybill" },
-  //   { name: "Maintenance Bill", key: "maintenancebill" },
-  //   { name: "House Tax Bill", key: "housetaxbill" },
-  //   { name: "NOC", key: "noc" },
-  //   { name: "Marriage Certificate", key: "marraigecertificate" },
-  //   { name: "Birth Certificate", key: "birthcertificate" },
-  //   { name: "Qualification Certificate", key: "qualificationcertificate" },
-  // ];
-
-  // // Push document image columns dynamically
-  // docFields.forEach(({ name, key }) => {
-  //   columns.push({
-  //     name,
-  //     selector: (row) => row[key],
-  //     // @ts-expect-error hhh
-  //     cell: (row) => renderImageCell(row[key], name, row.fullName),
-  //     width: "200px",
-  //   });
-  // });
+  // Columns for completed applications (without Forward and Complete buttons)
+  const completedColumns = [
+    {
+      name: "Customer Name",
+      cell: (row) => (
+        <a
+          className="underline text-blue-600"
+          target="_blank"
+          href={`/customerdashboard?email=${row.email}&customer_id=${row.customer_id}`}
+        >
+          {row.customer_id.toUpperCase()}
+        </a>
+      ),
+      width: "180px",
+    },
+    {
+      name: "Application ID",
+      cell: (row) => (
+        <a
+          className="underline text-blue-600"
+          target="_blank"
+          href={`/applicationform?update=false&type=${row.servicetype}&customerId=${row.customer_id}`}
+        >
+          {row.applicationId.toUpperCase()}
+        </a>
+      ),
+      width: "150px",
+    },
+    {
+      name: "Date",
+      selector: (row) => formatDate(row.createdAt),
+    },
+    {
+      name: "Time",
+      selector: (row) => formatTime(row.createdAt),
+    },
+    { name: "AADHAAR", selector: (row) => row.aadhaarNumber, width: "150px" },
+    { name: "Service", selector: (row) => row.servicename },
+    { name: "Loan Amount", selector: (row) => row?.newLoanAmount },
+    { name: "Status", selector: (row) => row.status, width: "120px" },
+  ];
 
   const customStyles = {
     headRow: {
@@ -278,14 +317,27 @@ const AdminApplications = () => {
     },
   };
 
+  const completedCustomStyles = {
+    ...customStyles,
+    headRow: {
+      style: {
+        backgroundColor: "#065F46",
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: "14px",
+        padding: "12px",
+      },
+    },
+  };
+
   return (
-    <div className="bg-slate-800 w-full min-h-screen">
+    <div className="bg-slate-800 pb-10 w-full min-h-screen">
       <ToastContainerComponent />
       {adminRank == 1 && <AdminSidebar />}
 
       {forwardboxopen && (
-        <div className="absolute z-50  ml-[45%] w-[30%] px-4 py-2 bg-gray-400 shadow-gray-300 shadow-md top-[32vh] rounded-lg">
-          <CloseIcon/>
+        <div className="absolute z-50 ml-[45%] w-[30%] px-4 py-2 bg-gray-400 shadow-gray-300 shadow-md top-[32vh] rounded-lg">
+          <CloseIcon />
           <h1 className="text-center font-semibold text-xl text-[#1E293B]">
             Forward
           </h1>
@@ -303,25 +355,99 @@ const AdminApplications = () => {
                 </option>
               ))}
           </select>
-          <button onClick={handleForward} className="w-[100%] mt-4 text-white rounded-sm py-2 bg-[#1E293B]">
+          <button
+            onClick={handleForward}
+            className="w-[100%] mt-4 text-white rounded-sm py-2 bg-[#1E293B]"
+          >
             Forward
           </button>
         </div>
       )}
 
-      <div className={`${adminRank == 1 ? "ml-[22%]" : ""}  pt-[10vh] px-[5%]`}>
+      {confirmCompleteOpen && (
+        <div className="absolute z-50 ml-[40%] w-[35%] px-6 py-4 bg-white shadow-lg shadow-gray-500 top-[35vh] rounded-lg border border-gray-300">
+          <div className="flex justify-end">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 384 512"
+              width={20}
+              className="cursor-pointer text-gray-600 hover:text-gray-800"
+              onClick={() => {
+                setConfirmCompleteOpen(false);
+                setApplicationToComplete("");
+              }}
+            >
+              <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
+            </svg>
+          </div>
+          <h2 className="text-center font-bold text-xl text-[#1E293B] mb-4">
+            Complete Application
+          </h2>
+          <p className="text-center text-gray-700 mb-6">
+            Are you sure you want to complete this application?
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => {
+                setConfirmCompleteOpen(false);
+                setApplicationToComplete("");
+              }}
+              className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleComplete(applicationToComplete)}
+              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+            >
+              Yes, Complete
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className={`${adminRank == 1 ? "ml-[22%]" : ""} pt-[10vh] px-[5%]`}>
         {loading ? (
           <div className="text-center py-4">
             <span className="animate-spin inline-block w-6 h-6 border-4 border-t-transparent border-orange-500 rounded-full"></span>
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={applicationList}
-            pagination
-            //@ts-expect-error ignore
-            customStyles={customStyles}
-          />
+          <>
+            {/* Processing Applications Table */}
+            <div className="mb-8">
+              <h2 className="text-white text-2xl font-bold mb-4">
+                Processing Applications ({processingApplications.length})
+              </h2>
+              <DataTable
+                columns={processingColumns}
+                data={processingApplications}
+                pagination
+                //@ts-expect-error ignore
+                customStyles={customStyles}
+                noDataComponent={
+                  <div className="text-center py-4 text-gray-500">
+                    No processing applications found
+                  </div>
+                }
+              />
+            </div>
+
+            {/* Completed Applications Table - Only render if there are completed applications */}
+            {completedApplications.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-white text-2xl font-bold mb-4">
+                  Completed Applications ({completedApplications.length})
+                </h2>
+                <DataTable
+                  columns={completedColumns}
+                  data={completedApplications}
+                  pagination
+                  //@ts-expect-error ignore
+                  customStyles={completedCustomStyles}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

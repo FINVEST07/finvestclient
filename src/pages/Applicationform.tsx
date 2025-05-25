@@ -24,6 +24,7 @@ const Applicationform = () => {
   const [isAgreed, setIsAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
+    email: "",
     mobile: "",
     altMobile: "",
     city: "",
@@ -37,15 +38,14 @@ const Applicationform = () => {
     natureOfBusiness: "",
     officeAddress: "",
     officeContact: "",
-    officialEmail: "",
     purchaseCost: "",
     savings: "",
     existingLoans: "",
     newLoanAmount: "",
-    insuranceplan : "",
-    suminsured : "",
-    investmentfund : "",
-    investmentamt : "",
+    insuranceplan: "",
+    suminsured: "",
+    investmentfund: "",
+    investmentamt: "",
     photo: "",
     pancard: "",
     aadharcard: "",
@@ -111,7 +111,11 @@ const Applicationform = () => {
   const loadData = useCallback(async () => {
     try {
       let response;
-      if (customer_id == "") {
+      if (!emailcookie && !customer_id) {
+        return;
+      }
+      if (customer_id === "") {
+        // Changed to strict equality
         response = await axios.get(
           `${import.meta.env.VITE_API_URI}getsinglecustomer`,
           { params: { email: emailcookie } }
@@ -119,7 +123,7 @@ const Applicationform = () => {
       } else {
         response = await axios.get(
           `${import.meta.env.VITE_API_URI}getsinglecustomer`,
-          { params: { email: emailcookie } }
+          { params: { customer_id: customer_id } }
         );
       }
 
@@ -136,7 +140,7 @@ const Applicationform = () => {
     } catch (error) {
       console.error("Error loading user data:", error);
     }
-  }, [emailcookie]);
+  }, [emailcookie, customer_id]); // Added customer_id to dependencies
 
   useEffect(() => {
     loadData();
@@ -160,25 +164,55 @@ const Applicationform = () => {
     try {
       const missingFields = [];
 
-      if (formData.city === "") missingFields.push("City");
-      if (formData.currentAddress === "") missingFields.push("Current Address");
-      if (formData.permanentAddress === "")
-        missingFields.push("Permanent Address");
-      if (formData.qualification === "") missingFields.push("Qualification");
-      if (formData.profession === "") missingFields.push("Profession");
-      if (formData.incomeType === "") missingFields.push("Employment Type");
-      if (formData.purchaseCost === "") missingFields.push("Purchase Cost");
-      if (formData.existingLoans === "") missingFields.push("Existing Loans");
-      if (formData.newLoanAmount === "") missingFields.push("New Loan Amount Required");
-      if (formData.existingLoans === "") missingFields.push("Existing Loans");
-      if (formData.savings === "") missingFields.push("Savings / Net Worth");
+      if (currentStep == 1) {
+        if (formData.city === "") missingFields.push("City");
+        if (formData.currentAddress === "")
+          missingFields.push("Current Address");
+        if (formData.permanentAddress === "")
+          missingFields.push("Permanent Address");
+      } else {
+        if (formData.city === "") missingFields.push("City");
+        if (formData.currentAddress === "")
+          missingFields.push("Current Address");
+        if (formData.permanentAddress === "")
+          missingFields.push("Permanent Address");
+        if (formData.qualification === "") missingFields.push("Qualification");
+        if (formData.profession === "") missingFields.push("Profession");
+        if (formData.incomeType === "") missingFields.push("Employment Type");
 
-      if (missingFields.length > 0) {
-        toast.error(
-          `Following fields are missing: ${missingFields.join(", ")}`
-        );
-        return false;
+        if (serviceData.type == "1") {
+          if (formData.purchaseCost === "") missingFields.push("Purchase Cost");
+          if (formData.existingLoans === "")
+            missingFields.push("Existing Loans");
+          if (formData.newLoanAmount === "")
+            missingFields.push("New Loan Amount Required");
+          if (formData.existingLoans === "")
+            missingFields.push("Existing Loans");
+        }
+        if (serviceData.type == "2") {
+          if (formData.insuranceplan === "")
+            missingFields.push("Insurance Plan");
+          if (formData.suminsured === "")
+            missingFields.push("Sum Insured");
+        }
+
+        if (serviceData.type == "3") {
+          if (formData.investmentfund === "")
+            missingFields.push("Investment Fund");
+          if (formData.investmentamt === "")
+            missingFields.push("Investment Amount");
+        }
+
+        if (formData.savings === "") missingFields.push("Savings / Net Worth");
+
+        if (missingFields.length > 0) {
+          toast.error(
+            `Following fields are missing: ${missingFields.join(", ")}`
+          );
+          return false;
+        }
       }
+
       setLoading(true);
       const form = new FormData();
       const textPayload = {};
@@ -194,8 +228,6 @@ const Applicationform = () => {
         }
       }
 
-      // @ts-expect-error err
-      textPayload.email = emailcookie;
       // @ts-expect-error err
       textPayload.servicename = serviceData.servicename;
       if (applicationId) {
@@ -265,9 +297,6 @@ const Applicationform = () => {
       }
 
       // @ts-expect-error err
-      textPayload.email = emailcookie;
-
-      // @ts-expect-error err
       textPayload.servicename = serviceData.servicename;
 
       // @ts-expect-error err
@@ -320,7 +349,7 @@ const Applicationform = () => {
 
   const handleNext = async (e) => {
     const success = await saveData(e);
-    
+
     if (success) {
       setCurrentStep((prev) => prev + 1);
     }

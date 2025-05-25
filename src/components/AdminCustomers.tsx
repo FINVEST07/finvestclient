@@ -15,8 +15,21 @@ const AdminCustomers = () => {
     return `${day} ${month} ${year}`;
   };
 
+
   const columns = [
-    { name: "C_ID", selector: (row) => row.customer_id, width: "100px" },
+    {
+      name: "C_ID",
+      cell: (row) => (
+        <a
+          className="underline text-blue-600"
+          target="_blank"
+          href={`/customerdashboard?email=${row.email}&customer_id=${row.customer_id}`}
+        >
+          {row.customer_id.toUpperCase()}
+        </a>
+      ),
+      width: "100px",
+    },
     { name: "Name", selector: (row) => row.fullName, width: "150px" },
     {
       name: "Mobile",
@@ -83,7 +96,6 @@ const AdminCustomers = () => {
         `${import.meta.env.VITE_API_URI}getcustomers`
       );
       const payload = response.data.payload;
-      
 
       if (Array.isArray(payload)) {
         setCustomerList(payload);
@@ -102,7 +114,6 @@ const AdminCustomers = () => {
     loadData();
   }, [loadData]);
 
-  
   return (
     <div className="bg-slate-800 w-full min-h-screen">
       <AdminSidebar />
@@ -126,4 +137,3 @@ const AdminCustomers = () => {
 };
 
 export default AdminCustomers;
-
