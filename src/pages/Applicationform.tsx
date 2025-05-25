@@ -42,6 +42,10 @@ const Applicationform = () => {
     savings: "",
     existingLoans: "",
     newLoanAmount: "",
+    insuranceplan : "",
+    suminsured : "",
+    investmentfund : "",
+    investmentamt : "",
     photo: "",
     pancard: "",
     aadharcard: "",
@@ -316,7 +320,7 @@ const Applicationform = () => {
 
   const handleNext = async (e) => {
     const success = await saveData(e);
-    //@ts-expect-error err
+    
     if (success) {
       setCurrentStep((prev) => prev + 1);
     }

@@ -4,7 +4,6 @@ const ProfessionalFormSection = ({
   serviceData,
   update,
 }) => {
- 
   return (
     <div className="space-y-4 border bg-[#E9E5DA] p-4 rounded-lg">
       <h3 className="text-lg font-semibold">
@@ -96,7 +95,7 @@ const ProfessionalFormSection = ({
         </>
       )}
 
-      {(serviceData.type == "1" || serviceData.type == 1 ) && (
+      {(serviceData.type == "1" || serviceData.type == 1) && (
         <>
           <div>
             <label>
@@ -137,6 +136,74 @@ const ProfessionalFormSection = ({
               placeholder="e.g. 1000000"
               onChange={handleChange}
               value={formData.newLoanAmount}
+              className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
+              disabled={update == "false"}
+            />
+          </div>
+        </>
+      )}
+
+      {(serviceData.type == "2" || serviceData.type == 2) && (
+        <>
+          <div>
+            <label>
+              Insurance Plan&nbsp;
+              <span className="text-red-600">*</span>
+            </label>
+            <input
+              name="insuranceplan"
+              placeholder="e.g. Family Floater"
+              onChange={handleChange}
+              value={formData.insuranceplan}
+              className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
+              disabled={update == "false"}
+            />
+          </div>
+
+          <div>
+            <label>
+              Sum Insured Required&nbsp;
+              <span className="text-red-600">*</span>
+            </label>
+            <input
+              name="suminsured"
+              placeholder="e.g. 1000000"
+              onChange={handleChange}
+              value={formData.suminsured}
+              className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
+              disabled={update == "false"}
+            />
+          </div>
+        </>
+      )}
+
+      {(serviceData.type == "3" || serviceData.type == 3) && (
+        <>
+          <div>
+            <label>
+              Investment Fund&nbsp;
+              <span className="text-red-600">*</span>
+            </label>
+            <input
+              name="investmentfund"
+              placeholder="e.g. Equity, Balance, Multi Asset Fund"
+              onChange={handleChange}
+              value={formData.investmentfund}
+              className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
+              disabled={update == "false"}
+            />
+          </div>
+
+          <div>
+            <label>
+              Investment Amount&nbsp;
+              <span className="text-red-600">*</span>
+            </label>
+            <input
+              name="investmentamt"
+              placeholder="e.g. 1000000"
+              onChange={handleChange}
+              value={formData.investmentamt}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
               disabled={update == "false"}
             />

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { encryptData } from "@/utils/Security";
+import { decryptData, encryptData } from "@/utils/Security";
 
 const Adminlogin = () => {
   const [formdata, setFormdata] = useState({ email: "", password: "" });
@@ -34,21 +34,24 @@ const Adminlogin = () => {
         }
       );
 
-      if (response.status == 200) {
-        
-        
-        localStorage.setItem("rank",response.data.rank);
-        localStorage.setItem("email",response.data.email);
-        if (response.data.rank == 1 || response.data.rank == "1") {
-          navigate("/admindashboard");
-        } else {
-          navigate("/adminapplications?tab=applications");
-        }
+      const decryptedpayload = decryptData(
+        response.data.payload,
+        import.meta.env.VITE_UTIL
+      );
+
+
+      localStorage.setItem("rank", decryptedpayload.rank);
+      localStorage.setItem("email", decryptedpayload.email);
+      if (
+        decryptedpayload.rank == 1 ||
+        decryptedpayload.rank == "1"
+      ) {
+        navigate("/admindashboard");
       } else {
-        setError("Unexpected error occurred");
+        navigate("/adminapplications?tab=applications");
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }

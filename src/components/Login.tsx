@@ -128,10 +128,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
           }
         );
 
-        if (loginresponse.status !== 200) {
-          toast.error(loginresponse.data.message);
-        }
-
         Cookie.set(
           "finvest",
           `${loginformdata.email}$${loginresponse.data.mobile}`,
@@ -155,16 +151,13 @@ const Login = ({ setLoginOpen, loginopen }) => {
           }
         );
 
-        if (loginresponse.status !== 200) {
-          toast.error(loginresponse.data.message);
-        }
-
         Cookie.set(
           "finvest",
           `${loginformdata.email}$${loginresponse.data.mobile}`,
           { expires: 365 }
         );
 
+        setLoginTimer(0);
         toast.success(loginresponse.data.message);
         setLoginOpen(false);
         setLoginFormData({
@@ -175,10 +168,12 @@ const Login = ({ setLoginOpen, loginopen }) => {
         navigate("/customerdashboard");
       }
     } catch (error) {
-      toast.error("Something Went Wrong");
-      console.error(error);
-    } finally {
-      setLoginTimer(0);
+      if (error.response?.data?.status === false) {
+        toast.error(error.response.data.message);
+      } else {
+        // Generic error fallback
+        toast.error("something went wrong");
+      }
     }
   };
 
@@ -197,18 +192,19 @@ const Login = ({ setLoginOpen, loginopen }) => {
         }
       );
 
-      if (response.status !== 200) {
-        toast.error(response.data.message);
-        return;
-      }
-
+      // Success case (when status is true)
       toast.success(response.data.message);
       setLoginTimer(120);
-
       setStep("verify");
       setTimer(120);
     } catch (error) {
-      toast.error("something went wrong");
+      // Check if it's an HTTP error with response data
+      if (error.response?.data?.status === false) {
+        toast.error(error.response.data.message);
+      } else {
+        // Generic error fallback
+        toast.error("something went wrong");
+      }
     }
   };
 
@@ -223,11 +219,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
           otp: otp,
         }
       );
-
-      if (response.status !== 200) {
-        toast.error(response.data.message);
-        return;
-      }
 
       Cookie.set("finvest", `${formData.email}$${formData.mobile}`, {
         expires: 365,
@@ -245,9 +236,15 @@ const Login = ({ setLoginOpen, loginopen }) => {
       setTimer(0);
       navigate("/customerdashboard");
     } catch (error) {
-      toast.error("something went wrong");
-    } finally {
-      setTimer(0);
+      setStep("form");
+
+      // Check if it's an HTTP error with response data
+      if (error.response?.data?.status === false) {
+        toast.error(error.response.data.message);
+      } else {
+        // Generic error fallback
+        toast.error("something went wrong");
+      }
     }
   };
 
@@ -364,7 +361,11 @@ const Login = ({ setLoginOpen, loginopen }) => {
                           Login with Password ?
                         </p>
                         {loginotpgenerated && (
-                          <p>OTP will Expire in {logintimer} Seconds</p>
+                          <p className="text-center">
+                            {logintimer > 0
+                              ? `OTP will Expire in ${logintimer} Seconds`
+                              : "OTP Expired, Request a new One"}
+                          </p>
                         )}
                       </>
                     ) : (
@@ -381,7 +382,9 @@ const Login = ({ setLoginOpen, loginopen }) => {
                           />
                           <button
                             type="button"
-                            onClick={() => setShowLoginPassword(!showLoginPassword)}
+                            onClick={() =>
+                              setShowLoginPassword(!showLoginPassword)
+                            }
                             className="absolute right-2 top-1/2 transform -translate-y-1/2"
                           >
                             {showLoginPassword ? (

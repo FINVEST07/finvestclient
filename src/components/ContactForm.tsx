@@ -17,6 +17,7 @@ const ContactForm = ({ setLoginOpen }) => {
     lastName: "",
     email: "",
     phone: "",
+    city: "",
     service: "",
     message: "",
   });
@@ -67,6 +68,7 @@ const ContactForm = ({ setLoginOpen }) => {
         phone: "",
         service: "",
         message: "",
+        city: "",
       });
     } catch (err) {
       console.error(err);
@@ -162,8 +164,19 @@ const ContactForm = ({ setLoginOpen }) => {
                 </select>
               </div>
 
+              <div className="space-y-2">
+                <Label>City</Label>
+                <Input
+                  id="city"
+                  required
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="Enter your city name"
+                />
+              </div>
+
               {/* Message */}
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mt-6 mb-6">
                 <Label htmlFor="message">Message</Label>
                 <Textarea
                   id="message"
@@ -175,7 +188,11 @@ const ContactForm = ({ setLoginOpen }) => {
                 />
               </div>
 
-              {responsetext && <p className="text-center text-base md:text-xl xl:text-2xl my-1">{responsetext}</p>}
+              {responsetext && (
+                <p className="text-center text-base md:text-xl xl:text-2xl my-1">
+                  {responsetext}
+                </p>
+              )}
 
               {/* Button */}
               <Button

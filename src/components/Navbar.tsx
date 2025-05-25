@@ -3,7 +3,6 @@ import { Menu, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Cookie from "js-cookie";
 
-
 const Navbar = ({ setLoginOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -11,7 +10,18 @@ const Navbar = ({ setLoginOpen }) => {
 
   const emailcookie = Cookie.get("finvest");
 
-  
+  const handleBecomePartnerClick = (e) => {
+    e.preventDefault();
+    
+    if (!emailcookie) {
+      // No cookie present, open login modal
+      setLoginOpen(true);
+      return;
+    }
+    
+    // Cookie present, navigate to dashboard
+    window.location.href = "/customerdashboard";
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,7 +64,11 @@ const Navbar = ({ setLoginOpen }) => {
               Services
             </a>
            
-            <a href="/customerdashboard" className="nav-link">
+            <a 
+              href="/customerdashboard" 
+              className="nav-link"
+              onClick={handleBecomePartnerClick}
+            >
               Become a Partner
             </a>
             <a href="/loancalculator" target="_blank" className="nav-link">
@@ -200,7 +214,7 @@ const Navbar = ({ setLoginOpen }) => {
           ) : (
             <button
               onClick={() => {
-                Cookie.remove("email");
+                Cookie.remove("finvest"); // Fixed: was "email", should be "finvest"
                 setIsOpen(false);
                  window.location.reload();
               }}
