@@ -15,7 +15,7 @@ const Settings = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  const [update , setUpdate] = useState(false);
+  const [update, setUpdate] = useState(false);
 
   const [formdata, setFormData] = useState({
     fullName: "",
@@ -103,9 +103,7 @@ const Settings = () => {
   };
 
   const assignadmindata = (email) => {
-    const filtered = adminlist.filter(
-      (item) => item.email == email
-    );
+    const filtered = adminlist.filter((item) => item.email == email);
 
     setCurrentData(filtered[0]);
   };
@@ -117,6 +115,8 @@ const Settings = () => {
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
+
+  const locations = ["Mumbai"];
 
   const columns = [
     {
@@ -186,7 +186,7 @@ const Settings = () => {
           onClick={() => {
             setAddBoxOpen(true);
             assignadmindata(row.email);
-            setUpdate(true)
+            setUpdate(true);
           }}
         >
           {row.adminname}
@@ -301,23 +301,20 @@ const Settings = () => {
         `${import.meta.env.VITE_API_URI}addadmin`,
         {
           payload: currentData,
-          update : update
+          update: update,
         }
       );
-
-      // Check if status is in success range
-      if (!response.data.status) {
-        toast.error(response.data?.message || "Something went wrong");
-        return;
-      }
 
       toast.success(response.data.message);
       loadData();
       setAddBoxOpen(false);
     } catch (error) {
-      console.error(error);
-
-      toast.error("Error Adding");
+      if (error.response?.data?.status === false) {
+        toast.error(error.response.data.message);
+      } else {
+        // Generic error fallback
+        toast.error("something went wrong");
+      }
     }
   };
 
@@ -412,6 +409,23 @@ const Settings = () => {
               <option value="2">Employee</option>
               <option value="3">Partner</option>
               <option value="4">Guest</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-white">Location :</span>
+            <select
+              name="location"
+              id=""
+              className="border border-gray-300 rounded-md p-2"
+              onChange={handleCurrentChange}
+            >
+              <option value="">Select a Location</option>
+              {locations.map((location, index) => (
+                <option key={index} value={location}>
+                  {location}
+                </option>
+              ))}
             </select>
           </div>
 

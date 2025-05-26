@@ -25,6 +25,8 @@ const fileFields = [
   { name: "qualificationcertificate", label: "Qualification Certificate" },
 ];
 
+const locations = ["Mumbai"];
+
 const DocumentFormSection = ({
   handleChange,
   formData,
@@ -256,6 +258,16 @@ const DocumentFormSection = ({
           })}
         </div>
       </div>
+
+      <div className="w-full flex gap-2 items-center">
+        <label className="font-semibold" htmlFor="">Location: </label>
+        <select className="w-full py-1" name="" id="">
+          {locations.map((location, index) => (
+            <option value={location}>{location}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="flex space-x-2">
         <input
           type="checkbox"

@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PersonalFormSection from "@/components/PersonalFormSection";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 
 const Customerdashboard = () => {
   const location = useLocation();
@@ -31,6 +32,8 @@ const Customerdashboard = () => {
     customer_id: "",
     servicename: "",
   });
+
+  const [isAnimationPaused, setIsAnimationPaused] = useState(false);
 
   const [applications, setApplications] = useState(null);
 
@@ -113,6 +116,26 @@ const Customerdashboard = () => {
       servicename: "Become an Employee",
     },
   ];
+
+    // Continuous popping animation variants with conditional animation
+  const poppingAnimation = {
+    scale: isAnimationPaused ? [1] : [1, 1.02, 1],
+    transition: {
+      duration: 2,
+      repeat: isAnimationPaused ? 0 : Infinity,
+      ease: "easeInOut",
+    },
+  };
+
+  // Handle click/touch to pause animation
+  const handleInteraction = () => {
+    setIsAnimationPaused(true);
+  };
+
+  // Handle mouse leave to resume animation (for desktop)
+  const handleMouseLeave = () => {
+    setIsAnimationPaused(false);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -221,6 +244,8 @@ const Customerdashboard = () => {
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
+
+  
 
   return (
     <div className="bg-[#EBECEC] min-h-screen">
@@ -384,12 +409,20 @@ const Customerdashboard = () => {
               </div>
             )}
 
-            <div className="mt-[4vh] flex flex-col gap-2 border-2 p-2 border-black">
-              <h1 className="font-bold text-xl p-2 block text-black w-full  text-center rounded-md ">
+            <motion.div
+              className="mt-[4vh] bg-blue-50 rounded-sm flex flex-col gap-2 border-2 p-2 border-black"
+              animate={poppingAnimation}
+              onClick={handleInteraction}
+              onMouseEnter={handleInteraction}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleInteraction}
+            >
+              <h1 className="font-bold text-xl lg:text-2xl p-2 block text-black w-full text-center rounded-md">
                 Apply for Services
               </h1>
 
               <label className="text-xl">Select a Service :</label>
+
               <div>
                 <select
                   className="bg-transparent w-full border-[#0F172A] border-2"
@@ -398,9 +431,9 @@ const Customerdashboard = () => {
                     const selected = services.find(
                       (item) => item.servicename === e.target.value
                     );
-                    setSelectedService(
-                      // @ts-expect-error fff
 
+                    setSelectedService(
+                      // @ts-expect-error err
                       selected || { type: "", servicename: "" }
                     );
                   }}
@@ -417,7 +450,7 @@ const Customerdashboard = () => {
               </div>
 
               <button className="w-full py-2 bg-[#0F172A] text-[#D4AF37] rounded-md">
-                {selectedservice.type != "" ? (
+                {selectedservice.type !== "" ? (
                   <a
                     href={`applicationform?type=${selectedservice.type}&servicename=${selectedservice.servicename}&update=true`}
                     target="_blank"
@@ -430,7 +463,7 @@ const Customerdashboard = () => {
                   <p>Apply...</p>
                 )}
               </button>
-            </div>
+            </motion.div>
           </>
         ) : (
           <div className="flex flex-col gap-0">

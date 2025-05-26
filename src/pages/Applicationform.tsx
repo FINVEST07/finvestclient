@@ -66,6 +66,7 @@ const Applicationform = () => {
     marraigecertificate: "",
     birthcertificate: "",
     qualificationcertificate: "",
+    location: "Mumbai",
   });
 
   useEffect(() => {
@@ -192,8 +193,7 @@ const Applicationform = () => {
         if (serviceData.type == "2") {
           if (formData.insuranceplan === "")
             missingFields.push("Insurance Plan");
-          if (formData.suminsured === "")
-            missingFields.push("Sum Insured");
+          if (formData.suminsured === "") missingFields.push("Sum Insured");
         }
 
         if (serviceData.type == "3") {
