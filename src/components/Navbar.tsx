@@ -12,13 +12,13 @@ const Navbar = ({ setLoginOpen }) => {
 
   const handleBecomePartnerClick = (e) => {
     e.preventDefault();
-    
+
     if (!emailcookie) {
       // No cookie present, open login modal
       setLoginOpen(true);
       return;
     }
-    
+
     // Cookie present, navigate to dashboard
     window.location.href = "/customerdashboard";
   };
@@ -63,9 +63,9 @@ const Navbar = ({ setLoginOpen }) => {
             <a href="#services" className="nav-link">
               Services
             </a>
-           
-            <a 
-              href="/customerdashboard" 
+
+            <a
+              href="/customerdashboard"
               className="nav-link"
               onClick={handleBecomePartnerClick}
             >
@@ -73,6 +73,9 @@ const Navbar = ({ setLoginOpen }) => {
             </a>
             <a href="/loancalculator" target="_blank" className="nav-link">
               Loan Calculator
+            </a>
+            <a href="#contact" className="nav-link">
+              Refer & Earn
             </a>
             <a href="#contact" className="nav-link">
               Contact
@@ -114,7 +117,7 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={() => {
                     Cookie.remove("finvest");
                     setIsOpen(false);
-                     window.location.reload();
+                    window.location.reload();
                   }}
                   className="cursor-pointer"
                 >
@@ -205,7 +208,6 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setLoginOpen(true);
                 setIsOpen(false);
-                
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
             >
@@ -216,7 +218,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 Cookie.remove("finvest"); // Fixed: was "email", should be "finvest"
                 setIsOpen(false);
-                 window.location.reload();
+                window.location.reload();
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
             >

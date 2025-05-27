@@ -117,7 +117,7 @@ const Customerdashboard = () => {
     },
   ];
 
-    // Continuous popping animation variants with conditional animation
+  // Continuous popping animation variants with conditional animation
   const poppingAnimation = {
     scale: isAnimationPaused ? [1] : [1, 1.02, 1],
     transition: {
@@ -185,6 +185,36 @@ const Customerdashboard = () => {
     loadData();
   }, [loadData]);
 
+  // Function to render stars based on rating
+  const renderStars = (rating) => {
+    const numStars = parseInt(rating) || 0;
+    const maxStars = 5;
+    const stars = [];
+
+    for (let i = 0; i < maxStars; i++) {
+      stars.push(
+        <svg
+          key={i}
+          className={`w-4 h-4 ${
+            i < numStars ? "text-yellow-400" : "text-gray-300"
+          }`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-1">
+        {stars}
+        <span className="text-xs text-gray-500 ml-1">({numStars}/5)</span>
+      </div>
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -245,13 +275,11 @@ const Customerdashboard = () => {
     return `${day} ${month} ${year}`;
   };
 
-  
-
   return (
     <div className="bg-[#EBECEC] min-h-screen">
       <ToastContainerComponent />
       <nav
-        className={`fixed top-0 flex justify-between items-center px-4 gap-2 bg-[#0F172A] h-[8vh] lg:h-[10vh] lg:border-b-2 w-full  border-[#D4AF37]`}
+        className={`fixed top-0 flex justify-between items-center px-4 gap-2 bg-blue-900 h-[8vh] lg:h-[10vh] lg:border-b-2 w-full  ]`}
       >
         <div
           className="flex gap-2 cursor-pointer"
@@ -260,12 +288,12 @@ const Customerdashboard = () => {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width={15}
-            fill="#D4AF37"
+            fill="#FFF"
             viewBox="0 0 512 512"
           >
             <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 480 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-370.7 0 73.4-73.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-128 128z" />
           </svg>
-          <h1 className="text-lg text-[#D4AF37]">Back to Home</h1>
+          <h1 className="text-lg text-[#fff]">Back to Home</h1>
         </div>
       </nav>
       <div className="px-[5%] mt-[8vh] lg:mt-[10vh] p-6">
@@ -382,6 +410,9 @@ const Customerdashboard = () => {
                           <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                             {item.status}
                           </td>
+                          <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
+                            {renderStars(item.stars)}
+                          </td>
                           <td className="hidden lg:block">
                             <a
                               href={`/applicationform?applicationId=${item.applicationId}`}
@@ -449,7 +480,7 @@ const Customerdashboard = () => {
                 </select>
               </div>
 
-              <button className="w-full py-2 bg-[#0F172A] text-[#D4AF37] rounded-md">
+              <button className="w-full py-2 bg-blue-800 text-[#fff] rounded-md">
                 {selectedservice.type !== "" ? (
                   <a
                     href={`applicationform?type=${selectedservice.type}&servicename=${selectedservice.servicename}&update=true`}

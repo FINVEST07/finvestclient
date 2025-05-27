@@ -204,7 +204,11 @@ const Settings = () => {
       name: "Rank",
       selector: (row) =>
         row.rank == 2 ? "Employee" : row.rank == 3 ? "Partner" : "Guest",
-      width: "250px",
+      width: "120px",
+    },
+    {
+      name: "Location",
+      selector: (row) => row.location,
     },
   ];
 

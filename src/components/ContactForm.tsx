@@ -20,6 +20,7 @@ const ContactForm = ({ setLoginOpen }) => {
     city: "",
     service: "",
     message: "",
+    refercode: "",
   });
 
   const emailcookie = Cookie.get("finvest");
@@ -69,7 +70,9 @@ const ContactForm = ({ setLoginOpen }) => {
         service: "",
         message: "",
         city: "",
+        refercode: "",
       });
+      
     } catch (err) {
       console.error(err);
       toast.error("Something Went Wrong");
@@ -164,15 +167,27 @@ const ContactForm = ({ setLoginOpen }) => {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label>City</Label>
-                <Input
-                  id="city"
-                  required
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder="Enter your city name"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-2">
+                  <Label>City</Label>
+                  <Input
+                    id="city"
+                    required
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder="Enter your city name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Refer Code</Label>
+                  <Input
+                    id="refercode"
+                    required
+                    value={formData.refercode}
+                    onChange={handleChange}
+                    placeholder="Enter your Employee / Partner ID"
+                  />
+                </div>
               </div>
 
               {/* Message */}
@@ -184,7 +199,8 @@ const ContactForm = ({ setLoginOpen }) => {
                   onChange={handleChange}
                   required
                   placeholder="Tell us about your financial goals and how we can help"
-                  className="min-h-[120px]"
+                  
+                  cols={3}
                 />
               </div>
 
@@ -206,11 +222,11 @@ const ContactForm = ({ setLoginOpen }) => {
 
           {/* Contact Info Cards */}
           <div className="lg:col-span-2 space-y-6 animate-fade-in-right">
-            <Card className="p-6">
+            <Card className="px-6 lg:py-10">
               <h3 className="text-xl font-playfair font-semibold mb-4 text-blue-900">
                 Contact Information
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-4 lg:space-y-6">
                 <ContactInfo
                   icon={<MailIcon className="h-5 w-5 text-blue-900" />}
                   title="Email Us"

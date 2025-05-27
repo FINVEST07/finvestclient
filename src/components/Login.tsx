@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = ({ setLoginOpen, loginopen }) => {
-  const [step, setStep] = useState("form"); // 'form' or 'verify'
+  const [step, setStep] = useState("form"); // 'form', 'verify', or 'forgot-password'
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,15 +21,25 @@ const Login = ({ setLoginOpen, loginopen }) => {
     otp: "",
   });
 
+  const [forgotPasswordData, setForgotPasswordData] = useState({
+    email: "",
+    otp: "",
+    newPassword: "",
+  });
+
   const [loginwithotp, setLoginWithOtp] = useState(true);
   const [loginotpgenerated, setloginOtpGenerated] = useState(false);
+  const [forgotPasswordOtpGenerated, setForgotPasswordOtpGenerated] =
+    useState(false);
   const [error, setError] = useState("");
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(0);
   const [otpbox, setOtpBox] = useState(false);
   const [logintimer, setLoginTimer] = useState(0);
+  const [forgotPasswordTimer, setForgotPasswordTimer] = useState(0);
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const [showLoginPassword, setShowLoginPassword] = useState(false); // State for login password visibility
+  const [showNewPassword, setShowNewPassword] = useState(false); // State for new password visibility
 
   const [sectionopen, setSectionOpen] = useState("register");
 
@@ -74,6 +84,16 @@ const Login = ({ setLoginOpen, loginopen }) => {
     return () => clearInterval(countdown);
   }, [logintimer]);
 
+  useEffect(() => {
+    if (forgotPasswordTimer <= 0) return;
+
+    const countdown = setInterval(() => {
+      setForgotPasswordTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(countdown);
+  }, [forgotPasswordTimer]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -86,6 +106,14 @@ const Login = ({ setLoginOpen, loginopen }) => {
   const handleLoginFormChnage = (e) => {
     const { name, value } = e.target;
     setLoginFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleForgotPasswordChange = (e) => {
+    const { name, value } = e.target;
+    setForgotPasswordData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -112,6 +140,71 @@ const Login = ({ setLoginOpen, loginopen }) => {
       toast.success(sendOtpResponse.data.message);
     } catch (error) {
       toast.error("Something Went Wrong");
+    }
+  };
+
+  const SendForgotPasswordOtp = async (e) => {
+    e.preventDefault();
+
+    try {
+      const sendOtpResponse = await axios.post(
+        `${import.meta.env.VITE_API_URI}sendforgotpasswordotp`,
+        {
+          email: forgotPasswordData.email,
+        }
+      );
+
+      if (sendOtpResponse.status !== 200) {
+        toast.error(sendOtpResponse.data.message);
+        return;
+      }
+      setForgotPasswordOtpGenerated(true);
+      setForgotPasswordTimer(120);
+
+      toast.success(sendOtpResponse.data.message);
+    } catch (error) {
+      if (error.response?.data?.status === false) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
+
+  const HandleForgotPassword = async (e) => {
+    e.preventDefault();
+
+    if (forgotPasswordData.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      const resetPasswordResponse = await axios.post(
+        `${import.meta.env.VITE_API_URI}resetpassword`,
+        {
+          email: forgotPasswordData.email,
+          otp: forgotPasswordData.otp,
+          newPassword: forgotPasswordData.newPassword,
+        }
+      );
+
+      toast.success(resetPasswordResponse.data.message);
+      setStep("form");
+      setSectionOpen("login");
+      setForgotPasswordData({
+        email: "",
+        otp: "",
+        newPassword: "",
+      });
+      setForgotPasswordOtpGenerated(false);
+      setForgotPasswordTimer(0);
+    } catch (error) {
+      if (error.response?.data?.status === false) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
     }
   };
 
@@ -394,12 +487,21 @@ const Login = ({ setLoginOpen, loginopen }) => {
                             )}
                           </button>
                         </div>
-                        <p
-                          onClick={() => setLoginWithOtp(true)}
-                          className="text-right text-blue-900 cursor-pointer"
-                        >
-                          Login with OTP ?
-                        </p>
+                        <div className="flex justify-end gap-2 items-center text-sm">
+                          <p
+                            onClick={() => setLoginWithOtp(true)}
+                            className="text-blue-900 cursor-pointer"
+                          >
+                            Login with OTP ?
+                          </p>
+                          <span className="text-gray-400">|</span>
+                          <p
+                            onClick={() => setStep("forgot-password")}
+                            className="text-blue-900 cursor-pointer"
+                          >
+                            Forgot Password ?
+                          </p>
+                        </div>
                       </>
                     )}
                     <button
@@ -412,7 +514,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
                   </form>
                 )}
               </>
-            ) : (
+            ) : step === "verify" ? (
               <>
                 <h2 className="text-xl font-semibold mb-2 text-center">
                   Enter OTP
@@ -445,6 +547,91 @@ const Login = ({ setLoginOpen, loginopen }) => {
                   className="w-full text-sm text-blue-600 mt-4 underline"
                 >
                   Go Back
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-semibold mb-2 text-center">
+                  Reset Password
+                </h2>
+                <p className="text-sm text-gray-500 text-center mb-4">
+                  Enter your email to receive OTP for password reset
+                </p>
+                <form onSubmit={HandleForgotPassword}>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={forgotPasswordData.email}
+                    onChange={handleForgotPasswordChange}
+                    className="w-full p-2 mb-3 border rounded-lg"
+                    required
+                  />
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      name="otp"
+                      placeholder="Enter OTP"
+                      value={forgotPasswordData.otp}
+                      onChange={handleForgotPasswordChange}
+                      disabled={!forgotPasswordOtpGenerated}
+                      className="w-full p-2 border rounded-lg"
+                      required
+                    />
+                    <button
+                      type="button"
+                      disabled={forgotPasswordTimer > 0}
+                      className="w-[40%] bg-blue-900 rounded-md text-white py-2"
+                      onClick={SendForgotPasswordOtp}
+                    >
+                      Send OTP
+                    </button>
+                  </div>
+                  {forgotPasswordOtpGenerated && (
+                    <p className="text-center text-sm mb-3">
+                      {forgotPasswordTimer > 0
+                        ? `OTP will Expire in ${forgotPasswordTimer} Seconds`
+                        : "OTP Expired, Request a new One"}
+                    </p>
+                  )}
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      name="newPassword"
+                      placeholder="Enter New Password"
+                      value={forgotPasswordData.newPassword}
+                      onChange={handleForgotPasswordChange}
+                      className="w-full p-2 mb-3 border rounded-lg"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-500" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!forgotPasswordOtpGenerated}
+                    className="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                  >
+                    Reset Password
+                  </button>
+                </form>
+                <button
+                  onClick={() => {
+                    setStep("form");
+                    setSectionOpen("login");
+                  }}
+                  className="w-full text-sm text-blue-600 mt-4 underline"
+                >
+                  Go Back to Login
                 </button>
               </>
             )}

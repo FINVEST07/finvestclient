@@ -37,8 +37,64 @@ const DocumentFormSection = ({
   const [selectedDoc, setSelectedDoc] = useState("");
   const [customDocName, setCustomDocName] = useState("");
   const [error, setError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const normalizeDocName = (name) => name.toLowerCase().replace(/\s+/g, "");
+
+  // Load PDF.js library dynamically
+  const loadPdfJs = async () => {
+    // @ts-expect-error err
+    if (window.pdfjsLib) return window.pdfjsLib;
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      script.onload = () => {
+        // @ts-expect-error err
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        // @ts-expect-error err
+        resolve(window.pdfjsLib);
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
+  // Convert PDF to image
+  const convertPdfToImage = async (file) => {
+    try {
+      const pdfjsLib = await loadPdfJs();
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      // Get first page
+      const page = await pdf.getPage(1);
+      const scale = 2; // Higher scale for better quality
+      const viewport = page.getViewport({ scale });
+
+      // Create canvas
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      // Render PDF page to canvas
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+      }).promise;
+
+      // Convert canvas to blob
+      return new Promise((resolve) => {
+        canvas.toBlob(resolve, "image/jpeg", 0.9);
+      });
+    } catch (error) {
+      console.error("Error converting PDF to image:", error);
+      throw new Error("Failed to convert PDF to image");
+    }
+  };
 
   const handleFileChange = async (e) => {
     const { files } = e.target;
@@ -51,14 +107,25 @@ const DocumentFormSection = ({
       return;
     }
 
-    const options = {
-      maxSizeMB: 0.5,
-      maxWidthOrHeight: 1024,
-      useWebWorker: true,
-    };
+    setIsProcessing(true);
+    setError("");
 
     try {
-      const compressedFile = await imageCompression(file, options);
+      let processedFile = file;
+
+      // Check if file is PDF and convert to image
+      if (file.type === "application/pdf") {
+        processedFile = await convertPdfToImage(file);
+      }
+
+      // Compress the image (works for both original images and converted PDF images)
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+
+      const compressedFile = await imageCompression(processedFile, options);
       const base64 = await convertToBase64(compressedFile);
       let fieldName =
         selectedDoc === "other" ? normalizeDocName(customDocName) : selectedDoc;
@@ -75,11 +142,12 @@ const DocumentFormSection = ({
       if (selectedDoc === "other") {
         setCustomDocName("");
         setSelectedDoc("");
-        setError("");
       }
     } catch (error) {
-      console.error("Error compressing file", error);
-      setError("Error compressing file. Please try again.");
+      console.error("Error processing file", error);
+      setError(error.message || "Error processing file. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -147,6 +215,7 @@ const DocumentFormSection = ({
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 384 512"
         onClick={() => downloadPDF(imgUrl, label)}
+        className="cursor-pointer hover:fill-blue-600"
       >
         <path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM216 232l0 102.1 31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31L168 232c0-13.3 10.7-24 24-24s24 10.7 24 24z" />
       </svg>
@@ -205,10 +274,36 @@ const DocumentFormSection = ({
           </label>
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,application/pdf"
             onChange={handleFileChange}
             className="border p-2 w-full"
+            disabled={isProcessing}
           />
+          {isProcessing && (
+            <div className="mt-2 text-blue-600 text-sm flex items-center">
+              <svg
+                className="animate-spin -ml-1 mr-3 h-4 w-4 text-blue-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing file...
+            </div>
+          )}
           {formData[selectedDoc] &&
             selectedDoc !== "other" &&
             isImageField(formData[selectedDoc]) && (
@@ -239,7 +334,7 @@ const DocumentFormSection = ({
                 <div key={key}>
                   <div className="flex gap-2">
                     <img
-                      //@ts-expect-error err
+                      // @ts-expect-error err
                       src={value}
                       alt={key}
                       className="w-32 h-32 object-cover border"
@@ -260,10 +355,14 @@ const DocumentFormSection = ({
       </div>
 
       <div className="w-full flex gap-2 items-center">
-        <label className="font-semibold" htmlFor="">Location: </label>
+        <label className="font-semibold" htmlFor="">
+          Location:{" "}
+        </label>
         <select className="w-full py-1" name="" id="">
           {locations.map((location, index) => (
-            <option value={location}>{location}</option>
+            <option key={index} value={location}>
+              {location}
+            </option>
           ))}
         </select>
       </div>
@@ -280,9 +379,12 @@ const DocumentFormSection = ({
           className="h-8 w-8 text-blue-900 border-gray-300 rounded focus:ring-blue-900"
         />
         <label htmlFor="declaration" className="text-sm text-gray-700">
-          I hereby consent to the company storing my documents and information
-          for the purpose of providing future services. I declare that all
-          information provided is true and accurate.
+          <span className="text-base text-black font-semibold">
+            Consent cum Terms & Conditions
+          </span>{" "}
+          I hereby consent to the Company's storage of my documents and
+          information for the purpose of providing current and future services.
+          I declare that all information provided herein is true and accurate.
         </label>
       </div>
     </div>

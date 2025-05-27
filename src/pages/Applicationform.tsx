@@ -402,7 +402,7 @@ const Applicationform = () => {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="bg-[#252C3D] text-[#fff] px-4 py-2 rounded"
+                className="bg-blue-800 text-[#fff] px-4 py-2 rounded"
               >
                 Previous
               </button>
@@ -411,7 +411,7 @@ const Applicationform = () => {
               <button
                 type="button"
                 onClick={(e) => handleNext(e)}
-                className="bg-[#252C3D] text-white px-4 py-2 rounded"
+                className="bg-blue-800 text-white px-4 py-2 rounded"
               >
                 {loading ? "Saving..." : "Next"}
               </button>
@@ -419,7 +419,7 @@ const Applicationform = () => {
               <button
                 type="submit"
                 onClick={(e) => saveData(e)}
-                className="bg-[#D6B549] text-[#252C3D] px-4 py-2 rounded"
+                className="bg-blue-800 text-white px-4 py-2 rounded"
               >
                 {loading ? "Saving..." : "Finish"}
               </button>
@@ -433,12 +433,37 @@ const Applicationform = () => {
             }}
             disabled={update == "false" || !isAgreed}
             className={`${
-              isAgreed ? "bg-[#252C3D]" : "bg-gray-500"
-            }  rounded-md py-2 text-white w-full mt-2`}
+              isAgreed ? "bg-blue-800 animate-pop" : "bg-gray-500"
+            } rounded-md py-2 text-white w-full mt-2 transition-all duration-200`}
+            style={{
+              animation: isAgreed ? "pop 1.5s ease-in-out infinite" : "none",
+            }}
           >
             Apply
           </button>
         )}
+
+        <style>{`
+          @keyframes pop {
+            0%,
+            100% {
+              transform: scale(1);
+            }
+            25% {
+              transform: scale(1.03);
+            }
+            50% {
+              transform: scale(1.02);
+            }
+            75% {
+              transform: scale(1.04);
+            }
+          }
+
+          .animate-pop {
+            animation: pop 1.5s ease-in-out infinite;
+          }
+        `}</style>
       </div>
     </div>
   );
