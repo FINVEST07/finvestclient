@@ -268,7 +268,19 @@ const Applicationform = () => {
       return true;
     } catch (error) {
       console.error("Error saving multipart form data:", error);
-      toast.error("Error Uploading!!");
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(error.response.data.message);
+      } else {
+        if (error.response && error.response.status === 413) {
+          toast.error("Uploading Capacity Exceeded");
+        } else {
+          toast.error("Something Went Wrong");
+        }
+      }
     } finally {
       setLoading(false);
     }
