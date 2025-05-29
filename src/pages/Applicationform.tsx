@@ -18,7 +18,6 @@ const Applicationform = () => {
   const [serviceData, setServiceData] = useState({ type: "", servicename: "" });
   const [applicationId, setApplicationId] = useState("");
   const [customer_id, setCustomerId] = useState("");
-
   const [isAgreed, setIsAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -80,7 +79,6 @@ const Applicationform = () => {
     if (applicationId) {
       setApplicationId(applicationId);
     }
-
     if (customerId) {
       setCustomerId(customerId);
     }
@@ -110,7 +108,6 @@ const Applicationform = () => {
         return;
       }
       if (customer_id === "") {
-        // Changed to strict equality
         response = await axios.get(
           `${import.meta.env.VITE_API_URI}getsinglecustomer`,
           { params: { email: emailcookie } }
@@ -123,6 +120,9 @@ const Applicationform = () => {
       }
 
       const payload = response.data.payload;
+
+      console.table(payload);
+     
       if (payload) {
         const updatedFormData = { ...formData };
         for (const key in payload) {
@@ -135,7 +135,7 @@ const Applicationform = () => {
     } catch (error) {
       console.error("Error loading user data:", error);
     }
-  }, [emailcookie, customer_id]); // Added customer_id to dependencies
+  }, [emailcookie, customer_id]);
 
   useEffect(() => {
     loadData();
@@ -152,6 +152,23 @@ const Applicationform = () => {
         <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
       </svg>
     );
+  };
+
+  const calculatePayloadSize = (textPayload, imageFields, formData) => {
+    // Calculate text payload size
+    const textPayloadSize = new Blob([JSON.stringify(textPayload)]).size;
+
+    // Calculate image sizes
+    const imageSizes = imageFields.reduce((total, field) => {
+      const base64String = formData[field];
+      if (!base64String || !base64String.startsWith("data:image")) return total;
+      const prefix = base64String.match(/^data:[^;]+;base64,/)[0];
+      const base64Content = base64String.slice(prefix.length);
+      const imageSize = (base64Content.length * 3) / 4; // Approximate decoded size
+      return total + imageSize;
+    }, 0);
+
+    return textPayloadSize + imageSizes;
   };
 
   const saveData = async (e) => {
@@ -181,22 +198,18 @@ const Applicationform = () => {
             missingFields.push("Existing Loans");
           if (formData.newLoanAmount === "")
             missingFields.push("New Loan Amount Required");
-          if (formData.existingLoans === "")
-            missingFields.push("Existing Loans");
         }
         if (serviceData.type == "2") {
           if (formData.insuranceplan === "")
             missingFields.push("Insurance Plan");
           if (formData.suminsured === "") missingFields.push("Sum Insured");
         }
-
         if (serviceData.type == "3") {
           if (formData.investmentfund === "")
             missingFields.push("Investment Fund");
           if (formData.investmentamt === "")
             missingFields.push("Investment Amount");
         }
-
         if (formData.savings === "") missingFields.push("Savings / Net Worth");
 
         if (missingFields.length > 0) {
@@ -218,15 +231,33 @@ const Applicationform = () => {
         ) {
           textPayload[key] = formData[key];
         } else if (typeof formData[key] !== "string") {
-          textPayload[key] = formData[key]; // Include non-string fields like booleans
+          textPayload[key] = formData[key];
         }
       }
 
-      // @ts-expect-error err
+      //@ts-expect-error err
       textPayload.servicename = serviceData.servicename;
       if (applicationId) {
-        // @ts-expect-error err
+        //@ts-expect-error err
         textPayload.applicationId = applicationId;
+      }
+
+      const imageFields = Object.keys(formData).filter(
+        (key) =>
+          typeof formData[key] === "string" &&
+          formData[key].startsWith("data:image")
+      );
+
+      // Calculate total payload size
+      const totalSize = calculatePayloadSize(
+        textPayload,
+        imageFields,
+        formData
+      );
+      const maxSize = 3.9 * 1024 * 1024; // 3.9 MB in bytes
+      if (totalSize > maxSize) {
+        toast.error("Payload size exceeds 3.9 MB. Please remove some  files.");
+        return false;
       }
 
       form.append("payload", JSON.stringify(textPayload));
@@ -240,12 +271,6 @@ const Applicationform = () => {
         while (n--) u8arr[n] = bstr.charCodeAt(n);
         return new File([u8arr], filename, { type: mime });
       };
-
-      const imageFields = Object.keys(formData).filter(
-        (key) =>
-          typeof formData[key] === "string" &&
-          formData[key].startsWith("data:image")
-      );
 
       imageFields.forEach((field) => {
         const base64 = formData[field];
@@ -288,6 +313,8 @@ const Applicationform = () => {
 
   const handleApply = async (e) => {
     e.preventDefault();
+    
+    
     try {
       setLoading(true);
       const form = new FormData();
@@ -302,11 +329,11 @@ const Applicationform = () => {
         }
       }
 
-      // @ts-expect-error err
+      //@ts-expect-error err
       textPayload.servicename = serviceData.servicename;
-
-      // @ts-expect-error err
+      //@ts-expect-error err
       textPayload.servicetype = serviceData.type;
+
 
       form.append("payload", JSON.stringify(textPayload));
 
@@ -344,10 +371,22 @@ const Applicationform = () => {
       }
 
       toast.success(response.data.message);
-      navigate("/customerdashboard");
+      // navigate("/customerdashboard");
     } catch (error) {
       console.error("Error saving multipart form data:", error);
-      toast.error("Error Uploading!!");
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(error.response.data.message);
+      } else {
+        if (error.response && error.response.status === 413) {
+          toast.error("Uploading Capacity Exceeded");
+        } else {
+          toast.error("Something Went Wrong");
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -355,7 +394,6 @@ const Applicationform = () => {
 
   const handleNext = async (e) => {
     const success = await saveData(e);
-
     if (success) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -369,11 +407,10 @@ const Applicationform = () => {
     <div className="max-w-3xl mx-auto p-6 bg-[#EBECEC] min-h-screen">
       <ToastContainerComponent />
       <nav
-        className="flex items-center  gap-2"
+        className="flex items-center gap-2"
         onClick={() => navigate("/customerdashboard")}
       >
         <LeftArrowIcon />
-
         <h1 className="text-lg">Back to Dashboard</h1>
       </nav>
       <div className="mt-6">
@@ -429,7 +466,7 @@ const Applicationform = () => {
             )}
           </div>
         </form>
-        {currentStep === 3 && (
+        {currentStep === 3 && customer_id == "" && (
           <button
             onClick={(e) => {
               handleApply(e);
