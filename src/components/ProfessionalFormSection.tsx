@@ -2,7 +2,6 @@ const ProfessionalFormSection = ({
   handleChange,
   formData,
   serviceData,
-  update,
 }) => {
   return (
     <div className="space-y-4 border bg-[#E9E5DA] p-4 rounded-lg">
@@ -21,7 +20,6 @@ const ProfessionalFormSection = ({
           onChange={handleChange}
           value={formData.qualification}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          disabled={update == "false"}
         />
       </div>
 
@@ -36,7 +34,6 @@ const ProfessionalFormSection = ({
           onChange={handleChange}
           value={formData.profession}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          disabled={update == "false"}
         />
       </div>
 
@@ -50,7 +47,7 @@ const ProfessionalFormSection = ({
           onChange={handleChange}
           value={formData.incomeType}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          disabled={update == "false"}
+          
         >
           <option value="">Select Income Type</option>
           <option value="Salaried">Salaried</option>
@@ -66,7 +63,7 @@ const ProfessionalFormSection = ({
             onChange={handleChange}
             value={formData.natureOfBusiness}
             className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-            disabled={update == "false"}
+            
           />
           <input
             name="officeAddress"
@@ -74,7 +71,7 @@ const ProfessionalFormSection = ({
             onChange={handleChange}
             value={formData.officeAddress}
             className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-            disabled={update == "false"}
+            
           />
           <input
             name="officeContact"
@@ -82,7 +79,7 @@ const ProfessionalFormSection = ({
             onChange={handleChange}
             value={formData.officeContact}
             className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-            disabled={update == "false"}
+            
           />
           <input
             name="officialEmail"
@@ -90,7 +87,7 @@ const ProfessionalFormSection = ({
             onChange={handleChange}
             value={formData.officialEmail}
             className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-            disabled={update == "false"}
+            
           />
         </>
       )}
@@ -108,7 +105,7 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.purchaseCost}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
+              
             />
           </div>
           <div>
@@ -122,7 +119,7 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.existingLoans}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
+              
             />
           </div>
 
@@ -137,7 +134,7 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.newLoanAmount}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
+              
             />
           </div>
         </>
@@ -156,7 +153,7 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.insuranceplan}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
+              
             />
           </div>
 
@@ -171,7 +168,7 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.suminsured}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
+              
             />
           </div>
         </>
@@ -190,7 +187,7 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.investmentfund}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
+              
             />
           </div>
 
@@ -205,7 +202,6 @@ const ProfessionalFormSection = ({
               onChange={handleChange}
               value={formData.investmentamt}
               className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-              disabled={update == "false"}
             />
           </div>
         </>
@@ -222,7 +218,7 @@ const ProfessionalFormSection = ({
           onChange={handleChange}
           value={formData.savings}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          disabled={update == "false"}
+          
         />
       </div>
     </div>

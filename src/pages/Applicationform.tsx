@@ -19,8 +19,6 @@ const Applicationform = () => {
   const [applicationId, setApplicationId] = useState("");
   const [customer_id, setCustomerId] = useState("");
 
-  const [update, setUpdate] = useState("");
-
   const [isAgreed, setIsAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -76,17 +74,13 @@ const Applicationform = () => {
     const applicationId = searchParams.get("applicationId");
     const customerId = searchParams.get("customerId");
 
-    const update = searchParams.get("update");
-
     if (type && servicename) {
       setServiceData({ type, servicename });
     }
     if (applicationId) {
       setApplicationId(applicationId);
     }
-    if (update) {
-      setUpdate(update);
-    }
+
     if (customerId) {
       setCustomerId(customerId);
     }
@@ -377,7 +371,6 @@ const Applicationform = () => {
               handleChange={handleChange}
               formData={formData}
               serviceData={serviceData}
-              update={update}
             />
           )}
           {currentStep === 2 && (
@@ -385,14 +378,12 @@ const Applicationform = () => {
               handleChange={handleChange}
               formData={formData}
               serviceData={serviceData}
-              update={update}
             />
           )}
           {currentStep === 3 && (
             <DocumentFormSection
               handleChange={handleChange}
               formData={formData}
-              update={update}
               setIsAgreed={setIsAgreed}
               isAgreed={isAgreed}
             />
@@ -431,7 +422,7 @@ const Applicationform = () => {
             onClick={(e) => {
               handleApply(e);
             }}
-            disabled={update == "false" || !isAgreed}
+            disabled={!isAgreed}
             className={`${
               isAgreed ? "bg-blue-800 animate-pop" : "bg-gray-500"
             } rounded-md py-2 text-white w-full mt-2 transition-all duration-200`}

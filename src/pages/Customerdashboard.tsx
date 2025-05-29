@@ -337,28 +337,20 @@ const Customerdashboard = () => {
                 <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   {customer.aadhaarNumber}
                 </td>
+                {/* // @ts-expect-error err */}
+                <td>
+                  <a
+                    href={`/applicationform?type=1&servicename=${customer.servicename}`}
+                    target="_blank"
+                    className="ml-2"
+                  >
+                    <button className="text-xs md:text-sm lg:text-lg px-2 py-2 bg-green-500 text-white rounded-md">
+                      Add / Update Documents & Details
+                    </button>
+                  </a>
+                </td>
               </tr>
             </table>
-            {/* // @ts-expect-error err */}
-            <div className="mt-[2vh] flex gap-4">
-              <a
-                href={`/applicationform?update=false&type=1&servicename=${customer.servicename}`}
-                target="_blank"
-              >
-                <button className="text-xs md:text-sm lg:text-lg px-2 py-2 bg-green-500 text-white rounded-md">
-                  View Documents & Details
-                </button>
-              </a>
-              <a
-                href={`/applicationform?update=false&type=1&servicename=${customer.servicename}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button className="text-xs md:text-sm lg:text-lg px-2 py-2 bg-green-500 text-white rounded-md">
-                  Upload Documents &&nbsp;Details
-                </button>
-              </a>
-            </div>
 
             {applications?.length > 0 && (
               <div className="max-h-[60vh] overflow-x-scroll my-4 py-2 rounded-sm px-2 overflow-y-scroll border-2 border-black">
@@ -389,6 +381,9 @@ const Customerdashboard = () => {
                           </th>
                           <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                             Status
+                          </th>
+                          <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
+                            Grade
                           </th>
                         </tr>
                         <tr>

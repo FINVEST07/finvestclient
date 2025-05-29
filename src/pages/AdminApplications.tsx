@@ -229,6 +229,8 @@ const AdminApplications = () => {
       name: "Time",
       selector: (row) => formatTime(row.createdAt),
     },
+    { name: "City", selector: (row) => row?.city },
+    { name: "Location / Branch", selector: (row) => row?.location , width: "150px" },
     { name: "AADHAAR", selector: (row) => row.aadhaarNumber, width: "150px" },
     { name: "Service", selector: (row) => row.servicename },
     { name: "Loan Amount", selector: (row) => row?.newLoanAmount },

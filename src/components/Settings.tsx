@@ -10,6 +10,7 @@ const Settings = () => {
   const [adminlist, setAdminList] = useState([]);
   const [addBoxOpen, setAddBoxOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedlocation, setSelectedLocation] = useState("");
 
   // State for delete confirmation
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -24,7 +25,15 @@ const Settings = () => {
     servicename: "",
   });
 
-  const [currentData, setCurrentData] = useState({});
+  const [currentData, setCurrentData] = useState({
+    fullName : "",
+    adminname : "",
+    email : "",
+    mobile : "",
+    password : "",
+    rank : "",
+    city : ""
+  });
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -175,6 +184,10 @@ const Settings = () => {
       selector: (row) => row.servicename,
       width: "250px",
     },
+    {
+      name: "City",
+      selector: (row) => row.city,
+    },
   ];
 
   const admincolumns = [
@@ -209,6 +222,10 @@ const Settings = () => {
     {
       name: "Location",
       selector: (row) => row.location,
+    },
+    {
+      name: "City",
+      selector: (row) => row.city,
     },
   ];
 
@@ -272,18 +289,8 @@ const Settings = () => {
       const payload = response.data.payload;
       const adminpayload = adminresponse.data.payload;
 
-      const filtered = payload.filter(
-        (item) => item.servicetype == 4 || item.servicetype == "4"
-      );
-
-      setAdminsRequestList(filtered);
       setAdminList(adminpayload);
-
-      if (Array.isArray(payload)) {
-        setAdminsRequestList(payload);
-      } else {
-        setAdminsRequestList([]); // fallback to empty array
-      }
+      setAdminsRequestList(payload);
     } catch (error) {
       console.error("Error loading users", error);
       setAdminsRequestList([]);
@@ -304,7 +311,16 @@ const Settings = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URI}addadmin`,
         {
-          payload: currentData,
+          payload: {
+            fullName: currentData.fullName,
+            adminname: currentData.adminname,
+            email: currentData.email,
+            mobile: currentData.mobile,
+            location: selectedlocation,
+            password: currentData.password,
+            rank: currentData.rank,
+            city: currentData.city,
+          },
           update: update,
         }
       );
@@ -367,7 +383,6 @@ const Settings = () => {
               type="text"
               name="fullName"
               onChange={handleFormChange}
-              // @ts-expect-error err
               value={currentData.fullName || currentData.adminname}
               required
               className="border border-gray-300 rounded-md p-2"
@@ -380,7 +395,6 @@ const Settings = () => {
               type="text"
               name="email"
               onChange={handleFormChange}
-              // @ts-expect-error err
               value={currentData.email}
               required
               className="border border-gray-300 rounded-md p-2"
@@ -394,7 +408,6 @@ const Settings = () => {
               name="mobile"
               placeholder="Mobile Number"
               onChange={handleFormChange}
-              // @ts-expect-error err
               value={currentData.mobile}
               required
               className="border border-gray-300 rounded-md p-2"
@@ -422,7 +435,7 @@ const Settings = () => {
               name="location"
               id=""
               className="border border-gray-300 rounded-md p-2"
-              onChange={handleCurrentChange}
+              onChange={(e) => setSelectedLocation(e.target.value)}
             >
               <option value="">Select a Location</option>
               {locations.map((location, index) => (

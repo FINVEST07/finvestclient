@@ -6,7 +6,6 @@ const ContactFormSection = ({
   handleChange,
   formData,
   serviceData,
-  update,
 }) => {
   const [cities, setCities] = useState([]);
 
@@ -103,7 +102,7 @@ const ContactFormSection = ({
           onChange={handleChange}
           value={formData.altMobile}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          disabled={update == "false"}
+          
         />
       </div>
 
@@ -118,7 +117,7 @@ const ContactFormSection = ({
           onChange={handleChange}
           value={formData.city}
           className="bg-transparent border-b-2 border-[#252C3D] w-full outline-0"
-          disabled={update == "false"}
+          
          
         />
        
@@ -134,7 +133,7 @@ const ContactFormSection = ({
           onChange={handleChange}
           value={formData.currentAddress}
           className="bg-transparent border-2 border-[#252C3D] w-full "
-          disabled={update == "false"}
+          
           
         />
       </div>
@@ -145,7 +144,7 @@ const ContactFormSection = ({
           name="sameAsCurrent"
           checked={formData.sameAsCurrent}
           onChange={handleChange}
-          disabled={update == "false"}
+          
         />
         <span>Same as current address</span>
       </label>
@@ -160,7 +159,7 @@ const ContactFormSection = ({
           onChange={handleChange}
           value={formData.permanentAddress}
           className="bg-transparent border-2 border-[#252C3D] w-full"
-          disabled={update == "false"}
+          
         />
       </div>
 
@@ -179,7 +178,7 @@ const ContactFormSection = ({
                   value="Owned"
                   onChange={handleChange}
                   checked={formData.residenceType === "Owned"}
-                  disabled={update == "false"}
+                  
                 />
                 <span className="ml-1">Owned</span>
               </label>
@@ -190,7 +189,7 @@ const ContactFormSection = ({
                   value="Rented"
                   onChange={handleChange}
                   checked={formData.residenceType === "Rented"}
-                  disabled={update == "false"}
+                  
                 />
                 <span className="ml-1">Rented</span>
               </label>

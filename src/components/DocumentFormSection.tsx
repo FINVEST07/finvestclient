@@ -30,7 +30,6 @@ const locations = ["Mumbai"];
 const DocumentFormSection = ({
   handleChange,
   formData,
-  update,
   setIsAgreed,
   isAgreed,
 }) => {
@@ -62,37 +61,66 @@ const DocumentFormSection = ({
     });
   };
 
-  // Convert PDF to image
-  const convertPdfToImage = async (file) => {
+  // Compress PDF file
+  const compressPdf = async (file) => {
     try {
+      // For PDFs, we'll use a simple approach to reduce file size
+      // by creating a new PDF with reduced quality
       const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      const newPdf = new jsPDF();
+      const pageCount = pdf.numPages;
+      
+      // Process each page
+      for (let i = 1; i <= Math.min(pageCount, 10); i++) { // Limit to first 10 pages
+        const page = await pdf.getPage(i);
+        const scale = 1.2; // Reduced scale for compression
+        const viewport = page.getViewport({ scale });
 
-      // Get first page
-      const page = await pdf.getPage(1);
-      const scale = 2; // Higher scale for better quality
-      const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
 
-      // Create canvas
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+        }).promise;
 
-      // Render PDF page to canvas
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-      }).promise;
-
-      // Convert canvas to blob
-      return new Promise((resolve) => {
-        canvas.toBlob(resolve, "image/jpeg", 0.9);
-      });
+        const imgData = canvas.toDataURL("image/jpeg", 0.7); // Lower quality for compression
+        
+        if (i > 1) {
+          newPdf.addPage();
+        }
+        
+        const pageWidth = newPdf.internal.pageSize.getWidth();
+        const pageHeight = newPdf.internal.pageSize.getHeight();
+        
+        // Calculate dimensions to fit page
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+        
+        const width = imgWidth * ratio;
+        const height = imgHeight * ratio;
+        const x = (pageWidth - width) / 2;
+        const y = (pageHeight - height) / 2;
+        
+        newPdf.addImage(imgData, "JPEG", x, y, width, height);
+      }
+      
+      // Convert to blob
+      const pdfBlob = newPdf.output('blob');
+      return pdfBlob;
     } catch (error) {
-      console.error("Error converting PDF to image:", error);
-      throw new Error("Failed to convert PDF to image");
+      console.error("Error compressing PDF:", error);
+      // If compression fails, return original file with size check
+      if (file.size > 2 * 1024 * 1024) { // If larger than 2MB
+        throw new Error("PDF file is too large. Please use a smaller file or compress it manually.");
+      }
+      return file;
     }
   };
 
@@ -112,21 +140,25 @@ const DocumentFormSection = ({
 
     try {
       let processedFile = file;
+      let base64;
 
-      // Check if file is PDF and convert to image
+      // Handle PDF files differently
       if (file.type === "application/pdf") {
-        processedFile = await convertPdfToImage(file);
+        // Compress PDF and convert to base64
+        processedFile = await compressPdf(file);
+        base64 = await convertToBase64(processedFile);
+      } else {
+        // For images, compress as before
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+        };
+
+        processedFile = await imageCompression(file, options);
+        base64 = await convertToBase64(processedFile);
       }
 
-      // Compress the image (works for both original images and converted PDF images)
-      const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1024,
-        useWebWorker: true,
-      };
-
-      const compressedFile = await imageCompression(processedFile, options);
-      const base64 = await convertToBase64(compressedFile);
       let fieldName =
         selectedDoc === "other" ? normalizeDocName(customDocName) : selectedDoc;
 
@@ -138,7 +170,16 @@ const DocumentFormSection = ({
         fieldName = `${fieldName}_custom_${Date.now()}`; // Append unique suffix
       }
 
-      handleChange({ target: { name: fieldName, value: base64 } });
+      // Store file info including type
+      const fileData = {
+        content: base64,
+        type: file.type,
+        name: file.name,
+        size: processedFile.size
+      };
+
+      handleChange({ target: { name: fieldName, value: fileData } });
+      
       if (selectedDoc === "other") {
         setCustomDocName("");
         setSelectedDoc("");
@@ -160,12 +201,43 @@ const DocumentFormSection = ({
     });
 
   const isImageField = (value) => {
+    if (typeof value === "object" && value.content) {
+      return value.type && value.type.startsWith("image/");
+    }
     return (
       typeof value === "string" &&
       (value.startsWith("data:image") ||
         value.startsWith("http://") ||
         value.startsWith("https://"))
     );
+  };
+
+  const isPdfField = (value) => {
+    if (typeof value === "object" && value.content) {
+      return value.type === "application/pdf";
+    }
+    return false;
+  };
+
+  const downloadFile = (fileData, label) => {
+    if (typeof fileData === "object" && fileData.content) {
+      // Create download link
+      const link = document.createElement('a');
+      link.href = fileData.content;
+      
+      if (fileData.type === "application/pdf") {
+        link.download = `${label.replace(/ /g, "_")}.pdf`;
+      } else {
+        link.download = `${label.replace(/ /g, "_")}.${fileData.type.split('/')[1]}`;
+      }
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // Legacy support for old image format
+      downloadPDF(fileData, label);
+    }
   };
 
   const downloadPDF = (imgUrl, label) => {
@@ -207,19 +279,57 @@ const DocumentFormSection = ({
     };
   };
 
-  const DownloadIcon = ({ imgUrl, label }) => {
+  const DownloadIcon = ({ fileData, label }) => {
     return (
       <svg
         width={20}
         fill="#0F172A"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 384 512"
-        onClick={() => downloadPDF(imgUrl, label)}
+        onClick={() => downloadFile(fileData, label)}
         className="cursor-pointer hover:fill-blue-600"
       >
         <path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM216 232l0 102.1 31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31L168 232c0-13.3 10.7-24 24-24s24 10.7 24 24z" />
       </svg>
     );
+  };
+
+  const FilePreview = ({ value, label }) => {
+    if (isImageField(value)) {
+      const imgSrc = typeof value === "object" ? value.content : value;
+      return (
+        <img
+          src={imgSrc}
+          alt={label}
+          className="w-32 h-32 object-cover border"
+          onError={(e) =>
+            console.error(`Failed to load image for ${label}:`, value)
+          }
+        />
+      );
+    } else if (isPdfField(value)) {
+      return (
+        <div className="w-32 h-32 border border-gray-300 bg-red-50 flex items-center justify-center">
+          <div className="text-center">
+            <svg
+              width={40}
+              height={40}
+              fill="#DC2626"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 384 512"
+              className="mx-auto mb-2"
+            >
+              <path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0z"/>
+            </svg>
+            <span className="text-xs text-red-600 font-medium">PDF</span>
+            <div className="text-xs text-gray-500">
+              {Math.round(value.size / 1024)}KB
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -235,7 +345,6 @@ const DocumentFormSection = ({
             setSelectedDoc(e.target.value);
             setError("");
           }}
-          disabled={update == "false"}
         >
           <option value="">-- Choose Document --</option>
           {fileFields.map(({ name, label }) => (
@@ -304,21 +413,14 @@ const DocumentFormSection = ({
               Processing file...
             </div>
           )}
-          {formData[selectedDoc] &&
-            selectedDoc !== "other" &&
-            isImageField(formData[selectedDoc]) && (
-              <img
-                src={formData[selectedDoc]}
-                alt={selectedDoc}
-                className="mt-2 w-40 h-40 object-cover border"
-                onError={(e) =>
-                  console.error(
-                    `Failed to load image for ${selectedDoc}:`,
-                    formData[selectedDoc]
-                  )
-                }
+          {formData[selectedDoc] && selectedDoc !== "other" && (
+            <div className="mt-2">
+              <FilePreview 
+                value={formData[selectedDoc]} 
+                label={fileFields.find((f) => f.name === selectedDoc)?.label}
               />
-            )}
+            </div>
+          )}
         </div>
       )}
 
@@ -326,25 +428,16 @@ const DocumentFormSection = ({
         <h3 className="font-medium">Uploaded Documents</h3>
         <div className="grid grid-cols-3 gap-2 mt-2">
           {Object.entries(formData).map(([key, value]) => {
-            if (value && isImageField(value)) {
+            if (value && (isImageField(value) || isPdfField(value))) {
               const label =
                 fileFields.find((f) => f.name === key)?.label ||
                 key.replace(/_custom_\d+$/, "");
               return (
                 <div key={key}>
                   <div className="flex gap-2">
-                    <img
-                      // @ts-expect-error err
-                      src={value}
-                      alt={key}
-                      className="w-32 h-32 object-cover border"
-                      onError={(e) =>
-                        console.error(`Failed to load image for ${key}:`, value)
-                      }
-                    />
-                    <DownloadIcon label={label} imgUrl={value} />
+                    <FilePreview value={value} label={label} />
+                    <DownloadIcon label={label} fileData={value} />
                   </div>
-
                   <p className="text-sm mt-1">{label}</p>
                 </div>
               );
