@@ -354,6 +354,8 @@ const DocumentFormSection = ({
           ))}
           <option value="other">Other</option>
         </select>
+        <br /><br />
+        <p className="text-red-700">Please upload maximum of 15 images at a time & Single PDF less than 4mb at a time !</p>
       </div>
 
       {selectedDoc === "other" && (
