@@ -37,10 +37,10 @@ const ApplicationIcon = (props) => {
 const UsersIcon = (props) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" {...props}>
-      <path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z"/>
+      <path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z" />
     </svg>
   );
-}
+};
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -55,6 +55,8 @@ const AdminSidebar = () => {
       setActiveTab(tab);
     }
   }, [location]);
+
+  
 
   const handleNavigation = (path, tab) => {
     // Update the URL with the active tab and navigate to the corresponding page
@@ -71,33 +73,52 @@ const AdminSidebar = () => {
       {/* Navigation Section */}
       <section className="mt-[8vh] ml-5 flex flex-col space-y-10">
         <div
-          className={`flex gap-4 cursor-pointer ${activeTab === "dashboard" ? "bg-slate-600 p-4" : ""}`}
+          className={`flex gap-4 cursor-pointer ${
+            activeTab === "dashboard" ? "bg-slate-600 p-4" : ""
+          }`}
           onClick={() => handleNavigation("/admindashboard", "dashboard")}
         >
           <DashboardIcon width={30} fill={"#D6B549"} />
           <span className="text-2xl self-center text-[#D6B549]">DashBoard</span>
         </div>
         <div
-          className={`flex gap-4 cursor-pointer ${activeTab === "applications" ? "bg-slate-600 p-4" : ""}`}
+          className={`flex gap-4 cursor-pointer ${
+            activeTab === "applications" ? "bg-slate-600 p-4" : ""
+          }`}
           onClick={() => handleNavigation("/adminapplications", "applications")}
         >
           <ApplicationIcon width={30} fill={"#D6B549"} />
-          <span className="text-2xl self-center text-[#D6B549]">Applications</span>
+          <span className="text-2xl self-center text-[#D6B549]">
+            Applications
+          </span>
         </div>
         <div
-          className={`flex gap-4 cursor-pointer ${activeTab === "customers" ? "bg-slate-600 p-4" : ""}`}
+          className={`flex gap-4 cursor-pointer ${
+            activeTab === "customers" ? "bg-slate-600 p-4" : ""
+          }`}
           onClick={() => handleNavigation("/admincustomers", "customers")}
         >
           <UsersIcon width={30} fill={"#D6B549"} />
           <span className="text-2xl self-center text-[#D6B549]">Customers</span>
         </div>
         <div
-          className={`flex gap-4 cursor-pointer ${activeTab === "settings" ? "bg-slate-600 p-4" : ""}`}
+          className={`flex gap-4 cursor-pointer ${
+            activeTab === "settings" ? "bg-slate-600 p-4" : ""
+          }`}
           onClick={() => handleNavigation("/settings", "settings")}
         >
           <SettingsIcon width={30} fill={"#D6B549"} />
           <span className="text-2xl self-center text-[#D6B549]">Settings</span>
         </div>
+        <button
+          className="mt-[10vh] bg-red-700 z-50 px-4 py-2 text-white rounded-md"
+          onClick={() => {
+            localStorage.removeItem("rank");
+            window.location.reload();
+          }}
+        >
+          Log Out
+        </button>
       </section>
     </div>
   );

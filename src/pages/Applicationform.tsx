@@ -19,6 +19,7 @@ const Applicationform = () => {
   const [applicationId, setApplicationId] = useState("");
   const [customer_id, setCustomerId] = useState("");
   const [isAgreed, setIsAgreed] = useState(false);
+  const [adminrank, setAdminRank] = useState("");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -35,6 +36,7 @@ const Applicationform = () => {
     natureOfBusiness: "",
     officeAddress: "",
     officeContact: "",
+    officialEmail : "",
     purchaseCost: "",
     savings: "",
     existingLoans: "",
@@ -72,6 +74,7 @@ const Applicationform = () => {
     const servicename = searchParams.get("servicename");
     const applicationId = searchParams.get("applicationId");
     const customerId = searchParams.get("customerId");
+    const rank = localStorage.getItem("rank");
 
     if (type && servicename) {
       setServiceData({ type, servicename });
@@ -81,6 +84,13 @@ const Applicationform = () => {
     }
     if (customerId) {
       setCustomerId(customerId);
+    }
+    if (rank) {
+      //@ts-expect-error err
+      if (rank == 4 || rank == "4") {
+        setCurrentStep(2);
+        setAdminRank(rank);
+      }
     }
   }, [location.search]);
 
@@ -122,7 +132,7 @@ const Applicationform = () => {
       const payload = response.data.payload;
 
       console.table(payload);
-     
+
       if (payload) {
         const updatedFormData = { ...formData };
         for (const key in payload) {
@@ -191,6 +201,21 @@ const Applicationform = () => {
         if (formData.qualification === "") missingFields.push("Qualification");
         if (formData.profession === "") missingFields.push("Profession");
         if (formData.incomeType === "") missingFields.push("Employment Type");
+
+        if(formData.incomeType === "Business"){
+          if(formData.natureOfBusiness){
+            missingFields.push("Nature Of Business");
+          }
+          if(formData.officeAddress){
+            missingFields.push("Office Address");
+          }
+          if(formData.officeContact){
+            missingFields.push("Office Contact");
+          }
+          if(formData.officialEmail){
+            missingFields.push("Official Email");
+          }
+        }
 
         if (serviceData.type == "1") {
           if (formData.purchaseCost === "") missingFields.push("Purchase Cost");
@@ -313,8 +338,7 @@ const Applicationform = () => {
 
   const handleApply = async (e) => {
     e.preventDefault();
-    
-    
+
     try {
       setLoading(true);
       const form = new FormData();
@@ -333,7 +357,6 @@ const Applicationform = () => {
       textPayload.servicename = serviceData.servicename;
       //@ts-expect-error err
       textPayload.servicetype = serviceData.type;
-
 
       form.append("payload", JSON.stringify(textPayload));
 
@@ -415,7 +438,7 @@ const Applicationform = () => {
       </nav>
       <div className="mt-6">
         <form className="space-y-6">
-          {currentStep === 1 && (
+          {currentStep === 1 && !adminrank && (
             <ContactFormSection
               handleChange={handleChange}
               formData={formData}
@@ -437,34 +460,66 @@ const Applicationform = () => {
               isAgreed={isAgreed}
             />
           )}
-          <div className="flex justify-between mt-6">
-            {currentStep > 1 && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="bg-blue-800 text-[#fff] px-4 py-2 rounded"
-              >
-                Previous
-              </button>
-            )}
-            {currentStep < 3 ? (
-              <button
-                type="button"
-                onClick={(e) => handleNext(e)}
-                className="bg-blue-800 text-white px-4 py-2 rounded"
-              >
-                {loading ? "Saving..." : "Next"}
-              </button>
-            ) : (
-              <button
-                type="submit"
-                onClick={(e) => saveData(e)}
-                className="bg-blue-800 text-white px-4 py-2 rounded"
-              >
-                {loading ? "Saving..." : "Finish"}
-              </button>
-            )}
-          </div>
+          {!adminrank && (
+            <div className="flex justify-between mt-6">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="bg-blue-800 text-[#fff] px-4 py-2 rounded"
+                >
+                  Previous
+                </button>
+              )}
+              {currentStep < 3 ? (
+                <button
+                  type="button"
+                  onClick={(e) => handleNext(e)}
+                  className="bg-blue-800 text-white px-4 py-2 rounded"
+                >
+                  {loading ? "Saving..." : "Next"}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  onClick={(e) => saveData(e)}
+                  className="bg-blue-800 text-white px-4 py-2 rounded"
+                >
+                  {loading ? "Saving..." : "Finish"}
+                </button>
+              )}
+            </div>
+          )}
+          {adminrank && (
+            <div className="flex justify-between mt-6">
+              {currentStep > 2 && (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="bg-blue-800 text-[#fff] px-4 py-2 rounded"
+                >
+                  Previous
+                </button>
+              )}
+              {currentStep < 3 ? (
+                <button
+                  type="button"
+                  onClick={(e) => handleNext(e)}
+                  className="bg-blue-800 text-white px-4 py-2 rounded"
+                >
+                  {loading ? "Saving..." : "Next"}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  onClick={(e) => saveData(e)}
+                  className="bg-blue-800 text-white px-4 py-2 rounded"
+                >
+                  {loading ? "Saving..." : "Finish"}
+                </button>
+              )}
+            </div>
+          )}
         </form>
         {currentStep === 3 && customer_id == "" && (
           <button

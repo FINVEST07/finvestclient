@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
+import { encryptData } from "@/utils/Security";
 
 const AdminApplications = () => {
   const [applicationList, setApplicationList] = useState([]);
@@ -19,6 +20,8 @@ const AdminApplications = () => {
   const [currentApplicationId, setCurrentApplicationId] = useState("");
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
   const [applicationToComplete, setApplicationToComplete] = useState("");
+
+  const rank = localStorage.getItem("rank");
 
   const navigate = useNavigate();
 
@@ -214,7 +217,9 @@ const AdminApplications = () => {
         <a
           className="underline text-blue-600"
           target="_blank"
-          href={`/applicationform?update=false&type=${row.servicetype}&customerId=${row.customer_id}`}
+          href={`/applicationform?update=false&type=${
+            row.servicetype
+          }&customerId=${row.customer_id}`}
         >
           {row.applicationId.toUpperCase()}
         </a>
@@ -230,7 +235,11 @@ const AdminApplications = () => {
       selector: (row) => formatTime(row.createdAt),
     },
     { name: "City", selector: (row) => row?.city },
-    { name: "Location / Branch", selector: (row) => row?.location , width: "150px" },
+    {
+      name: "Location / Branch",
+      selector: (row) => row?.location,
+      width: "150px",
+    },
     { name: "AADHAAR", selector: (row) => row.aadhaarNumber, width: "150px" },
     { name: "Service", selector: (row) => row.servicename },
     { name: "Loan Amount", selector: (row) => row?.newLoanAmount },
@@ -335,6 +344,9 @@ const AdminApplications = () => {
   return (
     <div className="bg-slate-800 pb-10 w-full min-h-screen">
       <ToastContainerComponent />
+      <button className="fixed top-5 right-5 bg-red-700 z-50 px-4 py-2 text-white rounded-md" onClick={() => { localStorage.removeItem("rank") ; window.location.reload()}}>
+        Log Out
+      </button>
       {adminRank == 1 && <AdminSidebar />}
 
       {forwardboxopen && (
