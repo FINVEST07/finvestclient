@@ -146,3 +146,13 @@
 .font-playfair {
   font-family: 'Playfair Display', serif;
 }
+
+.no-scrollbar {
+    /* Hide scrollbar for modern browsers */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+  }

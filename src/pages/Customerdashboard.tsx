@@ -311,7 +311,7 @@ const Customerdashboard = () => {
           {customer.fullName || emailcookie || "User"}
         </h2>
         {customer.customer_id ? (
-          <div className=" overflow-x-scroll lg:overflow-x-hidden">
+          <div className="nav overflow-x-scroll lg:overflow-x-hidden no-scrollbar">
             <table className="">
               <tr>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
