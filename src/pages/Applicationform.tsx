@@ -203,16 +203,16 @@ const Applicationform = () => {
         if (formData.incomeType === "") missingFields.push("Employment Type");
 
         if(formData.incomeType === "Business"){
-          if(formData.natureOfBusiness){
+          if(formData.natureOfBusiness === ""){
             missingFields.push("Nature Of Business");
           }
-          if(formData.officeAddress){
+          if(formData.officeAddress === ""){
             missingFields.push("Office Address");
           }
-          if(formData.officeContact){
+          if(formData.officeContact === ""){
             missingFields.push("Office Contact");
           }
-          if(formData.officialEmail){
+          if(formData.officialEmail === ""){
             missingFields.push("Official Email");
           }
         }

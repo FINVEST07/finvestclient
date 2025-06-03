@@ -295,16 +295,24 @@ const Customerdashboard = () => {
           </svg>
           <h1 className="text-lg text-[#fff]">Back to Home</h1>
         </div>
-        <button className="px-4 py-2 bg-white rounded-md" onClick={() => { Cookie.remove("finvest"); navigate("/")}}>Log Out</button>
+        <button
+          className="px-4 py-2 bg-white rounded-md"
+          onClick={() => {
+            Cookie.remove("finvest");
+            navigate("/");
+          }}
+        >
+          Log Out
+        </button>
       </nav>
-      <div className="px-[5%] mt-[8vh] lg:mt-[10vh] p-6">
+      <div className=" w-full px-[5%] mt-[8vh] lg:mt-[10vh] p-6">
         <h2 className="text-lg font-semibold mb-6">
           <span className="text-xl">Welcome,</span> <br />{" "}
           {customer.fullName || emailcookie || "User"}
         </h2>
         {customer.customer_id ? (
-          <>
-            <table>
+          <div className=" overflow-x-scroll">
+            <table className="">
               <tr>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   Customer&nbsp;ID
@@ -345,13 +353,25 @@ const Customerdashboard = () => {
                     target="_blank"
                     className="ml-2"
                   >
-                    <button className="text-xs md:text-sm lg:text-lg px-2 py-2 bg-green-500 text-white rounded-md">
+                    <button className="text-xs md:text-sm lg:text-lg hidden lg:block px-2 py-2 bg-green-500 text-white rounded-md">
                       Add / Update Documents & Details
                     </button>
                   </a>
                 </td>
               </tr>
+              {/* // @ts-expect-error err */}
             </table>
+            <td>
+              <a
+                href={`/applicationform?type=1&servicename=${customer.servicename}`}
+                target="_blank"
+                className="ml-2"
+              >
+                <button className="text-sm md:text-sm lg:text-lg mt-4  lg:hidden px-3 -ml-2 py-4 bg-green-500 text-white rounded-md">
+                  Add&nbsp;/&nbsp;Update&nbsp;Documents&nbsp;&&nbsp;Details
+                </button>
+              </a>
+            </td>
 
             {applications?.length > 0 && (
               <div className="max-h-[60vh] overflow-x-scroll my-4 py-2 rounded-sm px-2 overflow-y-scroll border-2 border-black">
@@ -491,7 +511,7 @@ const Customerdashboard = () => {
                 )}
               </button>
             </motion.div>
-          </>
+          </div>
         ) : (
           <div className="flex flex-col gap-0">
             <span>No Data Found ☹️</span>
