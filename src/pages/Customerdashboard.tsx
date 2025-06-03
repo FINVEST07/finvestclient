@@ -349,12 +349,12 @@ const Customerdashboard = () => {
                 {/* // @ts-expect-error err */}
                 <td>
                   <a
-                    href={`/applicationform?type=1&servicename=${customer.servicename}`}
+                    href={`/applicationform?type=4&servicename=${customer.servicename}`}
                     target="_blank"
                     className="ml-2"
                   >
                     <button className="text-xs md:text-sm lg:text-lg hidden ml-2 lg:block px-2 py-2 bg-green-500 text-white rounded-md">
-                      Add / Update Documents & Details
+                      Upload / Download Documents & Details
                     </button>
                   </a>
                 </td>
@@ -363,12 +363,12 @@ const Customerdashboard = () => {
             </table>
             <td>
               <a
-                href={`/applicationform?type=1&servicename=${customer.servicename}`}
+                href={`/applicationform?type=4&servicename=${customer.servicename}`}
                 target="_blank"
                 className="ml-2"
               >
                 <button className="text-sm md:text-sm lg:text-lg mt-4  lg:hidden px-3 -ml-2 py-4 bg-green-500 text-white rounded-md">
-                  Add&nbsp;/&nbsp;Update&nbsp;Documents&nbsp;&&nbsp;Details
+                  Upload&nbsp;/&nbsp;Download&nbsp;Documents&nbsp;&&nbsp;Details
                 </button>
               </a>
             </td>
