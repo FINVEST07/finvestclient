@@ -295,6 +295,7 @@ const Customerdashboard = () => {
           </svg>
           <h1 className="text-lg text-[#fff]">Back to Home</h1>
         </div>
+        <button className="px-4 py-2 bg-white rounded-md" onClick={() => { Cookie.remove("finvest"); navigate("/")}}>Log Out</button>
       </nav>
       <div className="px-[5%] mt-[8vh] lg:mt-[10vh] p-6">
         <h2 className="text-lg font-semibold mb-6">

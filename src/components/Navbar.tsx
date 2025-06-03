@@ -1,12 +1,28 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Cookie from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = ({ setLoginOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profiledropopen, setProfiledropopen] = useState(false);
+
+  const navigate = useNavigate();
+
+  const RupeeIcon = ({ width }) => {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={width}
+        viewBox="0 0 320 512"
+        fill="#1e40af"
+      >
+        <path d="M0 64C0 46.3 14.3 32 32 32l64 0 16 0 176 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-56.2 0c9.6 14.4 16.7 30.6 20.7 48l35.6 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-35.6 0c-13.2 58.3-61.9 103.2-122.2 110.9L274.6 422c14.4 10.3 17.7 30.3 7.4 44.6s-30.3 17.7-44.6 7.4L13.4 314C2.1 306-2.7 291.5 1.5 278.2S18.1 256 32 256l80 0c32.8 0 61-19.7 73.3-48L32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32l153.3 0C173 115.7 144.8 96 112 96L96 96 32 96C14.3 96 0 81.7 0 64z" />
+      </svg>
+    );
+  };
 
   const emailcookie = Cookie.get("finvest");
 
@@ -74,8 +90,11 @@ const Navbar = ({ setLoginOpen }) => {
             <a href="/loancalculator" target="_blank" className="nav-link">
               Loan Calculator
             </a>
-            <a href="#contact" className="nav-link">
+            <a href="#contact" className="nav-link flex items-center gap-2">
               Refer & Earn
+              <div className="bg-blue-100 flex items-center p-2 rounded-xl">
+                <RupeeIcon width={10} />
+              </div>
             </a>
             <a href="#contact" className="nav-link">
               Contact
@@ -172,6 +191,9 @@ const Navbar = ({ setLoginOpen }) => {
                 Dashboard
               </a>
             )}
+            <a href="#about" className="px-4" onClick={() => setIsOpen(false)}>
+              About
+            </a>
             <a
               href="#services"
               className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
@@ -179,24 +201,36 @@ const Navbar = ({ setLoginOpen }) => {
             >
               Services
             </a>
+
             <a
-              href="#testimonials"
-              className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
-              onClick={() => setIsOpen(false)}
+              href="/customerdashboard"
+              className="px-4"
+              onClick={(e) => {
+                handleBecomePartnerClick(e);
+                setIsOpen(false);
+              }}
             >
-              Reviews
+              Become a Partner
             </a>
-            <a
-              href="#about"
-              className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
-              onClick={() => setIsOpen(false)}
-            >
-              About
+
+            <a href="/loancalculator" className="px-4">
+              Loan Calculator
             </a>
 
             <a
               href="#contact"
-              className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
+              onClick={() => setIsOpen(false)}
+              className="px-4 flex items-center gap-2"
+            >
+              Refer & Earn
+              <div className="bg-blue-100 flex items-center p-1.5 rounded-xl">
+                <RupeeIcon width={10} />
+              </div>
+            </a>
+
+            <a
+              href="#contact"
+              className="px-4"
               onClick={() => setIsOpen(false)}
             >
               Contact

@@ -187,7 +187,7 @@ const ProfessionalFormSection = ({ handleChange, formData, serviceData }) => {
         <>
           <div>
             <label>
-              Investment Fund <span className="text-red-600">*</span>
+              Type of Fund <span className="text-red-600">*</span>
             </label>
             <input
               name="investmentfund"

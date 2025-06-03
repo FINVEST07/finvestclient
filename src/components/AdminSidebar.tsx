@@ -81,6 +81,15 @@ const AdminSidebar = () => {
           <DashboardIcon width={30} fill={"#D6B549"} />
           <span className="text-2xl self-center text-[#D6B549]">DashBoard</span>
         </div>
+         <div
+          className={`flex gap-4 cursor-pointer ${
+            activeTab === "customers" ? "bg-slate-600 p-4" : ""
+          }`}
+          onClick={() => handleNavigation("/admincustomers", "customers")}
+        >
+          <UsersIcon width={30} fill={"#D6B549"} />
+          <span className="text-2xl self-center text-[#D6B549]">Customers</span>
+        </div>
         <div
           className={`flex gap-4 cursor-pointer ${
             activeTab === "applications" ? "bg-slate-600 p-4" : ""
@@ -92,15 +101,7 @@ const AdminSidebar = () => {
             Applications
           </span>
         </div>
-        <div
-          className={`flex gap-4 cursor-pointer ${
-            activeTab === "customers" ? "bg-slate-600 p-4" : ""
-          }`}
-          onClick={() => handleNavigation("/admincustomers", "customers")}
-        >
-          <UsersIcon width={30} fill={"#D6B549"} />
-          <span className="text-2xl self-center text-[#D6B549]">Customers</span>
-        </div>
+       
         <div
           className={`flex gap-4 cursor-pointer ${
             activeTab === "settings" ? "bg-slate-600 p-4" : ""

@@ -394,7 +394,7 @@ const Applicationform = () => {
       }
 
       toast.success(response.data.message);
-      // navigate("/customerdashboard");
+      navigate("/customerdashboard");
     } catch (error) {
       console.error("Error saving multipart form data:", error);
       if (

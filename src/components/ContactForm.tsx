@@ -179,7 +179,7 @@ const ContactForm = ({ setLoginOpen }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Refer Code</Label>
+                  <Label>Referral Code</Label>
                   <Input
                     id="refercode"
                     required

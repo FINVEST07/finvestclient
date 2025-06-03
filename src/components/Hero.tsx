@@ -1,7 +1,6 @@
 
-import React from 'react';
+
 import { ChevronRight, DollarSign, Shield, TrendingUp } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
 
 const Hero = () => {

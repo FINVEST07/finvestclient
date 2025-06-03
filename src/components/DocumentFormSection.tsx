@@ -62,67 +62,96 @@ const DocumentFormSection = ({
   };
 
   // Compress PDF file
-  const compressPdf = async (file) => {
-    try {
-      // For PDFs, we'll use a simple approach to reduce file size
-      // by creating a new PDF with reduced quality
-      const pdfjsLib = await loadPdfJs();
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      
-      const newPdf = new jsPDF();
-      const pageCount = pdf.numPages;
-      
-      // Process each page
-      for (let i = 1; i <= Math.min(pageCount, 10); i++) { // Limit to first 10 pages
-        const page = await pdf.getPage(i);
-        const scale = 1.2; // Reduced scale for compression
-        const viewport = page.getViewport({ scale });
-
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({
-          canvasContext: context,
-          viewport: viewport,
-        }).promise;
-
-        const imgData = canvas.toDataURL("image/jpeg", 0.7); // Lower quality for compression
-        
-        if (i > 1) {
-          newPdf.addPage();
-        }
-        
-        const pageWidth = newPdf.internal.pageSize.getWidth();
-        const pageHeight = newPdf.internal.pageSize.getHeight();
-        
-        // Calculate dimensions to fit page
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-        
-        const width = imgWidth * ratio;
-        const height = imgHeight * ratio;
-        const x = (pageWidth - width) / 2;
-        const y = (pageHeight - height) / 2;
-        
-        newPdf.addImage(imgData, "JPEG", x, y, width, height);
-      }
-      
-      // Convert to blob
-      const pdfBlob = newPdf.output('blob');
-      return pdfBlob;
-    } catch (error) {
-      console.error("Error compressing PDF:", error);
-      // If compression fails, return original file with size check
-      if (file.size > 2 * 1024 * 1024) { // If larger than 2MB
-        throw new Error("PDF file is too large. Please use a smaller file or compress it manually.");
-      }
+const compressPdf = async (file) => {
+  try {
+    // Check if file is already small enough
+    if (file.size <= 2 * 1024 * 1024) { // 2MB
       return file;
     }
-  };
+
+    const pdfjsLib = await loadPdfJs();
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    const newPdf = new jsPDF({
+      compress: true, // Enable compression
+      format: 'a4'
+    });
+    
+    const pageCount = pdf.numPages;
+    const maxPages = Math.min(pageCount, 50); // Limit pages for large PDFs
+    
+    // Process each page with aggressive compression
+    for (let i = 1; i <= maxPages; i++) {
+      const page = await pdf.getPage(i);
+      
+      // Use lower scale for smaller file size
+      const scale = 0.8; // Reduced from 1.2
+      const viewport = page.getViewport({ scale });
+      
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+      }).promise;
+      
+      // More aggressive JPEG compression
+      const imgData = canvas.toDataURL("image/jpeg", 0.5); // Reduced from 0.7
+      
+      if (i > 1) {
+        newPdf.addPage();
+      }
+      
+      const pageWidth = newPdf.internal.pageSize.getWidth();
+      const pageHeight = newPdf.internal.pageSize.getHeight();
+      
+      // Calculate dimensions to fit page
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+      
+      const width = imgWidth * ratio;
+      const height = imgHeight * ratio;
+      const x = (pageWidth - width) / 2;
+      const y = (pageHeight - height) / 2;
+      
+      newPdf.addImage(imgData, "JPEG", x, y, width, height);
+    }
+    
+    // Get the compressed PDF
+    const pdfBlob = newPdf.output('blob');
+    
+    // Check if compression was successful
+    if (pdfBlob.size >= file.size) {
+      console.warn("Compression didn't reduce file size significantly");
+      // Try alternative approach or return original if small enough
+      if (file.size <= 3 * 1024 * 1024) { // 3MB tolerance
+        return file;
+      } else {
+        throw new Error("Unable to compress PDF to acceptable size. Please use a smaller file.");
+      }
+    }
+    
+    console.log(`PDF compressed from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(pdfBlob.size / 1024 / 1024).toFixed(2)}MB`);
+    
+    return pdfBlob;
+    
+  } catch (error) {
+    console.error("Error compressing PDF:", error);
+    
+    // Fallback: check original file size
+    if (file.size > 2 * 1024 * 1024) { // 2MB
+      throw new Error("PDF file is too large and compression failed. Please use a file smaller than 2MB or compress it manually.");
+    }
+    
+    return file;
+  }
+};
+
 
   const handleFileChange = async (e) => {
     const { files } = e.target;
