@@ -353,7 +353,7 @@ const Customerdashboard = () => {
                     target="_blank"
                     className="ml-2"
                   >
-                    <button className="text-xs md:text-sm lg:text-lg hidden lg:block px-2 py-2 bg-green-500 text-white rounded-md">
+                    <button className="text-xs md:text-sm lg:text-lg hidden ml-2 lg:block px-2 py-2 bg-green-500 text-white rounded-md">
                       Add / Update Documents & Details
                     </button>
                   </a>
