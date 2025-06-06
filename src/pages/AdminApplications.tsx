@@ -298,7 +298,7 @@ const AdminApplications = () => {
         <a
           className="underline text-blue-600"
           target="_blank"
-          href={`/applicationform?update=false&type=${row.servicetype}&customerId=${row.customer_id}`}
+          href={`/applicationform?type=${row.servicetype}&servicename=${row.servicename}&customerId=${row.customer_id}`}
         >
           {row.applicationId.toUpperCase()}
         </a>
@@ -306,11 +306,11 @@ const AdminApplications = () => {
       width: "150px",
     },
     {
-      name: "Date",
+      name: "Login Date",
       selector: (row) => formatDate(row.createdAt),
     },
     {
-      name: "Time",
+      name: "Login Time",
       selector: (row) => formatTime(row.createdAt),
     },
     { name: "City", selector: (row) => row?.city },
@@ -354,19 +354,19 @@ const AdminApplications = () => {
       width: "150px",
     },
     {
-      name: "Date",
+      name: "Login Date",
       selector: (row) => formatDate(row.createdAt),
     },
     {
-      name: "Time",
+      name: "Login Time",
       selector: (row) => formatTime(row.createdAt),
     },
     {
-      name: "Closing Date",
+      name: "Completed Date",
       selector: (row) => formatDate(row.closingTime),
     },
     {
-      name: "Closing Time",
+      name: "Completed Time",
       selector: (row) => formatTime(row.closingTime),
     },
     { name: "AADHAAR", selector: (row) => row.aadhaarNumber, width: "150px" },

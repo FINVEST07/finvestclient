@@ -431,7 +431,7 @@ const Customerdashboard = () => {
                           </td>
                           <td className="hidden lg:block">
                             <a
-                              href={`/applicationform?applicationId=${item.applicationId}`}
+                              href={`/applicationform?applicationId=${item.applicationId}&type=${item.servicetype}&servicename=${item.servicename}`}
                               target="_blank"
                               className="m-4"
                             >
@@ -442,7 +442,7 @@ const Customerdashboard = () => {
                           </td>
                         </tr>
                         <a
-                          href={`/applicationform?applicationId=${item.applicationId}`}
+                          href={`/applicationform?applicationId=${item.applicationId}&type=${item.servicetype}&servicename=${item.servicename}`}
                           target="_blank"
                           className="m-4 lg:hidden"
                         >
@@ -499,7 +499,7 @@ const Customerdashboard = () => {
               <button className="w-full py-2 bg-blue-800 text-[#fff] rounded-md">
                 {selectedservice.type !== "" ? (
                   <a
-                    href={`applicationform?type=${selectedservice.type}&servicename=${selectedservice.servicename}&update=true`}
+                    href={`applicationform?type=${selectedservice.type}&servicename=${selectedservice.servicename}&apply=true`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full h-full text-center"

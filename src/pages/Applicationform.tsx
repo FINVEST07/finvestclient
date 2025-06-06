@@ -20,6 +20,8 @@ const Applicationform = () => {
   const [customer_id, setCustomerId] = useState("");
   const [isAgreed, setIsAgreed] = useState(false);
   const [adminrank, setAdminRank] = useState("");
+  const [apply, setApply] = useState("false");
+
 
   const [formData, setFormData] = useState({
     email: "",
@@ -74,6 +76,7 @@ const Applicationform = () => {
     const servicename = searchParams.get("servicename");
     const applicationId = searchParams.get("applicationId");
     const customerId = searchParams.get("customerId");
+    const apply = searchParams.get("apply");
     const rank = localStorage.getItem("rank");
 
     if (type && servicename) {
@@ -84,6 +87,9 @@ const Applicationform = () => {
     }
     if (customerId) {
       setCustomerId(customerId);
+    }
+    if(apply){
+      setApply(apply);
     }
     if (rank) {
       //@ts-expect-error err
@@ -131,7 +137,7 @@ const Applicationform = () => {
 
       const payload = response.data.payload;
 
-      console.table(payload);
+    
 
       if (payload) {
         const updatedFormData = { ...formData };
@@ -521,7 +527,7 @@ const Applicationform = () => {
             </div>
           )}
         </form>
-        {currentStep === 3 && customer_id == "" && (
+        {currentStep === 3 && customer_id == "" && apply == "true" && (
           <button
             onClick={(e) => {
               handleApply(e);
