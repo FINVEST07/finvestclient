@@ -6,7 +6,7 @@ import axios from "axios";
 // Error Boundary Component
 const ErrorBoundary = ({ children, fallback }) => {
   const [hasError, setHasError] = useState(false);
-  
+
   if (hasError) return fallback;
   return children;
 };
@@ -30,22 +30,22 @@ const AdminCustomers = () => {
 
   const formatDate = (isoDate: string): string => {
     try {
-      if (!isoDate || typeof isoDate !== 'string') {
-        console.warn('Invalid date format:', isoDate);
-        return 'Invalid Date';
+      if (!isoDate || typeof isoDate !== "string") {
+        console.warn("Invalid date format:", isoDate);
+        return "Invalid Date";
       }
       const date = new Date(isoDate);
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date object:', isoDate);
-        return 'Invalid Date';
+        console.warn("Invalid date object:", isoDate);
+        return "Invalid Date";
       }
       const day = date.getDate().toString().padStart(2, "0");
       const month = date.toLocaleString("en-US", { month: "short" });
       const year = date.getFullYear();
       return `${day} ${month} ${year}`;
     } catch (err) {
-      console.error('Error formatting date:', err);
-      return 'Error in Date';
+      console.error("Error formatting date:", err);
+      return "Error in Date";
     }
   };
 
@@ -54,22 +54,20 @@ const AdminCustomers = () => {
       name: "C_ID",
       cell: (row: Customer) => {
         try {
-          if (!row?.customer_id || !row?.email) {
-            console.warn('Invalid row data for C_ID:', row);
-            return <span className="text-red-500">Invalid ID</span>;
-          }
           return (
             <a
               className="underline text-blue-600"
               target="_blank"
-              href={`/customerdashboard?email=${encodeURIComponent(row.email)}&customer_id=${encodeURIComponent(row.customer_id)}`}
+              href={`/customerdashboard?email=${encodeURIComponent(
+                row.email
+              )}&customer_id=${encodeURIComponent(row.customer_id)}`}
               rel="noopener noreferrer"
             >
-              {row.customer_id.toUpperCase()}
+              {row.customer_id}
             </a>
           );
         } catch (err) {
-          console.error('Error rendering C_ID cell:', err);
+          console.error("Error rendering C_ID cell:", err);
           return <span className="text-red-500">Error</span>;
         }
       },
@@ -77,17 +75,17 @@ const AdminCustomers = () => {
     },
     {
       name: "Name",
-      selector: (row: Customer) => row.fullName || 'N/A',
+      selector: (row: Customer) => row.fullName || "N/A",
       width: "150px",
     },
     {
       name: "Mobile",
-      selector: (row: Customer) => row.mobile || 'N/A',
+      selector: (row: Customer) => row.mobile || "N/A",
       width: "150px",
     },
     {
       name: "Email ID",
-      selector: (row: Customer) => row.email || 'N/A',
+      selector: (row: Customer) => row.email || "N/A",
       width: "250px",
     },
     {
@@ -150,7 +148,7 @@ const AdminCustomers = () => {
 
       // Set timeout for API call
       timeoutRef.current = setTimeout(() => {
-        setError('Request timeout. Please try again.');
+        setError("Request timeout. Please try again.");
         setLoading(false);
       }, 10000);
 
@@ -159,44 +157,29 @@ const AdminCustomers = () => {
         {
           timeout: 10000,
           headers: {
-            'Accept': 'application/json',
+            Accept: "application/json",
           },
         }
       );
 
       // Validate response
       if (!response?.data?.payload) {
-        throw new Error('Invalid response structure');
+        throw new Error("Invalid response structure");
       }
 
       const payload = response.data.payload;
 
       // Type checking for payload
       if (!Array.isArray(payload)) {
-        console.error('Payload is not an array:', payload);
+        console.error("Payload is not an array:", payload);
         setCustomerList([]);
-        setError('Invalid data format received');
+        setError("Invalid data format received");
         return;
       }
 
-      // Validate customer data structure
-      const validCustomers = payload.filter((customer): customer is Customer => {
-        const isValid = customer &&
-          typeof customer.customer_id === 'string' &&
-          typeof customer.fullName === 'string' &&
-          typeof customer.mobile === 'string' &&
-          typeof customer.email === 'string' &&
-          typeof customer.createdAt === 'string';
-        
-        if (!isValid) {
-          console.warn('Invalid customer data:', customer);
-        }
-        return isValid;
-      });
-
-      setCustomerList(validCustomers);
+      setCustomerList(payload);
     } catch (error) {
-      console.error('Error loading customers:', {
+      console.error("Error loading customers:", {
         message: error.message,
         status: error.response?.status,
         data: error.response?.data,
@@ -204,10 +187,10 @@ const AdminCustomers = () => {
       });
 
       if (retryCount < maxRetries) {
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
         setTimeout(() => loadData(), 2000 * (retryCount + 1));
       } else {
-        setError(error.message || 'Failed to load customers');
+        setError(error.message || "Failed to load customers");
         setCustomerList([]);
       }
     } finally {
@@ -278,7 +261,11 @@ const AdminCustomers = () => {
         pagination
         //@ts-expect-error err
         customStyles={customStyles}
-        noDataComponent={<div className="p-4 text-center text-gray-500">No customers available</div>}
+        noDataComponent={
+          <div className="p-4 text-center text-gray-500">
+            No customers available
+          </div>
+        }
       />
     );
   };
@@ -294,9 +281,7 @@ const AdminCustomers = () => {
     >
       <div className="bg-slate-800 w-full min-h-screen">
         <AdminSidebar />
-        <div className="ml-[22%] pt-[10vh] px-[5%]">
-          {renderContent()}
-        </div>
+        <div className="ml-[22%] pt-[10vh] px-[5%]">{renderContent()}</div>
       </div>
     </ErrorBoundary>
   );
