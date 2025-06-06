@@ -17,10 +17,6 @@ const AdminApplications = () => {
   const [forwardboxopen, setForwardBoxOpen] = useState(false);
   const [forwardadmin, setForwardAdmin] = useState("");
   const [currentApplicationId, setCurrentApplicationId] = useState("");
-  const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
-  const [applicationToComplete, setApplicationToComplete] = useState("");
-
-  // New state for appraisal modal
   const [appraisalModalOpen, setAppraisalModalOpen] = useState(false);
   const [currentAppraisal, setCurrentAppraisal] = useState("");
   const [appraisalApplicationId, setAppraisalApplicationId] = useState("");
@@ -84,9 +80,15 @@ const AdminApplications = () => {
 
       // Filter applications by status
       const processing =
-        payload?.filter((app) => app.status === "Processing") || [];
+        payload?.filter((app) =>
+          ["Processing", "Hold", "Query", "Sanctioned", "Disbursed"].includes(
+            app.status
+          )
+        ) || [];
       const completed =
-        payload?.filter((app) => app.status === "Completed") || [];
+        payload?.filter((app) =>
+          ["Completed", "Rejected"].includes(app.status)
+        ) || [];
 
       setProcessingApplications(processing);
       setCompletedApplications(completed);
@@ -134,30 +136,48 @@ const AdminApplications = () => {
     return `${hours12}:${minutes} ${ampm}`;
   };
 
-  const handleComplete = async (applicationId) => {
+  const handleStatusUpdate = async (applicationId, newStatus) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URI}completeapplication`,
+        `${import.meta.env.VITE_API_URI}updateapplicationstatus`,
         {
           applicationId: applicationId,
+          status: newStatus,
         }
       );
 
       if (response.data.status) {
         toast.success(response.data.message);
-        setConfirmCompleteOpen(false);
-        setApplicationToComplete("");
         loadData();
+      } else {
+        toast.error(response.data.message);
       }
     } catch (error) {
       console.error(error);
-      alert("Something Went Wrong");
+      toast.error("Something went wrong while updating status");
     }
   };
 
-  const handleCompleteClick = (applicationId) => {
-    setApplicationToComplete(applicationId);
-    setConfirmCompleteOpen(true);
+  const handleReopen = async (applicationId) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URI}updateapplicationstatus`,
+        {
+          applicationId: applicationId,
+          status: "Processing",
+        }
+      );
+
+      if (response.data.status) {
+        toast.success("Application reopened successfully");
+        loadData();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while reopening application");
+    }
   };
 
   const handleAppraisalEdit = (applicationId, currentAppraisal) => {
@@ -221,7 +241,7 @@ const AdminApplications = () => {
     }
   };
 
-  // Columns for processing applications (with Forward and Complete buttons)
+  // Columns for processing applications (with Forward and Status dropdown)
   const processingColumns = [
     {
       name: "",
@@ -239,27 +259,31 @@ const AdminApplications = () => {
       width: "100px",
     },
     {
-      name: "",
+      name: "Status",
       cell: (row) => (
-        <div className="flex items-center ">
-          <button
-            className="px-4 py-2 text-2xl rounded text-white"
-            onClick={() => handleCompleteClick(row.applicationId)}
-          >
-            ✅
-          </button>
-          {/* <button
-            onClick={() =>
-              handleAppraisalEdit(row.applicationId, row.appraisal)
-            }
-            className="p-2 hover:bg-gray-100 rounded"
-            title="Edit Appraisal"
-          >
-            <PencilIcon />
-          </button> */}
-        </div>
+        <select
+          value={row.status}
+          onChange={(e) =>
+            handleStatusUpdate(row.applicationId, e.target.value)
+          }
+          className="w-full p-2 border rounded"
+        >
+          {[
+            "Hold",
+            "Query",
+            "Processing",
+            "Sanctioned",
+            "Disbursed",
+            "Rejected",
+            "Completed",
+          ].map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
       ),
-      width: "80px",
+      width: "150px",
     },
     {
       name: "Assigned Person",
@@ -325,8 +349,20 @@ const AdminApplications = () => {
     { name: "Status", selector: (row) => row.status, width: "120px" },
   ];
 
-  // Columns for completed applications (without Forward and Complete buttons)
+  // Columns for completed applications (with Reopen button)
   const completedColumns = [
+    {
+      name: "",
+      cell: (row) => (
+        <button
+          className="px-4 py-2 bg-yellow-600 rounded text-white"
+          onClick={() => handleReopen(row.applicationId)}
+        >
+          Reopen
+        </button>
+      ),
+      width: "100px",
+    },
     {
       name: "Customer Name",
       cell: (row) => (
@@ -352,6 +388,18 @@ const AdminApplications = () => {
         </a>
       ),
       width: "150px",
+    },
+    {
+      name: "Appraisal",
+      cell: (row) => (
+        <textarea
+          readOnly
+          value={row?.appraisal || ""}
+          className="w-full p-2 border rounded resize-none"
+          rows={2}
+        ></textarea>
+      ),
+      width: "260px",
     },
     {
       name: "Login Date",
@@ -469,49 +517,6 @@ const AdminApplications = () => {
           >
             Forward
           </button>
-        </div>
-      )}
-
-      {/* Complete Confirmation Modal */}
-      {confirmCompleteOpen && (
-        <div className="absolute z-50 ml-[40%] w-[35%] px-6 py-4 bg-white shadow-lg shadow-gray-500 top-[35vh] rounded-lg border border-gray-300">
-          <div className="flex justify-end">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 384 512"
-              width={20}
-              className="cursor-pointer text-gray-600 hover:text-gray-800"
-              onClick={() => {
-                setConfirmCompleteOpen(false);
-                setApplicationToComplete("");
-              }}
-            >
-              <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
-            </svg>
-          </div>
-          <h2 className="text-center font-bold text-xl text-[#1E293B] mb-4">
-            Complete Application
-          </h2>
-          <p className="text-center text-gray-700 mb-6">
-            Are you sure you want to complete this application?
-          </p>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => {
-                setConfirmCompleteOpen(false);
-                setApplicationToComplete("");
-              }}
-              className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => handleComplete(applicationToComplete)}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-            >
-              Yes, Complete
-            </button>
-          </div>
         </div>
       )}
 
