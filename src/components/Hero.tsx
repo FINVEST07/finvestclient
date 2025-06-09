@@ -5,7 +5,7 @@ import BusinessNewsTabs from "./BusinessNews";
 const Hero = () => {
   return (
     <>
-      <section className="pt-36 md:pt-36 pb-16 2xl:pb-24 relative overflow-hidden">
+      <section className="pt-36 md:pt-44 pb-16 2xl:pb-24 relative overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-0 right-0 w-full h-full bg-blue-50 opacity-50 -z-10"></div>
         <div className="absolute top-1/3 -right-64 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl -z-10"></div>
