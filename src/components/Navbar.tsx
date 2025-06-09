@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Menu, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,10 @@ const Navbar = ({ setLoginOpen }) => {
       <div className="container-custom">
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center">
+            <img
+              src="/fin_l.png"
+              alt="FinvestCorp Logo"
+              className="h-20 w-20 mr-2"/>
             <span className="font-playfair text-xl md:text-2xl font-semibold text-blue-900">
               FinvestCorp<span className="text-blue-400">.</span>
             </span>
