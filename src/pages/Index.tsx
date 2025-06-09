@@ -7,6 +7,7 @@ import Testimonials from "@/components/Testimonials";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import axios from "axios";
+import StockTicker from "@/components/Stocknews";
 import {
   ArrowUpRight,
   DollarSign,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 
 import Login from "@/components/Login";
+import BusinessNewsTabs from "@/components/BusinessNews";
 
 const About = () => (
   <section id="about" className="section-padding bg-white">
@@ -249,15 +251,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen w-full">
+      <StockTicker />
       <Navbar setLoginOpen={setLoginOpen} />
       <Hero />
       <Login setLoginOpen={setLoginOpen} loginopen={loginopen} />
-      <Services setLoginOpen={setLoginOpen}/>
+      <Services setLoginOpen={setLoginOpen} />
       <About />
       <WhyChooseUs />
       <Testimonials />
-      <ContactForm setLoginOpen={setLoginOpen}/>
-      <Footer setLoginOpen={setLoginOpen}/>
+      <ContactForm setLoginOpen={setLoginOpen} />
+      <Footer setLoginOpen={setLoginOpen} />
     </div>
   );
 };
