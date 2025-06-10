@@ -1,11 +1,10 @@
 import { ChevronRight, DollarSign, Shield, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import BusinessNewsTabs from "./BusinessNews";
 
 const Hero = () => {
   return (
     <>
-      <section className="pt-36 md:pt-44 pb-16 2xl:pb-24 relative overflow-hidden">
+      <section className="md:pt-4 pb-16 2xl:pb-20 relative overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-0 right-0 w-full h-full bg-blue-50 opacity-50 -z-10"></div>
         <div className="absolute top-1/3 -right-64 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl -z-10"></div>
@@ -15,7 +14,7 @@ const Hero = () => {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             {/* Left column - Text content */}
             <div className="lg:w-1/2 space-y-6 animate-fade-in">
-              <div className="inline-block mt-12 md:mt-0 ">
+              <div className="inline-block mt-2 md:mt-0 ">
                 <span className="bg-blue-200 text-blue-900 text-sm font-medium py-1 px-3 rounded-full border border-blue-900">
                   Financial Solutions & Freedom Starts Here
                 </span>
@@ -89,7 +88,6 @@ const Hero = () => {
               </div>
             </div>
           </div>
-          <BusinessNewsTabs />
         </div>
       </section>
     </>

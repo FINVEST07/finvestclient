@@ -2,24 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-// Tab configuration
-const TABS = [
-  { label: "India", country: "in", category: "business" },
-  { label: "Global", country: "us", category: "business" },
-  { label: "Startups", country: "in", category: "technology" },
-];
-
 // In-memory cache object
 const cache = {};
 
-const BusinessNewsTabs = () => {
-  const [activeTab, setActiveTab] = useState(TABS[0]);
+const BusinessNews = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
-  const fetchNews = async (tab: typeof TABS[number]) => {
-    const cacheKey = tab.label;
+  const fetchNews = async () => {
+    const cacheKey = "business-us";
 
     if (cache[cacheKey]) {
       setNews(cache[cacheKey]);
@@ -31,7 +23,7 @@ const BusinessNewsTabs = () => {
     setError(null);
     try {
       const res = await fetch(
-        `https://newsdata.io/api/1/news?apikey=pub_ae2dc193e5ea478baf1f964fa482ec12&country=${tab.country}&category=${tab.category}&language=en`
+        `https://newsdata.io/api/1/news?apikey=pub_ae2dc193e5ea478baf1f964fa482ec12&country=us&category=business&language=en`
       );
 
       if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
@@ -54,76 +46,77 @@ const BusinessNewsTabs = () => {
   };
 
   useEffect(() => {
-    fetchNews(activeTab);
-  }, [activeTab]);
+    fetchNews();
+  }, []);
 
   return (
-    <div className="bg-blue-900 mt-8 text-white px-4 py-4 border-t border-b border-gray-700">
-      {/* Tabs */}
-      <div className="flex space-x-4 mb-4">
-        {TABS.map((tab) => (
-          <button
-            key={tab.label}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1 rounded-full ${
-              activeTab.label === tab.label
-                ? "bg-blue-800 text-white"
-                : "bg-blue-300 text-blue-800 hover:bg-blue-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* News Content */}
-      <div className="space-y-4  overflow-y-auto">
-        {loading && <p className="text-gray-400">Loading news...</p>}
+    <div className="py-4 px-4 lg:px-[4%] max-w-8xl mx-auto mt-[24vh] ">
+      {/* Marquee Container */}
+      <div className="overflow-hidden bg-gray-100 p-2 rounded">
+        {loading && <p className="text-center">Loading news...</p>}
 
         {!loading && error && (
-          <div className="text-red-400">
-            <p>⚠️ {error}</p>
-            <button
-              onClick={() => fetchNews(activeTab)}
-              className="mt-2 px-3 py-1 text-sm bg-red-600 rounded hover:bg-red-700"
-            >
-              Retry
-            </button>
+          <div className="text-center">
+            <p className="text-center">No news available right now.</p>
+
+
           </div>
         )}
 
         {!loading && !error && news.length === 0 && (
-          <p className="text-yellow-400">No news available right now.</p>
+          <p className="text-center">No news available right now.</p>
         )}
 
-        {!loading &&
-          !error &&
-          news.map((item, index) => (
-            <a
-              key={index}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex gap-4 items-start hover:bg-blue-700 p-2 rounded-md transition"
-            >
-              {item.image_url && (
-                <img
-                  src={item.image_url}
-                  alt="news"
-                  className="w-20 h-16 object-cover rounded"
-                />
-              )}
-              <div>
-                <h4 className="font-semibold text-sm">{item.title}</h4>
-                <p className="text-xs text-gray-400">
-                  {item.description?.slice(0, 100)}...
-                </p>
-              </div>
-            </a>
-          ))}
+        {!loading && !error && news.length > 0 && (
+          <div className="marquee-container">
+            <div className="marquee">
+              {news.map((item, index) => (
+                <span key={index} className="marquee-item">
+                  {item.title} &nbsp; • &nbsp;
+                </span>
+              ))}
+              {/* Duplicate news items for seamless looping */}
+              {news.map((item, index) => (
+                <span key={`dup-${index}`} className="marquee-item">
+                  {item.title} &nbsp; • &nbsp;
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* CSS for Marquee Effect */}
+      <style jsx>{`
+        .marquee-container {
+          width: 100%;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+        .marquee {
+          display: inline-block;
+          animation: marquee 90s linear infinite;
+        }
+        .marquee-item {
+          display: inline-block;
+          font-size: 1rem;
+          color: #1a202c;
+          padding-right: 1rem;
+        }
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        .marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default BusinessNewsTabs;
+export default BusinessNews;

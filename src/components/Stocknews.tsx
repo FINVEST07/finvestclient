@@ -10,12 +10,12 @@ const StockTicker = () => {
 
     script.innerHTML = JSON.stringify({
       symbols: [
-        // 📊 Indian Indices - Correct format
+        // 📊 Indian Indices - Fixed format
         { proName: "BSE:SENSEX", title: "Sensex" },
-        { proName: "NSE:NIFTY", title: "Nifty 50" },
+        { proName: "NIFTY", title: "Nifty 50" },
         { proName: "NSE:BANKNIFTY", title: "Bank Nifty" },
 
-        // 🇮🇳 Indian Stocks - Fixed symbols
+        // 🇮🇳 Indian Stocks - Correct ticker tape format
         { proName: "RELIANCE", title: "Reliance" },
         { proName: "TCS", title: "TCS" },
         { proName: "INFY", title: "Infosys" },
@@ -98,7 +98,7 @@ const StockTicker = () => {
   }, []);
 
   return (
-    <div className="w-full fixed top-0 z-[999] overflow-hidden border-b border-gray-700 bg-black">
+    <div className="w-full lg:px-[10vh] fixed top-[12vh] lg:top-[16vh] z-[999] overflow-hidden border-gray-700 ">
       <div id="tradingview-ticker-container" className="tradingview-widget-container" />
     </div>
   );
