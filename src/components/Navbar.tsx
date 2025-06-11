@@ -68,9 +68,9 @@ const Navbar = ({ setLoginOpen }) => {
         <div className="flex items-center justify-between">
           <a href="/" className="flex items-center">
             <img
-              src="/fin_l.png"
+              src="/fin_lo.png"
               alt="FinvestCorp Logo"
-              className="h-20 w-20 mr-2"/>
+              className="h-20 w-24 mr-2"/>
             <span className="font-playfair text-xl md:text-2xl font-semibold text-blue-900">
               FinvestCorp<span className="text-blue-400">.</span>
             </span>
@@ -128,7 +128,7 @@ const Navbar = ({ setLoginOpen }) => {
             )}
 
             {profiledropopen && (
-              <div className="bg-[#fff] flex flex-col gap-2 rounded-md py-2 px-3 absolute top-[12vh] right-6 text-sm border-2 border-[#F2EAD0] shadow-md shadow-[#F2EAD0]">
+              <div className="bg-[#fff] flex flex-col gap-2 rounded-md z-[999] py-2 px-3 absolute top-[12vh] right-6 text-sm border-2 border-[#F2EAD0] shadow-md shadow-[#F2EAD0]">
                 <a
                   href="/customerdashboard"
                   className="cursor-pointer"
