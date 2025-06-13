@@ -1,107 +1,68 @@
-"use client";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-import { useEffect } from "react";
+export default function StockTicker() {
+  const [stocks, setStocks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const StockTicker = () => {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.async = true;
+  const apiKey = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY; // Store in .env
+  const symbols = [
+    // Indian Nifty 50 stocks (sample, add more as needed)
+    'RELIANCE.BO', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'HINDUNILVR.NS',
+    // Indian indices
+    '^BSESN', '^NSEI', '^NSEBANK',
+    // Foreign stocks
+    'AAPL', 'TSLA', 'AMZN',
+    // Foreign indices
+    '^GSPC', '^IXIC', '^FTSE'
+  ];
 
-    script.innerHTML = JSON.stringify({
-      symbols: [
-        // 📊 Indian Indices - Fixed format
-        { proName: "BSE:SENSEX", title: "Sensex" },
-        { proName: "NIFTY", title: "Nifty 50" },
-        { proName: "NSE:BANKNIFTY", title: "Bank Nifty" },
-
-        // 🇮🇳 Indian Stocks - Correct ticker tape format
-        { proName: "RELIANCE", title: "Reliance" },
-        { proName: "TCS", title: "TCS" },
-        { proName: "INFY", title: "Infosys" },
-        { proName: "HDFCBANK", title: "HDFC Bank" },
-        { proName: "ICICIBANK", title: "ICICI Bank" },
-        { proName: "SBIN", title: "SBI" },
-        { proName: "AXISBANK", title: "Axis Bank" },
-        { proName: "KOTAKBANK", title: "Kotak Bank" },
-        { proName: "WIPRO", title: "Wipro" },
-        { proName: "HCLTECH", title: "HCL Tech" },
-        { proName: "LT", title: "L&T" },
-        { proName: "ITC", title: "ITC" },
-        { proName: "ADANIENT", title: "Adani Ent." },
-        { proName: "ADANIPORTS", title: "Adani Ports" },
-        { proName: "BAJFINANCE", title: "Bajaj Finance" },
-        { proName: "BAJAJ-AUTO", title: "Bajaj Auto" },
-        { proName: "HINDUNILVR", title: "HUL" },
-        { proName: "BHARTIARTL", title: "Airtel" },
-        { proName: "MARUTI", title: "Maruti Suzuki" },
-        { proName: "HEROMOTOCO", title: "Hero MotoCorp" },
-        { proName: "TATAMOTORS", title: "Tata Motors" },
-        { proName: "TATASTEEL", title: "Tata Steel" },
-        { proName: "JSWSTEEL", title: "JSW Steel" },
-        { proName: "ONGC", title: "ONGC" },
-        { proName: "COALINDIA", title: "Coal India" },
-        { proName: "BPCL", title: "BPCL" },
-        { proName: "IOC", title: "IOC" },
-        { proName: "POWERGRID", title: "Power Grid" },
-        { proName: "NTPC", title: "NTPC" },
-        { proName: "ULTRACEMCO", title: "Ultratech Cement" },
-        { proName: "DRREDDY", title: "Dr Reddy's" },
-        { proName: "SUNPHARMA", title: "Sun Pharma" },
-        { proName: "CIPLA", title: "Cipla" },
-        { proName: "DIVISLAB", title: "Divi's Labs" },
-        { proName: "HAVELLS", title: "Havells" },
-        { proName: "PIDILITIND", title: "Pidilite" },
-
-        // 🌐 Global Tech & Indices
-        { proName: "NASDAQ:AAPL", title: "Apple" },
-        { proName: "NASDAQ:GOOGL", title: "Google" },
-        { proName: "NASDAQ:MSFT", title: "Microsoft" },
-        { proName: "NASDAQ:AMZN", title: "Amazon" },
-        { proName: "NASDAQ:TSLA", title: "Tesla" },
-        { proName: "NYSE:BRK.B", title: "Berkshire Hathaway" },
-        { proName: "NYSE:JPM", title: "JP Morgan" },
-        { proName: "NYSE:V", title: "Visa" },
-        { proName: "NYSE:NKE", title: "Nike" },
-        { proName: "NASDAQ:NVDA", title: "Nvidia" },
-        { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
-        { proName: "FOREXCOM:DJI", title: "Dow Jones" },
-        { proName: "FOREXCOM:NSXUSD", title: "Nasdaq 100" },
-
-        // 💱 Forex
-        { proName: "FX_IDC:USDINR", title: "USD/INR" },
-        { proName: "FX_IDC:EURINR", title: "EUR/INR" },
-        { proName: "FX_IDC:JPYINR", title: "JPY/INR" },
-        { proName: "FX_IDC:GBPINR", title: "GBP/INR" },
-        { proName: "FX_IDC:EURUSD", title: "EUR/USD" },
-        { proName: "FX_IDC:USDJPY", title: "USD/JPY" },
-        { proName: "FX_IDC:GBPUSD", title: "GBP/USD" },
-
-        // 🪙 Crypto
-        { proName: "BINANCE:BTCUSDT", title: "Bitcoin" },
-        { proName: "BINANCE:ETHUSDT", title: "Ethereum" },
-        { proName: "BINANCE:BNBUSDT", title: "BNB" },
-        { proName: "BINANCE:XRPUSDT", title: "Ripple" },
-        { proName: "BINANCE:DOGEUSDT", title: "Dogecoin" }
-      ],
-      colorTheme: "dark",
-      isTransparent: false,
-      displayMode: "adaptive",
-      locale: "en"
-    });
-
-    const container = document.getElementById("tradingview-ticker-container");
-    if (container) {
-      container.innerHTML = "";
-      container.appendChild(script);
+  const fetchStocks = async () => {
+    try {
+      const data = await Promise.all(symbols.map(async (symbol) => {
+        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+        const response = await axios.get(url);
+        const quote = response.data['Global Quote'];
+        if (!quote) return null;
+        return {
+          symbol: quote['01. symbol'],
+          price: parseFloat(quote['05. price']).toFixed(2),
+          change: parseFloat(quote['09. change']).toFixed(2),
+          changePercent: quote['10. change percent']
+        };
+      }));
+      setStocks(data.filter(item => item !== null));
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching stocks:', err.message);
+      setError('Failed to load stock data');
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchStocks();
+    const interval = setInterval(fetchStocks, 60000); // Refresh every minute
+    return () => clearInterval(interval);
   }, []);
 
+  if (loading) return <div className="text-center text-gray-500">Loading...</div>;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
+
   return (
-    <div className="w-full lg:px-[10vh] fixed top-[12vh] lg:top-[16vh] z-[50] overflow-hidden border-gray-700 ">
-      <div id="tradingview-ticker-container" className="tradingview-widget-container" />
+    <div className="w-full overflow-hidden bg-gray-100 py-2">
+      <div className="flex animate-marquee whitespace-nowrap">
+        {stocks.map((stock, index) => (
+          <div key={index} className="mx-4 flex items-center">
+            <span className="font-bold text-gray-800">{stock.symbol}</span>
+            <span className="mx-2">${stock.price}</span>
+            <span className={`mx-2 ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {stock.change} ({stock.changePercent})
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default StockTicker;
+}

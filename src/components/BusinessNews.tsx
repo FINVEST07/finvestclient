@@ -50,14 +50,14 @@ const BusinessNews = () => {
   }, []);
 
   return (
-    <div className="py-4 lg:px-[4%] max-w-8xl w-full fixed top-[20vh] z-40 ">
+    <div className="py-4   max-w-8xl w-full   z-40 ">
       {/* Marquee Container */}
-      <div className="overflow-hidden bg-gray-100 p-2 rounded">
+      <div className="overflow-hidden bg-blue-900 p-2 rounded">
         {loading && <p className="text-center">Loading news...</p>}
 
         {!loading && error && (
-          <div className="text-center">
-            <p className="text-center">No news available right now.</p>
+          <div className="text-center text-white/95 ">
+            <p className="text-center text-white/95 ">No news available right now.</p>
 
 
           </div>
@@ -68,10 +68,10 @@ const BusinessNews = () => {
         )}
 
         {!loading && !error && news.length > 0 && (
-          <div className="marquee-container">
+          <div className="marquee-container ">
             <div className="marquee">
               {news.map((item, index) => (
-                <span key={index} className="marquee-item">
+                <span key={index} className="marquee-item text-white/95 ">
                   {item.title} &nbsp; • &nbsp;
                 </span>
               ))}

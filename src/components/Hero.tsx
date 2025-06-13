@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const Hero = () => {
   return (
     <>
-      <section className=" mt-[28vh] md:pt-4 pb-16 2xl:pb-20 relative overflow-hidden">
+      <section className=" xl:mt-[32vh] mt-[30vh] md:pt-4 pb-16 2xl:pb-20 relative 2xl:mt-[25vh] overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-0 right-0 w-full h-full bg-blue-50 opacity-50 -z-10"></div>
         <div className="absolute top-1/3 -right-64 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl -z-10"></div>

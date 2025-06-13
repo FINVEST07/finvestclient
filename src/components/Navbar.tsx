@@ -4,6 +4,8 @@ import { Menu, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Cookie from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import StockTicker from "@/components/Stocknews";
+import BusinessNews from "@/components/BusinessNews";
 
 const Navbar = ({ setLoginOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -265,6 +267,8 @@ const Navbar = ({ setLoginOpen }) => {
             </button>
           )}
         </div>
+      <StockTicker />
+      <BusinessNews/>
       </div>
     </nav>
   );
