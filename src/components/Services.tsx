@@ -18,11 +18,11 @@ import {
   PieChart,
   MapPin
 } from "lucide-react";
+import { Helmet } from 'react-helmet-async';
 import ToastContainerComponent from "./ToastContainerComponent";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Cookie from "js-cookie";
-
 
 const bankData = {
   // Loans
@@ -184,7 +184,7 @@ const BankModal = ({ isOpen, onClose, title, banks, type, setLoginOpen }) => {
                       className="w-full h-full object-contain rounded-xl shadow-sm"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E";
+                        target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12 l10 5 10-5'/%3E%3C/svg%3E";
                       }}
                     />
                   </div>
@@ -327,6 +327,13 @@ const Services = ({ setLoginOpen }) => {
       id="services"
       className="py-20 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 relative overflow-hidden"
     >
+      <Helmet>
+        <title>Services - RISEHIGH FINCON Financial Solutions</title>
+        <meta
+          name="description"
+          content="Explore RISEHIGH FINCON's financial services, including home loans, health insurance, mutual funds, and real estate investments with trusted partners."
+        />
+      </Helmet>
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(37,99,235,0.1),transparent)] pointer-events-none"></div>

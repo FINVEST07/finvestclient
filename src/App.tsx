@@ -14,6 +14,10 @@ import Settings from "./components/Settings";
 import AdminApplications from "./pages/AdminApplications";
 import { useState, useEffect } from "react";
 import LoanCalculator from "./pages/LoanCalculator";
+import About from "./pages/About";
+import Refer from "./pages/Refer";
+import Services from "./components/Services";
+import ContactForm from "./components/ContactForm";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +43,13 @@ const App = () => {
             <Route path="/applicationform" element={<Applicationform />} />
             <Route path="/admin" element={<Adminlogin />} />
             <Route path="/loancalculator" element={<LoanCalculator />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<ContactForm />} />
+            <Route path="/refer" element={<Refer />} />
+            <Route path="/services" element={<Services />} />
+            
+
+
 
 
             {adminrank == 1 && (

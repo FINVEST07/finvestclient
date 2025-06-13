@@ -12,7 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from "sonner";
 import Cookie from "js-cookie";
 
-const ContactForm = ({ setLoginOpen }) => {
+const Refer = ({ setLoginOpen }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -305,4 +305,4 @@ const ContactInfo = ({
   </div>
 );
 
-export default ContactForm;
+export default Refer;
