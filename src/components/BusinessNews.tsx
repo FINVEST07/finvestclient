@@ -64,7 +64,7 @@ const BusinessNews = () => {
         )}
 
         {!loading && !error && news.length === 0 && (
-          <p className="text-center">No news available right now.</p>
+          <p className="text-center text-white/95 ">No news available right now.</p>
         )}
 
         {!loading && !error && news.length > 0 && (
@@ -77,7 +77,7 @@ const BusinessNews = () => {
               ))}
               {/* Duplicate news items for seamless looping */}
               {news.map((item, index) => (
-                <span key={`dup-${index}`} className="marquee-item">
+                <span key={`dup-${index}`} className="marquee-item text-white/95 ">
                   {item.title} &nbsp; • &nbsp;
                 </span>
               ))}
@@ -100,7 +100,7 @@ const BusinessNews = () => {
         .marquee-item {
           display: inline-block;
           font-size: 1rem;
-          color: #1a202c;
+          
           padding-right: 1rem;
         }
         @keyframes marquee {
