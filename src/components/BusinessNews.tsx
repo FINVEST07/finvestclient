@@ -50,7 +50,7 @@ const BusinessNews = () => {
   }, []);
 
   return (
-    <div className="py-4   max-w-8xl w-full   z-40 ">
+    <div className="py-2   max-w-8xl w-full   z-40 ">
       {/* Marquee Container */}
       <div className="overflow-hidden bg-blue-900 p-2 rounded">
         {loading && <p className="text-center">Loading news...</p>}
