@@ -70,13 +70,13 @@ const BusinessNews = () => {
             <div className="marquee">
               {news.map((item, index) => (
                 <span key={index} className="marquee-item text-white/95">
-                  {item.title}   •  
+                  {item.title}  • 
                 </span>
               ))}
               {/* Duplicate news items for seamless looping */}
               {news.map((item, index) => (
                 <span key={`dup-${index}`} className="marquee-item text-white/95">
-                  {item.title}   •  
+                  {item.title}  • 
                 </span>
               ))}
               {/* Disclaimer inside marquee */}
