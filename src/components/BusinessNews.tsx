@@ -50,43 +50,47 @@ const BusinessNews = () => {
   }, []);
 
   return (
-    <div className="py-2   max-w-8xl w-full   z-40 ">
+    <div className="py-2 max-w-8xl w-full z-40">
       {/* Marquee Container */}
       <div className="overflow-hidden bg-blue-900 p-2 rounded">
-        {loading && <p className="text-center">Loading news...</p>}
+        {loading && <p className="text-center text-white/95">Loading news...</p>}
 
         {!loading && error && (
-          <div className="text-center text-white/95 ">
-            <p className="text-center text-white/95 ">No news available right now.</p>
-
-
+          <div className="text-center text-white/95">
+            <p>No news available right now.</p>
           </div>
         )}
 
         {!loading && !error && news.length === 0 && (
-          <p className="text-center text-white/95 ">No news available right now.</p>
+          <p className="text-center text-white/95">No news available right now.</p>
         )}
 
         {!loading && !error && news.length > 0 && (
-          <div className="marquee-container ">
+          <div className="marquee-container">
             <div className="marquee">
               {news.map((item, index) => (
-                <span key={index} className="marquee-item text-white/95 ">
-                  {item.title} &nbsp; • &nbsp;
+                <span key={index} className="marquee-item text-white/95">
+                  {item.title}   •  
                 </span>
               ))}
               {/* Duplicate news items for seamless looping */}
               {news.map((item, index) => (
-                <span key={`dup-${index}`} className="marquee-item text-white/95 ">
-                  {item.title} &nbsp; • &nbsp;
+                <span key={`dup-${index}`} className="marquee-item text-white/95">
+                  {item.title}   •  
                 </span>
               ))}
+              {/* Disclaimer inside marquee */}
+              <span className="marquee-item text-white/95">
+                News sourced from NewsData.io  • 
+              </span>
             </div>
           </div>
         )}
       </div>
 
       {/* CSS for Marquee Effect */}
+
+     
       <style jsx>{`
         .marquee-container {
           width: 100%;
@@ -100,7 +104,6 @@ const BusinessNews = () => {
         .marquee-item {
           display: inline-block;
           font-size: 1rem;
-          
           padding-right: 1rem;
         }
         @keyframes marquee {
