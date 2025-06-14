@@ -12,48 +12,59 @@ const StockTicker = () => {
       symbols: [
         // 📊 Indian Indices - Fixed format
         { proName: "BSE:SENSEX", title: "Sensex" },
-        { proName: "BSE:BANKEX", title: "Bankex" }, // BSE's bank index
         { proName: "BSE:POWER", title: "BSE Power" },
         { proName: "BSE:IT", title: "BSE IT" },
 
-
-        // 🇮🇳 Indian Stocks - Correct ticker tape format
-        { proName: "RELIANCE", title: "Reliance" },
-        { proName: "TCS", title: "TCS" },
-        { proName: "INFY", title: "Infosys" },
-        { proName: "HDFCBANK", title: "HDFC Bank" },
-        { proName: "ICICIBANK", title: "ICICI Bank" },
-        { proName: "SBIN", title: "SBI" },
-        { proName: "AXISBANK", title: "Axis Bank" },
-        { proName: "KOTAKBANK", title: "Kotak Bank" },
-        { proName: "WIPRO", title: "Wipro" },
-        { proName: "HCLTECH", title: "HCL Tech" },
-        { proName: "LT", title: "L&T" },
-        { proName: "ITC", title: "ITC" },
-        { proName: "ADANIENT", title: "Adani Ent." },
-        { proName: "ADANIPORTS", title: "Adani Ports" },
-        { proName: "BAJFINANCE", title: "Bajaj Finance" },
-        { proName: "BAJAJ-AUTO", title: "Bajaj Auto" },
-        { proName: "HINDUNILVR", title: "HUL" },
-        { proName: "BHARTIARTL", title: "Airtel" },
-        { proName: "MARUTI", title: "Maruti Suzuki" },
-        { proName: "HEROMOTOCO", title: "Hero MotoCorp" },
-        { proName: "TATAMOTORS", title: "Tata Motors" },
-        { proName: "TATASTEEL", title: "Tata Steel" },
-        { proName: "JSWSTEEL", title: "JSW Steel" },
-        { proName: "ONGC", title: "ONGC" },
-        { proName: "COALINDIA", title: "Coal India" },
-        { proName: "BPCL", title: "BPCL" },
-        { proName: "IOC", title: "IOC" },
-        { proName: "POWERGRID", title: "Power Grid" },
-        { proName: "NTPC", title: "NTPC" },
-        { proName: "ULTRACEMCO", title: "Ultratech Cement" },
-        { proName: "DRREDDY", title: "Dr Reddy's" },
-        { proName: "SUNPHARMA", title: "Sun Pharma" },
-        { proName: "CIPLA", title: "Cipla" },
-        { proName: "DIVISLAB", title: "Divi's Labs" },
-        { proName: "HAVELLS", title: "Havells" },
-        { proName: "PIDILITIND", title: "Pidilite" },
+        // 🇮🇳 Indian Stocks - Sorted alphabetically by title
+        { proName: "BSE:ADANIENT", title: "Adani Ent." },
+        { proName: "BSE:ADANIPORTS", title: "Adani Ports" },
+        { proName: "BSE:APOLLOHOSP", title: "Apollo Hospitals" },
+        { proName: "BSE:ASIANPAINT", title: "Asian Paints" },
+        { proName: "BSE:AXISBANK", title: "Axis Bank" },
+        { proName: "BSE:BAJAJ_AUTO", title: "Bajaj Auto" },
+        { proName: "BSE:BAJFINANCE", title: "Bajaj Finance" },
+        { proName: "BSE:BAJAJFINSV", title: "Bajaj FiBSErv" },
+        { proName: "BSE:BEL", title: "BEL" },
+        { proName: "BSE:BHARTIARTL", title: "Bharti Airtel" },
+        { proName: "BSE:CIPLA", title: "Cipla" },
+        { proName: "BSE:COALINDIA", title: "Coal India" },
+        { proName: "BSE:DRREDDY", title: "Dr Reddy's" },
+        { proName: "BSE:EICHERMOT", title: "Eicher Motors" },
+        { proName: "BSE:GRASIM", title: "Grasim" },
+        { proName: "BSE:HCLTECH", title: "HCL Tech" },
+        { proName: "BSE:HDFCBANK", title: "HDFC Bank" },
+        { proName: "BSE:HDFCLIFE", title: "HDFC Life" },
+        { proName: "BSE:HEROMOTOCO", title: "Hero MotoCorp" },
+        { proName: "BSE:HINDALCO", title: "Hindalco" },
+        { proName: "BSE:HINDUNILVR", title: "Hindustan Unilever" },
+        { proName: "BSE:ICICIBANK", title: "ICICI Bank" },
+        { proName: "BSE:INDUSINDBK", title: "IndusInd Bank" },
+        { proName: "BSE:INFY", title: "Infosys" },
+        { proName: "BSE:ITC", title: "ITC" },
+        { proName: "BSE:JIOFIN", title: "Jio Financial" },
+        { proName: "BSE:JSWSTEEL", title: "JSW Steel" },
+        { proName: "BSE:KOTAKBANK", title: "Kotak Bank" },
+        { proName: "BSE:LT", title: "L&T" },
+        // { proName: "BSE:M&M", title: "Mahindra & Mahindra" },
+        { proName: "BSE:MARUTI", title: "Maruti Suzuki" },
+        { proName: "BSE:NESTLEIND", title: "Nestle India" },
+        { proName: "BSE:NTPC", title: "NTPC" },
+        { proName: "BSE:ONGC", title: "ONGC" },
+        { proName: "BSE:POWERGRID", title: "Power Grid" },
+        { proName: "BSE:RELIANCE", title: "Reliance" },
+        { proName: "BSE:SBILIFE", title: "SBI Life" },
+        { proName: "BSE:SBIN", title: "SBI" },
+        { proName: "BSE:SHRIRAMFIN", title: "Shriram Finance" },
+        { proName: "BSE:SUNPHARMA", title: "Sun Pharma" },
+        { proName: "BSE:TATACONSUM", title: "Tata Consumer" },
+        { proName: "BSE:TATAMOTORS", title: "Tata Motors" },
+        { proName: "BSE:TATASTEEL", title: "Tata Steel" },
+        { proName: "BSE:TCS", title: "TCS" },
+        { proName: "BSE:TECHM", title: "Tech Mahindra" },
+        { proName: "BSE:TITAN", title: "Titan" },
+        { proName: "BSE:TRENT", title: "Trent" },
+        { proName: "BSE:ULTRACEMCO", title: "Ultratech Cement" },
+        { proName: "BSE:WIPRO", title: "Wipro" },
 
         // 🌐 Global Tech & Indices
         { proName: "NASDAQ:AAPL", title: "Apple" },
@@ -84,12 +95,12 @@ const StockTicker = () => {
         { proName: "BINANCE:ETHUSDT", title: "Ethereum" },
         { proName: "BINANCE:BNBUSDT", title: "BNB" },
         { proName: "BINANCE:XRPUSDT", title: "Ripple" },
-        { proName: "BINANCE:DOGEUSDT", title: "Dogecoin" }
+        { proName: "BINANCE:DOGEUSDT", title: "Dogecoin" },
       ],
-      colorTheme: "dark",
+      
       isTransparent: false,
       displayMode: "adaptive",
-      locale: "en"
+      locale: "en",
     });
 
     const container = document.getElementById("tradingview-ticker-container");
@@ -100,7 +111,7 @@ const StockTicker = () => {
   }, []);
 
   return (
-    <div className="w-full  z-[50] overflow-hidden border-gray-700 ">
+    <div className="w-full z-[50] overflow-hidden border-gray-700">
       <div id="tradingview-ticker-container" className="tradingview-widget-container" />
     </div>
   );
