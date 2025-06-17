@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MailIcon, PhoneIcon, MapPin, Clock } from "lucide-react";
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import Cookie from "js-cookie";
 
@@ -73,7 +73,6 @@ const ContactForm = ({ setLoginOpen }) => {
         city: "",
         refercode: "",
       });
-      
     } catch (err) {
       console.error(err);
       toast.error("Something Went Wrong");
@@ -263,11 +262,11 @@ const ContactForm = ({ setLoginOpen }) => {
                 Prefer to talk over the phone? Schedule a call with one of our
                 advisors at your convenience.
               </p>
-              <Button className="w-full bg-white text-blue-900 hover:bg-finance-cream">
-                <a className="flex gap-2" href="tel:+91 9324592709">
+              <a className="flex gap-2" href="tel:+91 9324592709">
+                <Button className="w-full bg-white text-blue-900 hover:bg-finance-cream">
                   <PhoneIcon /> Call Us
-                </a>
-              </Button>
+                </Button>
+              </a>
             </Card>
           </div>
         </div>
