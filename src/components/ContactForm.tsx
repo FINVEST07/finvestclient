@@ -264,7 +264,7 @@ const ContactForm = ({ setLoginOpen }) => {
                 advisors at your convenience.
               </p>
               <Button className="w-full bg-white text-blue-900 hover:bg-finance-cream">
-                <a className="flex gap-2" href="tel:+9324592709">
+                <a className="flex gap-2" href="tel:+91 9324592709">
                   <PhoneIcon /> Call Us
                 </a>
               </Button>
