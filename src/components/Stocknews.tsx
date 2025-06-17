@@ -97,9 +97,10 @@ const StockTicker = () => {
         { proName: "BINANCE:XRPUSDT", title: "Ripple" },
         { proName: "BINANCE:DOGEUSDT", title: "Dogecoin" },
       ],
-
+      
       isTransparent: false,
       displayMode: "adaptive",
+      theme: "dark",
       locale: "en",
     });
 
@@ -116,9 +117,6 @@ const StockTicker = () => {
         id="tradingview-ticker-container"
         className="tradingview-widget-container"
       />
-      <div className="text-xs text-gray-400 text-center mt-0.5">
-        All data is sourced from TradingView
-      </div>
     </div>
   );
 };
