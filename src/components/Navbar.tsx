@@ -62,8 +62,8 @@ const Navbar = ({ setLoginOpen }) => {
     <nav
       className={`fixed top-0  w-full z-50 transition-all duration-300 ${
         scrolled || isOpen
-          ? "py-3 bg-white/95 backdrop-blur-md shadow-md"
-          : "py-2 bg-transparent"
+          ? "py-0 bg-white/95 backdrop-blur-md shadow-md"
+          : "py-0 bg-transparent"
       }`}
     >
       <div className="container-custom">
