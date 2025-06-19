@@ -1,14 +1,19 @@
 User-agent: Googlebot
 Allow: /
+Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: Bingbot
 Allow: /
+Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: Twitterbot
 Allow: /
+Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: facebookexternalhit
 Allow: /
+Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: *
 Allow: /
+Sitemap: https://www.finvestcorp.com/sitemap.xml
