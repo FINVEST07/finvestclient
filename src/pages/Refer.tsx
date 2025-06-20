@@ -12,7 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from "sonner";
 import Cookie from "js-cookie";
 
-const Refer = ({ setLoginOpen }) => {
+const Refer = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",

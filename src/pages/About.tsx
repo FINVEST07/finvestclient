@@ -5,10 +5,10 @@ const About = () => (
   <section id="about" className="section-padding bg-white">
     <div className="container-custom">
       <Helmet>
-        <title>About RISEHIGH FINCON - Trusted Financial Advisors</title>
+        <title>About FINVESTCORP - Trusted Financial Advisors</title>
         <meta
           name="description"
-          content="Learn about RISEHIGH FINCON, trusted financial advisors since 2013, offering personalized loan solutions, insurance advisory, and investment opportunities."
+          content="Learn about FINVESTCORP, trusted financial advisors since 2013, offering personalized loan solutions, insurance advisory, and investment opportunities."
         />
       </Helmet>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -22,7 +22,7 @@ const About = () => (
           </h2>
 
           <p className="text-finance-slate mb-4">
-            RISEHIGH FINCON CONSULTANCY PVT. LTD was founded with a simple
+            FINVESTCORPCONSULTANCY PVT. LTD was founded with a simple
             mission: to provide personalized, transparent financial guidance
             that helps our clients achieve their goals. For over many years,
             we've been dedicated to creating tailored loan solutions & insurance
@@ -114,7 +114,7 @@ export default About;
 //             <br /> Since 2013
 //           </h2>
 //           <p className="text-finance-slate mb-4">
-//             RISEHIGH FINCON CONSULTANCY PVT. LTD was founded with a simple
+//             FINVESTCORPCONSULTANCY PVT. LTD was founded with a simple
 //             mission: to provide personalized, transparent financial guidance
 //             that helps our clients achieve their goals. For over many years,
 //             we've been dedicated to creating tailored loan solutions & insurance
@@ -178,7 +178,7 @@ export default About;
 // export async function getStaticProps() {
 //   return {
 //     props: {
-//       title: "About RISEHIGH FINCON - Trusted Financial Advisors",
+//       title: "About FINVESTCORP- Trusted Financial Advisors",
 //     },
 //   };
 // }

@@ -12,7 +12,7 @@ import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import Cookie from "js-cookie";
 
-const ContactForm = ({ setLoginOpen }) => {
+const ContactForm = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -81,13 +81,7 @@ const ContactForm = ({ setLoginOpen }) => {
 
   return (
     <section id="contact" className="section-padding bg-white">
-      <Helmet>
-        <title>Contact RISEHIGH FINCON - Financial Advice Inquiry</title>
-        <meta
-          name="description"
-          content="Contact RISEHIGH FINCON for personalized financial advice. Submit an inquiry or call our advisors for loans, insurance, and investment solutions."
-        />
-      </Helmet>
+  
       <div className="container-custom">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">

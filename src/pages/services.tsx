@@ -327,7 +327,13 @@ const Services = ({ setLoginOpen }) => {
       id="services"
       className="py-20 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 relative overflow-hidden"
     >
-
+      <Helmet>
+        <title>Services - FINVESTCORP Financial Solutions</title>
+        <meta
+          name="description"
+          content="Explore FINVESTCORP financial services, including home loans, health insurance, mutual funds, and real estate investments with trusted partners."
+        />
+      </Helmet>
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(37,99,235,0.1),transparent)] pointer-events-none"></div>

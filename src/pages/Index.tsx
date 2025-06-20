@@ -7,6 +7,7 @@ import Testimonials from "@/components/Testimonials";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import axios from "axios";
+import { Helmet } from "react-helmet-async";
 
 import {
   ArrowUpRight,
@@ -252,6 +253,7 @@ const Index = () => {
   return (
     <div className="min-h-screen w-full">
       
+
       <Navbar setLoginOpen={setLoginOpen} />
       <Hero />
       <Login setLoginOpen={setLoginOpen} loginopen={loginopen} />

@@ -1,9 +1,17 @@
 import { ChevronRight, DollarSign, Shield, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Helmet } from "react-helmet-async";
 
 const Hero = () => {
   return (
     <>
+      <Helmet>
+        <title>FINVESTCORP - Trusted Financial Advisors for Loans & Investments</title>
+        <meta
+          name="description"
+          content="FINVESTCORP offers expert financial advice on loans, insurance, and investments. Trusted by 1,500+ clients across India since 2013."
+        />
+      </Helmet>
       <section className=" xl:mt-[36vh] mt-[28vh] md:pt-4 pb-16 2xl:pb-20 relative 2xl:mt-[25vh] overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-0 right-0 w-full h-full bg-blue-50 opacity-50 -z-10"></div>
