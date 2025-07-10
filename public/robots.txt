@@ -1,19 +1,35 @@
 User-agent: Googlebot
+Disallow: /admin
+Disallow: /admindashboard
+Disallow: /admincustomers
+Disallow: /adminapplications
+Disallow: /applicationform
+Disallow: /settings
+Disallow: /customer-dashboard
 Allow: /
-Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: Bingbot
+Disallow: /admin
+Disallow: /admindashboard
+Disallow: /admincustomers
+Disallow: /adminapplications
+Disallow: /applicationform
+Disallow: /settings
+Disallow: /customer-dashboard
 Allow: /
-Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: Twitterbot
 Allow: /
-Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: facebookexternalhit
 Allow: /
-Sitemap: https://www.finvestcorp.com/sitemap.xml
 
 User-agent: *
+Disallow: /admin
+Disallow: /admindashboard
+Disallow: /admincustomers
+Disallow: /adminapplications
+Disallow: /applicationform
+Disallow: /settings
+Disallow: /customer-dashboard
 Allow: /
-Sitemap: https://www.finvestcorp.com/sitemap.xml
