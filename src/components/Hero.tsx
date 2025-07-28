@@ -6,7 +6,7 @@ const Hero = () => {
   return (
     <>
       <Helmet>
-        <title>FINVESTCORP - Trusted Financial Advisors for Loans & Investments</title>
+        <title>Home - FinvestCorp is a trusted Financial Advisors for Loans & Investments</title>
         <meta
           name="description"
           content="FINVESTCORP offers expert financial advice on loans, insurance, and investments. Trusted by 1,500+ clients across India since 2013."

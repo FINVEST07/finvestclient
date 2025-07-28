@@ -1,5 +1,7 @@
 "use client";
 
+import styles from "./BusinessNews.module.css"
+
 import { useEffect, useState } from "react";
 
 // In-memory cache object
@@ -66,10 +68,10 @@ const BusinessNews = () => {
         )}
 
         {!loading && !error && news.length > 0 && (
-          <div className="marquee-container">
-            <div className="marquee">
+          <div className={styles.marqueeContainer}>
+            <div className={styles.marquee}>
               {news.map((item, index) => (
-                <span key={index} className="marquee-item text-white/95">
+                <span key={index} className={styles.marqueeItem}>
                   {item.title}  • 
                 </span>
               ))}
@@ -88,36 +90,8 @@ const BusinessNews = () => {
         )}
       </div>
 
-      {/* CSS for Marquee Effect */}
-
      
-      <style jsx>{`
-        .marquee-container {
-          width: 100%;
-          overflow: hidden;
-          white-space: nowrap;
-        }
-        .marquee {
-          display: inline-block;
-          animation: marquee 90s linear infinite;
-        }
-        .marquee-item {
-          display: inline-block;
-          font-size: 1rem;
-          padding-right: 1rem;
-        }
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-        .marquee:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
+
     </div>
   );
 };

@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/dashboard"], // Sensitive pages block kar rahe hain
       },
     ],
-    sitemap: "https://www.ankurmaternityhospital.in/sitemap.xml", // Aapka sitemap URL
+    sitemap: "https://www.finvestcorp.com/sitemap.xml", // Aapka sitemap URL
   };
 }

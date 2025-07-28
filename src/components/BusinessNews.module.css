@@ -1,0 +1,25 @@
+.marqueeContainer {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee {
+  display: inline-block;
+  animation: marquee 90s linear infinite;
+}
+.marqueeItem {
+  display: inline-block;
+  font-size: 1rem;
+  padding-right: 1rem;
+}
+.marquee:hover {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
