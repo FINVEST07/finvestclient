@@ -1,8 +1,8 @@
 import { Helmet } from "react-helmet-async"
-import { LineChart, ArrowUpRight } from "lucide-react";
+import { LineChart, ArrowUpRight, ArrowLeft } from "lucide-react";
 
 const About = () => (
-  <section id="about" className="section-padding bg-white">
+  <section id="about" className="section-padding pt-6 bg-white">
     <div className="container-custom">
       <Helmet>
         <title>About FINVESTCORP - Trusted Financial Advisors</title>
@@ -10,7 +10,43 @@ const About = () => (
           name="description"
           content="Learn about FINVESTCORP, trusted financial advisors since 2013, offering personalized loan solutions, insurance advisory, and investment opportunities."
         />
+        {/* BreadcrumbList JSON-LD */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: '/' ,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'About',
+                item: '/about',
+              },
+            ],
+          })}
+        </script>
+        {/* SiteNavigationElement JSON-LD */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SiteNavigationElement',
+            name: ['Home', 'Services', 'About', 'Contact'],
+            url: ['/', '/services', '/about', '/contact'],
+          })}
+        </script>
       </Helmet>
+      <div className="mb-6">
+        <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </a>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div className="order-2 lg:order-1 animate-fade-in-left">
           <span className="text-sm font-medium text-blue-900 bg-blue-100 py-1 px-4 rounded-full">
@@ -35,6 +71,21 @@ const About = () => (
             believe in building long-term relationships based on trust,
             integrity, and results.
           </p>
+
+          {/* Contextual internal links to Services sections */}
+          <div className="mt-4 space-y-2">
+            <a href="/services#loans" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+              Learn more about our Loan Services
+            </a>
+            <br />
+            <a href="/services#insurance" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+              Explore Insurance Plans
+            </a>
+            <br />
+            <a href="/services#investments" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+              See Investment Options
+            </a>
+          </div>
 
           <div className="grid grid-cols-2 gap-6 mt-8">
             <div className="flex flex-col">
@@ -88,9 +139,6 @@ const About = () => (
 );
 
 export default About;
-
-
-
 // import { Helmet } from "react-helmet-async";
 // import { LineChart, ArrowUpRight } from "lucide-react";
 

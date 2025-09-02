@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -134,6 +135,12 @@ export default function LoanCalculator() {
   return (
     <div className="min-h-screen bg-[#EBECED] p-8">
       <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </a>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Input Form */}
           <div className="bg-white p-6 rounded-lg shadow-md">

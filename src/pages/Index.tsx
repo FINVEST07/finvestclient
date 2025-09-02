@@ -1,3 +1,4 @@
+//@ts-nocheck
 "use client";
 import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
@@ -47,6 +48,30 @@ const About = () => (
             believe in building long-term relationships based on trust,
             integrity, and results.
           </p>
+
+          {/* Internal links to Services sections for better crawlable anchors */}
+          <div className="mt-6 space-y-2">
+            <a
+              href="/services#loans"
+              className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors"
+            >
+              Learn more about our Loan Services
+            </a>
+            <br />
+            <a
+              href="/services#insurance"
+              className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors"
+            >
+              Explore Insurance Plans
+            </a>
+            <br />
+            <a
+              href="/services#investments"
+              className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors"
+            >
+              See Investment Options
+            </a>
+          </div>
 
           <div className="grid grid-cols-2 gap-6 mt-8">
             <div className="flex flex-col">

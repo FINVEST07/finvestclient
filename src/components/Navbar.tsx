@@ -80,10 +80,10 @@ const Navbar = ({ setLoginOpen }) => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-1">
-            <a href="#about" className="nav-link">
+            <a href="/about" className="nav-link">
               About
             </a>
-            <a href="#services" className="nav-link">
+            <a href="/services" className="nav-link">
               Services
             </a>
 
@@ -94,16 +94,16 @@ const Navbar = ({ setLoginOpen }) => {
             >
               Become a Partner
             </a>
-            <a href="/loancalculator" target="_blank" className="nav-link">
+            <a href="/loancalculator" className="nav-link">
               Loan Calculator
             </a>
-            <a href="#contact" className="nav-link flex items-center gap-2">
+            <a href="/refer" className="nav-link flex items-center gap-2">
               Refer & Earn
               <div className="bg-blue-100 flex items-center p-2 rounded-xl">
                 <RupeeIcon width={10} />
               </div>
             </a>
-            <a href="#contact" className="nav-link">
+            <a href="/contact" className="nav-link">
               Contact
             </a>
           </div>
@@ -198,11 +198,11 @@ const Navbar = ({ setLoginOpen }) => {
                 Dashboard
               </a>
             )}
-            <a href="#about" className="px-4" onClick={() => setIsOpen(false)}>
+            <a href="/about" className="px-4" onClick={() => setIsOpen(false)}>
               About
             </a>
             <a
-              href="#services"
+              href="/services"
               className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
               onClick={() => setIsOpen(false)}
             >
@@ -225,7 +225,7 @@ const Navbar = ({ setLoginOpen }) => {
             </a>
 
             <a
-              href="#contact"
+              href="/refer"
               onClick={() => setIsOpen(false)}
               className="px-4 flex items-center gap-2"
             >
@@ -236,7 +236,7 @@ const Navbar = ({ setLoginOpen }) => {
             </a>
 
             <a
-              href="#contact"
+              href="/contact"
               className="px-4"
               onClick={() => setIsOpen(false)}
             >

@@ -76,7 +76,7 @@ const Footer = ({ setLoginOpen }) => {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="#services"
+                  href="/services"
                   className="text-white/70 hover:text-finance-gold transition-colors"
                 >
                   Our Services
@@ -84,7 +84,7 @@ const Footer = ({ setLoginOpen }) => {
               </li>
               <li>
                 <a
-                  href="#about"
+                  href="/about"
                   className="text-white/70 hover:text-finance-gold transition-colors"
                 >
                   About Us
@@ -100,7 +100,7 @@ const Footer = ({ setLoginOpen }) => {
               </li>
               <li>
                 <a
-                  href="#contact"
+                  href="/contact"
                   className="text-white/70 hover:text-finance-gold transition-colors"
                 >
                   Contact Us

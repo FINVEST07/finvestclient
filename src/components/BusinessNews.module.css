@@ -6,11 +6,13 @@
 .marquee {
   display: inline-block;
   animation: marquee 90s linear infinite;
+  color: #ffffff; /* Ensure text appears white */
 }
 .marqueeItem {
   display: inline-block;
   font-size: 1rem;
   padding-right: 1rem;
+  color: #ffffff; /* Ensure individual items are white */
 }
 .marquee:hover {
   animation-play-state: paused;

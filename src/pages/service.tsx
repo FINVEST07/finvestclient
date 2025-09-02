@@ -6,6 +6,7 @@ import {
   Shield, 
   Briefcase, 
   ArrowRight, 
+  ArrowLeft,
   X, 
   Home,
   Building2,
@@ -325,7 +326,7 @@ const Services = ({ setLoginOpen }) => {
   return (
     <section
       id="service"
-      className="py-20 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 relative overflow-hidden"
+      className="pt-6 pb-20 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 relative overflow-hidden"
     >
       <Helmet>
         <title>Services - FINVESTCORP Financial Solutions</title>
@@ -333,6 +334,51 @@ const Services = ({ setLoginOpen }) => {
           name="description"
           content="Explore FINVESTCORP financial services, including home loans, health insurance, mutual funds, and real estate investments with trusted partners."
         />
+        {/* BreadcrumbList JSON-LD (Home → Services) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: '/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Services',
+                item: '/services',
+              },
+            ],
+          })}
+        </script>
+        {/* Organization JSON-LD */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'FINVESTCORP',
+            url: '/',
+            logo: '/fin_lo.png',
+            contactPoint: [
+              {
+                '@type': 'ContactPoint',
+                telephone: '+91 9324592709',
+                contactType: 'customer service',
+                areaServed: 'IN',
+                availableLanguage: ['en', 'hi'],
+              },
+            ],
+            sameAs: [
+              '/',
+              'mailto:officefinvestcorp@gmail.com',
+              'tel:+919324592709',
+            ],
+          })}
+        </script>
       </Helmet>
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
@@ -340,6 +386,12 @@ const Services = ({ setLoginOpen }) => {
       
       <ToastContainerComponent />
       <div className="container mx-auto px-6 relative z-10">
+        <div className="mb-6">
+          <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </a>
+        </div>
         {/* Header Section */}
         <div className="text-center max-w-4xl mx-auto mb-20 animate-fade-in">
           <div className="inline-flex items-center justify-center mb-6">
@@ -359,7 +411,12 @@ const Services = ({ setLoginOpen }) => {
         {/* Services Sections */}
         <div className="space-y-20">
           {sectionCategories.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="animate-slide-up" style={{ animationDelay: `${categoryIndex * 200}ms` }}>
+            <div
+              key={categoryIndex}
+              id={categoryIndex === 0 ? 'loans' : categoryIndex === 1 ? 'insurance' : 'investments'}
+              className="animate-slide-up"
+              style={{ animationDelay: `${categoryIndex * 200}ms` }}
+            >
               {/* Section Header */}
               <div className="text-center mb-12">
                 <div className="inline-flex items-center justify-center mb-4">

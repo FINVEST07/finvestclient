@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Customerdashboard from "./pages/Customerdashboard";
@@ -37,6 +38,32 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        {/* Sitewide Organization JSON-LD */}
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'FINVESTCORP',
+              url: '/',
+              logo: '/fin_lo.png',
+              contactPoint: [
+                {
+                  '@type': 'ContactPoint',
+                  telephone: '+91 9324592709',
+                  contactType: 'customer service',
+                  areaServed: 'IN',
+                  availableLanguage: ['en', 'hi'],
+                },
+              ],
+              sameAs: [
+                '/',
+                'mailto:officefinvestcorp@gmail.com',
+                'tel:+919324592709',
+              ],
+            })}
+          </script>
+        </Helmet>
         <Toaster />
         <Sonner />
         <BrowserRouter>
