@@ -21,7 +21,7 @@ import LoanCalculator from "./pages/LoanCalculator";
 import About from "./pages/About";
 import Refer from "./pages/Refer";
 import Services from "./pages/service";
-import ContactForm from "./components/ContactForm";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -74,7 +74,7 @@ const App = () => {
             <Route path="/admin" element={<Adminlogin />} />
             <Route path="/loancalculator" element={<LoanCalculator />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<ContactForm />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/refer" element={<Refer />} />
            
             <Route path="/services" element={<Services />} />

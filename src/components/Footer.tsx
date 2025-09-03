@@ -103,7 +103,7 @@ const Footer = ({ setLoginOpen }) => {
                   href="/contact"
                   className="text-white/70 hover:text-finance-gold transition-colors"
                 >
-                  Contact U
+                  Contact Us
                 </a>
               </li>
             </ul>

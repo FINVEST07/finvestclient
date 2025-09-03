@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MailIcon, PhoneIcon, MapPin, Clock } from "lucide-react";
+import { MailIcon, PhoneIcon, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
 import { toast } from "sonner";
 import Cookie from "js-cookie";
@@ -81,7 +81,7 @@ const Refer = () => {
   };
 
   return (
-    <section id="contact" className="section-padding bg-white">
+    <section id="contact" className="section-padding pt-6 bg-white">
       <Helmet>
         <title>Contact RISEHIGH FINCON - Financial Advice Inquiry</title>
         <meta
@@ -90,6 +90,12 @@ const Refer = () => {
         />
       </Helmet>
       <div className="container-custom">
+        <div className="mb-6">
+          <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </a>
+        </div>
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">
           <span className="text-sm font-medium text-blue-900 bg-blue-200 py-1 px-3 rounded-full">

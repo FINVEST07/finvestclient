@@ -137,20 +137,6 @@ const ContactForm = () => {
             Schedule a consultation with our financial advisors to discuss your
             investment goals and loan options.
           </p>
-          {/* Contextual internal links to Services sections */}
-          <div className="mt-4 space-y-2">
-            <a href="/services#loans" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
-              Learn more about our Loan Services
-            </a>
-            <br />
-            <a href="/services#insurance" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
-              Explore Insurance Plans
-            </a>
-            <br />
-            <a href="/services#investments" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
-              See Investment Options
-            </a>
-          </div>
         </div>
 
         {/* Form & Info */}
@@ -318,6 +304,22 @@ const ContactForm = () => {
                 </Button>
               </a>
             </Card>
+          </div>
+        </div>
+        {/* Contextual internal links to Services sections - moved to bottom */}
+        <div className="mt-12 text-center">
+          <div className="space-y-2">
+            <a href="/services#loans" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+              Learn more about our Loan Services
+            </a>
+            <br />
+            <a href="/services#insurance" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+              Explore Insurance Plans
+            </a>
+            <br />
+            <a href="/services#investments" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">
+              See Investment Options
+            </a>
           </div>
         </div>
       </div>
