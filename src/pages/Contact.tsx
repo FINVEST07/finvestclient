@@ -87,6 +87,10 @@ const ContactForm = () => {
           name="description"
           content="Contact FINVESTCORP for personalized financial advice. Submit an inquiry or call our advisors for loans, insurance, and investment solutions."
         />
+        <meta
+          name="keywords"
+          content="Finvestcorp, financial consultant, loan, loans, insurance, mutual fund, mortgage loan, loan against property, working capital, home loan, CGTMSE, MSME loan, business loan, Andheri, Andheri West, Andheri East, Borivali, Mumbai, best loan provider in Andheri, home loan near me, insurance advisor in Andheri, mutual fund distributor in Mumbai"
+        />
         {/* BreadcrumbList JSON-LD */}
         <script type="application/ld+json">
           {JSON.stringify({

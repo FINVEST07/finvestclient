@@ -334,6 +334,10 @@ const Services = ({ setLoginOpen }) => {
           name="description"
           content="Explore FINVESTCORP financial services, including home loans, health insurance, mutual funds, and real estate investments with trusted partners."
         />
+        <meta
+          name="keywords"
+          content="Finvestcorp, financial consultant, loan, loans, insurance, mutual fund, PMS, AIF, mortgage loan, loan against property, working capital, home loan, CGTMSE, MSME loan, business loan, Andheri, Andheri West, Andheri East, Borivali, Mumbai, best loan provider in Andheri, home loan near me, loan agent in Andheri, insurance advisor in Mumbai, mutual fund distributor in Andheri"
+        />
         {/* BreadcrumbList JSON-LD (Home → Services) */}
         <script type="application/ld+json">
           {JSON.stringify({
