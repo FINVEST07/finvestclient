@@ -11,6 +11,7 @@ import DocumentFormSection from "@/components/DocumentFormSection";
 const Applicationform = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const cookie = Cookie.get("finvest");
   const emailcookie = cookie ? cookie.split("$")[0] : "";
   const navigate = useNavigate();
@@ -119,6 +120,7 @@ const Applicationform = () => {
 
   const loadData = useCallback(async () => {
     try {
+      setFetching(true);
       let response;
       if (!emailcookie && !customer_id) {
         return;
@@ -150,6 +152,8 @@ const Applicationform = () => {
       }
     } catch (error) {
       console.error("Error loading user data:", error);
+    } finally {
+      setFetching(false);
     }
   }, [emailcookie, customer_id]);
 
@@ -170,21 +174,33 @@ const Applicationform = () => {
     );
   };
 
-  const calculatePayloadSize = (textPayload, imageFields, formData) => {
+  const calculatePayloadSize = (textPayload: any, imageFields: string[], formData: any): number => {
     // Calculate text payload size
-    const textPayloadSize = new Blob([JSON.stringify(textPayload)]).size;
+    const textSize = new TextEncoder().encode(JSON.stringify(textPayload)).length;
 
     // Calculate image sizes
-    const imageSizes = imageFields.reduce((total, field) => {
-      const base64String = formData[field];
-      if (!base64String || !base64String.startsWith("data:image")) return total;
-      const prefix = base64String.match(/^data:[^;]+;base64,/)[0];
-      const base64Content = base64String.slice(prefix.length);
-      const imageSize = (base64Content.length * 3) / 4; // Approximate decoded size
-      return total + imageSize;
+    const imageSize = imageFields.reduce((total, field) => {
+      const value = formData[field];
+      if (!value) return total;
+
+      // Handle object with content property
+      if (typeof value === 'object' && value.content) {
+        return total + (value.content.length * 0.75); // Approximate base64 to bytes
+      }
+
+      // Handle direct base64 string
+      if (typeof value === 'string') {
+        if (value.startsWith('data:')) {
+          const base64Data = value.split(',')[1] || '';
+          return total + (base64Data.length * 0.75); // Approximate base64 to bytes
+        }
+        return total + value.length; // Fallback for regular strings
+      }
+
+      return total;
     }, 0);
 
-    return textPayloadSize + imageSizes;
+    return textSize + imageSize;
   };
 
   const saveData = async (e) => {
@@ -253,31 +269,26 @@ const Applicationform = () => {
 
       setLoading(true);
       const form = new FormData();
-      const textPayload = {};
+      const textPayload: Record<string, any> = {};
+      const imageFields: string[] = [];
 
       for (const key in formData) {
-        if (
-          typeof formData[key] === "string" &&
-          !formData[key].startsWith("data:image")
-        ) {
-          textPayload[key] = formData[key];
-        } else if (typeof formData[key] !== "string") {
-          textPayload[key] = formData[key];
+        const val = formData[key];
+        // Exclude file-like fields from payload; send them as files instead
+        if (typeof val === "object" && val && val.content && val.type) {
+          imageFields.push(key);
+        } else if (typeof val === "string" && val.startsWith("data:")) {
+          // legacy base64 string
+          imageFields.push(key);
+        } else {
+          textPayload[key] = val;
         }
       }
 
-      //@ts-expect-error err
       textPayload.servicename = serviceData.servicename;
       if (applicationId) {
-        //@ts-expect-error err
         textPayload.applicationId = applicationId;
       }
-
-      const imageFields = Object.keys(formData).filter(
-        (key) =>
-          typeof formData[key] === "string" &&
-          formData[key].startsWith("data:image")
-      );
 
       // Calculate total payload size
       const totalSize = calculatePayloadSize(
@@ -304,8 +315,10 @@ const Applicationform = () => {
       };
 
       imageFields.forEach((field) => {
-        const base64 = formData[field];
-        const file = base64ToFile(base64, `${field}.jpg`);
+        const v = formData[field];
+        const base64 = typeof v === "object" && v.content ? v.content : v;
+        const fallbackName = typeof v === "object" && v.name ? v.name : `${field}.jpg`;
+        const file = base64ToFile(base64, fallbackName);
         form.append(field, file);
       });
 
@@ -348,20 +361,21 @@ const Applicationform = () => {
     try {
       setLoading(true);
       const form = new FormData();
-      const textPayload = {};
+      const textPayload: Record<string, any> = {};
+      const imageFields: string[] = [];
 
       for (const key in formData) {
-        if (
-          typeof formData[key] === "string" &&
-          !formData[key].startsWith("data:image")
-        ) {
-          textPayload[key] = formData[key];
+        const val = formData[key];
+        if (typeof val === "object" && val && val.content && val.type) {
+          imageFields.push(key);
+        } else if (typeof val === "string" && val.startsWith("data:")) {
+          imageFields.push(key);
+        } else {
+          textPayload[key] = val;
         }
       }
 
-      //@ts-expect-error err
       textPayload.servicename = serviceData.servicename;
-      //@ts-expect-error err
       textPayload.servicetype = serviceData.type;
 
       form.append("payload", JSON.stringify(textPayload));
@@ -376,15 +390,11 @@ const Applicationform = () => {
         return new File([u8arr], filename, { type: mime });
       };
 
-      const imageFields = Object.keys(formData).filter(
-        (key) =>
-          typeof formData[key] === "string" &&
-          formData[key].startsWith("data:image")
-      );
-
       imageFields.forEach((field) => {
-        const base64 = formData[field];
-        const file = base64ToFile(base64, `${field}.jpg`);
+        const v = formData[field];
+        const base64 = typeof v === "object" && v.content ? v.content : v;
+        const fallbackName = typeof v === "object" && v.name ? v.name : `${field}.jpg`;
+        const file = base64ToFile(base64, fallbackName);
         form.append(field, file);
       });
 
@@ -435,6 +445,17 @@ const Applicationform = () => {
   return (
     <div className="max-w-3xl mx-auto p-6 bg-[#EBECEC] min-h-screen">
       <ToastContainerComponent />
+      {fetching && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
+          <div className="flex items-center gap-3 bg-white px-4 py-3 rounded shadow">
+            <svg className="w-6 h-6 animate-spin text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span className="text-sm text-gray-700">Loading your details...</span>
+          </div>
+        </div>
+      )}
       <nav
         className="flex items-center gap-2"
         onClick={() => navigate("/customerdashboard")}

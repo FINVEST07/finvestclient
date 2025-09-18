@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from "axios";
+
 import imageCompression from "browser-image-compression";
 import jsPDF from "jspdf";
 
@@ -37,6 +39,7 @@ const DocumentFormSection = ({
   const [customDocName, setCustomDocName] = useState("");
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [deletingField, setDeletingField] = useState<string | null>(null);
 
   const normalizeDocName = (name) => name.toLowerCase().replace(/\s+/g, "");
 
@@ -56,102 +59,94 @@ const DocumentFormSection = ({
         // @ts-expect-error err
         resolve(window.pdfjsLib);
       };
+
+  // Compress PDF file
+  const compressPdf = async (file: File): Promise<Blob | File> => {
+    try {
+      // If already small enough
+      if (file.size <= 2 * 1024 * 1024) {
+        return file;
+      }
+
+      const pdfjsLib = await loadPdfJs();
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      const newPdf = new jsPDF({ compress: true, format: 'a4' });
+      const pageCount = pdf.numPages;
+      const maxPages = Math.min(pageCount, 50);
+
+      for (let i = 1; i <= maxPages; i++) {
+        const page = await pdf.getPage(i);
+        const scale = 0.8;
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.5);
+        if (i > 1) newPdf.addPage();
+
+        const pageWidth = newPdf.internal.pageSize.getWidth();
+        const pageHeight = newPdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+        const width = imgWidth * ratio;
+        const height = imgHeight * ratio;
+        const x = (pageWidth - width) / 2;
+        const y = (pageHeight - height) / 2;
+        newPdf.addImage(imgData, 'JPEG', x, y, width, height);
+      }
+
+      const pdfBlob = newPdf.output('blob');
+      if (pdfBlob.size >= file.size) {
+        if (file.size <= 3 * 1024 * 1024) {
+          return file;
+        } else {
+          throw new Error('Unable to compress PDF to acceptable size. Please use a smaller file.');
+        }
+      }
+      return pdfBlob;
+    } catch (error) {
+      console.error('Error compressing PDF:', error);
+      if (file.size > 2 * 1024 * 1024) {
+        throw new Error('PDF file is too large and compression failed. Please use a file smaller than 2MB or compress it manually.');
+      }
+      return file;
+    }
+  };
       script.onerror = reject;
       document.head.appendChild(script);
     });
   };
 
-  // Compress PDF file
-const compressPdf = async (file) => {
-  try {
-    // Check if file is already small enough
-    if (file.size <= 2 * 1024 * 1024) { // 2MB
-      return file;
-    }
-
-    const pdfjsLib = await loadPdfJs();
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    
-    const newPdf = new jsPDF({
-      compress: true, // Enable compression
-      format: 'a4'
-    });
-    
-    const pageCount = pdf.numPages;
-    const maxPages = Math.min(pageCount, 50); // Limit pages for large PDFs
-    
-    // Process each page with aggressive compression
-    for (let i = 1; i <= maxPages; i++) {
-      const page = await pdf.getPage(i);
-      
-      // Use lower scale for smaller file size
-      const scale = 0.8; // Reduced from 1.2
-      const viewport = page.getViewport({ scale });
-      
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-      
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-      }).promise;
-      
-      // More aggressive JPEG compression
-      const imgData = canvas.toDataURL("image/jpeg", 0.5); // Reduced from 0.7
-      
-      if (i > 1) {
-        newPdf.addPage();
+  const handleDeleteDocument = async (fieldKey: string, value: any) => {
+    try {
+      if (!confirm(`Delete ${fieldKey.replace(/_/g, ' ')}?`)) return;
+      setDeletingField(fieldKey);
+      // Remove locally first for responsiveness
+      handleChange({ target: { name: fieldKey, value: "" } });
+      // Attempt server-side delete when email is available
+      const email = formData?.email;
+      if (email) {
+        await axios.post(`${import.meta.env.VITE_API_URI}deletedocument`, {
+          email,
+          field: fieldKey,
+          url: typeof value === 'object' ? value.url || value.content : value,
+          type: typeof value === 'object' ? value.type : undefined,
+        });
       }
-      
-      const pageWidth = newPdf.internal.pageSize.getWidth();
-      const pageHeight = newPdf.internal.pageSize.getHeight();
-      
-      // Calculate dimensions to fit page
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-      
-      const width = imgWidth * ratio;
-      const height = imgHeight * ratio;
-      const x = (pageWidth - width) / 2;
-      const y = (pageHeight - height) / 2;
-      
-      newPdf.addImage(imgData, "JPEG", x, y, width, height);
+    } catch (e: any) {
+      console.error("Delete document failed", e);
+      setError(e?.response?.data?.message || e?.message || "Failed to delete document");
+    } finally {
+      setDeletingField(null);
     }
-    
-    // Get the compressed PDF
-    const pdfBlob = newPdf.output('blob');
-    
-    // Check if compression was successful
-    if (pdfBlob.size >= file.size) {
-      console.warn("Compression didn't reduce file size significantly");
-      // Try alternative approach or return original if small enough
-      if (file.size <= 3 * 1024 * 1024) { // 3MB tolerance
-        return file;
-      } else {
-        throw new Error("Unable to compress PDF to acceptable size. Please use a smaller file.");
-      }
-    }
-    
-    console.log(`PDF compressed from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(pdfBlob.size / 1024 / 1024).toFixed(2)}MB`);
-    
-    return pdfBlob;
-    
-  } catch (error) {
-    console.error("Error compressing PDF:", error);
-    
-    // Fallback: check original file size
-    if (file.size > 2 * 1024 * 1024) { // 2MB
-      throw new Error("PDF file is too large and compression failed. Please use a file smaller than 2MB or compress it manually.");
-    }
-    
-    return file;
-  }
-};
-
+  };
 
   const handleFileChange = async (e) => {
     const { files } = e.target;
@@ -348,7 +343,7 @@ const compressPdf = async (file) => {
               viewBox="0 0 384 512"
               className="mx-auto mb-2"
             >
-              <path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0z"/>
+              <path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM216 232l0 102.1 31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31L168 232c0-13.3 10.7-24 24-24s24 10.7 24 24z" />
             </svg>
             <span className="text-xs text-red-600 font-medium">PDF</span>
             <div className="text-xs text-gray-500">
@@ -465,9 +460,20 @@ const compressPdf = async (file) => {
                 key.replace(/_custom_\d+$/, "");
               return (
                 <div key={key}>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-start">
                     <FilePreview value={value} label={label} />
-                    <DownloadIcon label={label} fileData={value} />
+                    <div className="flex flex-col gap-2">
+                      <DownloadIcon label={label} fileData={value} />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDocument(key, value)}
+                        disabled={deletingField === key}
+                        className={`text-xs px-2 py-1 rounded ${deletingField === key ? 'bg-gray-300 text-gray-600' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                        title="Delete document"
+                      >
+                        {deletingField === key ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm mt-1">{label}</p>
                 </div>

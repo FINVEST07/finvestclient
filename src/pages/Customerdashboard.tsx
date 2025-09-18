@@ -36,6 +36,7 @@ const Customerdashboard = () => {
   const [isAnimationPaused, setIsAnimationPaused] = useState(false);
 
   const [applications, setApplications] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -147,6 +148,7 @@ const Customerdashboard = () => {
 
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
       if (!emailToUse) return;
 
       // Fetch customer data
@@ -178,6 +180,8 @@ const Customerdashboard = () => {
       }
     } catch (error) {
       console.error("An error occurred while loading data:", error);
+    } finally {
+      setLoading(false);
     }
   }, [emailToUse]);
 
@@ -278,6 +282,17 @@ const Customerdashboard = () => {
   return (
     <div className="bg-[#EBECEC] min-h-screen">
       <ToastContainerComponent />
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
+          <div className="flex items-center gap-3 bg-white px-4 py-3 rounded shadow">
+            <svg className="w-6 h-6 animate-spin text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span className="text-sm text-gray-700">Loading your data...</span>
+          </div>
+        </div>
+      )}
       <nav
         className={`fixed top-0 flex justify-between items-center px-4 gap-2 bg-blue-900 h-[8vh] lg:h-[10vh] lg:border-b-2 w-full  ]`}
       >
