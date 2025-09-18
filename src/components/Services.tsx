@@ -27,30 +27,30 @@ import Cookie from "js-cookie";
 const bankData = {
   // Loans
   workingCapital: [
-    { name: "State Bank of India", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", rate: "8.5% - 12%", features: ["Quick Processing", "Flexible Tenure", "Minimal Documentation"] },
-    { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", rate: "9% - 13%", features: ["Digital Application", "Same Day Approval", "Collateral Free Options"] },
-    { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", rate: "8.75% - 12.5%", features: ["24/7 Support", "Easy EMI", "Quick Disbursal"] },
-    { name: "Axis Bank", logo: "axis.png", rate: "9.25% - 13.5%", features: ["Instant Approval", "Flexible Repayment", "Low Processing Fee"] },
-    { name: "Punjab National Bank", logo: "pnj.png", rate: "8.25% - 11.5%", features: ["Government Backed", "Low Interest", "Easy Documentation"] },
-    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", rate: "8.0% - 11.75%", features: ["Competitive Rates", "Quick Processing", "Wide Network"] }
+    { name: "State Bank of India", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", features: ["Quick Processing", "Flexible Tenure", "Minimal Documentation"] },
+    { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", features: ["Digital Application", "Same Day Approval", "Collateral Free Options"] },
+    { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", features: ["24/7 Support", "Easy EMI", "Quick Disbursal"] },
+    { name: "Axis Bank", logo: "axis.png", features: ["Instant Approval", "Flexible Repayment", "Low Processing Fee"] },
+    { name: "Punjab National Bank", logo: "pnj.png", features: ["Government Backed", "Low Interest", "Easy Documentation"] },
+    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", features: ["Competitive Rates", "Quick Processing", "Wide Network"] }
   ],
   
   loanAgainstProperty: [
-    { name: "State Bank of India", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", rate: "8.4% - 11%", features: ["Up to 75% LTV", "Long Tenure", "Competitive Rates"] },
-    { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", rate: "8.75% - 11.5%", features: ["Quick Valuation", "Flexible Tenure", "Part Payment"] },
-    { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", rate: "8.65% - 11.25%", features: ["Online Application", "Fast Processing", "High Loan Amount"] },
-    { name: "Axis Bank", logo: "axis.png", rate: "9% - 12%", features: ["Doorstep Service", "Minimal Documentation", "Quick Disbursal"] },
-    { name: "Bank of Baroda", logo: "bob.png", rate: "8.5% - 10.75%", features: ["Low Processing Fee", "Flexible EMI", "Easy Approval"] },
-    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", rate: "8.3% - 11%", features: ["Attractive Interest Rates", "Longer Repayment Tenure", "Quick Processing"] }
+    { name: "State Bank of India", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", features: ["Up to 75% LTV", "Long Tenure", "Competitive Rates"] },
+    { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", features: ["Quick Valuation", "Flexible Tenure", "Part Payment"] },
+    { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", features: ["Online Application", "Fast Processing", "High Loan Amount"] },
+    { name: "Axis Bank", logo: "axis.png", features: ["Doorstep Service", "Minimal Documentation", "Quick Disbursal"] },
+    { name: "Bank of Baroda", logo: "bob.png", features: ["Low Processing Fee", "Flexible EMI", "Easy Approval"] },
+    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", features: ["Attractive Interest Rates", "Longer Repayment Tenure", "Quick Processing"] }
   ],
   
   homeLoan: [
-    { name: "State Bank of India", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", rate: "8.5% - 9.25%", features: ["Low Interest Rate", "Long Tenure up to 30 years", "Government Subsidies"] },
-    { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", rate: "8.75% - 9.5%", features: ["Pre-approved Loans", "Balance Transfer", "Top-up Facility"] },
-    { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", rate: "8.7% - 9.4%", features: ["Digital Processing", "Instant Approval", "Flexible EMI"] },
-    { name: "LIC Housing Finance", logo: "LIC.png", rate: "8.6% - 9.3%", features: ["Specialized Housing Finance", "Attractive Interest Rates", "Easy Processing"] },
-    { name: "Axis Bank", logo: "axis.png", rate: "8.8% - 9.6%", features: ["Quick Sanction", "Doorstep Service", "Online Tracking"] },
-    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", rate: "8.4% - 9.2%", features: ["Competitive Interest Rates", "Longer Repayment Period", "Minimal Documentation"] }
+    { name: "State Bank of India", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", features: ["Low Interest Rate", "Long Tenure up to 30 years", "Government Subsidies"] },
+    { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", features: ["Pre-approved Loans", "Balance Transfer", "Top-up Facility"] },
+    { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", features: ["Digital Processing", "Instant Approval", "Flexible EMI"] },
+    { name: "LIC Housing Finance", logo: "LIC.png", features: ["Specialized Housing Finance", "Attractive Interest Rates", "Easy Processing"] },
+    { name: "Axis Bank", logo: "axis.png", features: ["Quick Sanction", "Doorstep Service", "Online Tracking"] },
+    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", features: ["Competitive Interest Rates", "Longer Repayment Period", "Minimal Documentation"] }
   ],
 
   // Insurance
@@ -310,7 +310,7 @@ const Services = ({ setLoginOpen }) => {
     {
       title: "Mutual Funds",
       serviceType: "mutualFunds",
-      image: "/homeloan.jpg"
+      image: "/mf.webp"
     },
     {
       title: "PMS/AIF",
