@@ -31,7 +31,8 @@ const bankData = {
     { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", rate: "9% - 13%", features: ["Digital Application", "Same Day Approval", "Collateral Free Options"] },
     { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", rate: "8.75% - 12.5%", features: ["24/7 Support", "Easy EMI", "Quick Disbursal"] },
     { name: "Axis Bank", logo: "axis.png", rate: "9.25% - 13.5%", features: ["Instant Approval", "Flexible Repayment", "Low Processing Fee"] },
-    { name: "Punjab National Bank", logo: "pnj.png", rate: "8.25% - 11.5%", features: ["Government Backed", "Low Interest", "Easy Documentation"] }
+    { name: "Punjab National Bank", logo: "pnj.png", rate: "8.25% - 11.5%", features: ["Government Backed", "Low Interest", "Easy Documentation"] },
+    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", rate: "8.0% - 11.75%", features: ["Competitive Rates", "Quick Processing", "Wide Network"] }
   ],
   
   loanAgainstProperty: [
@@ -39,7 +40,8 @@ const bankData = {
     { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", rate: "8.75% - 11.5%", features: ["Quick Valuation", "Flexible Tenure", "Part Payment"] },
     { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", rate: "8.65% - 11.25%", features: ["Online Application", "Fast Processing", "High Loan Amount"] },
     { name: "Axis Bank", logo: "axis.png", rate: "9% - 12%", features: ["Doorstep Service", "Minimal Documentation", "Quick Disbursal"] },
-    { name: "Bank of Baroda", logo: "bob.png", rate: "8.5% - 10.75%", features: ["Low Processing Fee", "Flexible EMI", "Easy Approval"] }
+    { name: "Bank of Baroda", logo: "bob.png", rate: "8.5% - 10.75%", features: ["Low Processing Fee", "Flexible EMI", "Easy Approval"] },
+    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", rate: "8.3% - 11%", features: ["Attractive Interest Rates", "Longer Repayment Tenure", "Quick Processing"] }
   ],
   
   homeLoan: [
@@ -47,7 +49,8 @@ const bankData = {
     { name: "HDFC Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", rate: "8.75% - 9.5%", features: ["Pre-approved Loans", "Balance Transfer", "Top-up Facility"] },
     { name: "ICICI Bank", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", rate: "8.7% - 9.4%", features: ["Digital Processing", "Instant Approval", "Flexible EMI"] },
     { name: "LIC Housing Finance", logo: "LIC.png", rate: "8.6% - 9.3%", features: ["Specialized Housing Finance", "Attractive Interest Rates", "Easy Processing"] },
-    { name: "Axis Bank", logo: "axis.png", rate: "8.8% - 9.6%", features: ["Quick Sanction", "Doorstep Service", "Online Tracking"] }
+    { name: "Axis Bank", logo: "axis.png", rate: "8.8% - 9.6%", features: ["Quick Sanction", "Doorstep Service", "Online Tracking"] },
+    { name: "Bank of Maharashtra", logo: "bankofmaharashtra.png", rate: "8.4% - 9.2%", features: ["Competitive Interest Rates", "Longer Repayment Period", "Minimal Documentation"] }
   ],
 
   // Insurance
@@ -56,7 +59,8 @@ const bankData = {
     { name: "ICICI Lombard", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", coverage: "₹3L - ₹50L", features: ["Wellness Programs", "No Claim Bonus", "24x7 Customer Support"] },
     { name: "SBI General Insurance", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", coverage: "₹2L - ₹25L", features: ["Affordable Premiums", "Wide Network", "Easy Claims"] },
     { name: "Bajaj Allianz", logo: "bajaj.png", coverage: "₹4L - ₹75L", features: ["Comprehensive Coverage", "Health Check-ups", "Fast Claim Settlement"] },
-    { name: "New India Assurance", logo: "NIIL.png", coverage: "₹1L - ₹20L", features: ["Government Backed", "Pan India Presence", "Low Premium"] }
+    { name: "New India Assurance", logo: "NIIL.png", coverage: "₹1L - ₹20L", features: ["Government Backed", "Pan India Presence", "Low Premium"] },
+    { name: "Tata AIG Health Insurance", logo: "tataaig.jpeg", coverage: "₹3L - ₹1Cr", features: ["Cashless Hospitalization", "Pre-existing Disease Cover", "Tax Benefits"] },
   ],
   
   lifeInsurance: [
@@ -64,7 +68,8 @@ const bankData = {
     { name: "HDFC Life", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", coverage: "₹10L - ₹10Cr", features: ["Online Premium Payment", "Flexible Plans", "Quick Settlement"] },
     { name: "ICICI Prudential", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", coverage: "₹5L - ₹3Cr", features: ["Unit Linked Plans", "Term Insurance", "Child Plans"] },
     { name: "SBI Life", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", coverage: "₹1L - ₹2Cr", features: ["Affordable Premiums", "Multiple Options", "Easy Process"] },
-    { name: "Max Life Insurance", logo: "MLI.png", coverage: "₹25L - ₹5Cr", features: ["Comprehensive Coverage", "Health Riders", "Online Services"] }
+    { name: "Max Life Insurance", logo: "MLI.png", coverage: "₹25L - ₹5Cr", features: ["Comprehensive Coverage", "Health Riders", "Online Services"] },
+    { name: "Bajaj Allianz Life Insurance", logo: "bajajlife.png", coverage: "₹5L - ₹5Cr", features: ["Wealth Creation Plans", "Retirement Solutions", "Tax Benefits"] },
   ],
   
   motorTravelProperty: [
@@ -72,7 +77,8 @@ const bankData = {
     { name: "ICICI Lombard", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", coverage: "Multi-Product", features: ["Instant Policy", "Cashless Claims", "24x7 Support"] },
     { name: "Bajaj Allianz", logo: "bajaj.png", coverage: "All-in-One", features: ["Quick Renewal", "Add-on Covers", "Easy Claims"] },
     { name: "Tata AIG", logo: "TAG.png", coverage: "Complete Protection", features: ["Competitive Premiums", "Wide Coverage", "Fast Processing"] },
-    { name: "Oriental Insurance", logo: "OI.png", coverage: "Traditional Coverage", features: ["Government Backed", "Reliable Service", "Pan India Network"] }
+    { name: "Oriental Insurance", logo: "OI.png", coverage: "Traditional Coverage", features: ["Government Backed", "Reliable Service", "Pan India Network"] },
+    { name: "New India Assurance", logo: "NIIL.png", coverage: "Wide Range", features: ["Government Owned", "All Types of Insurance", "Nationwide Presence"] }
   ],
 
   // Investments
@@ -81,7 +87,8 @@ const bankData = {
     { name: "HDFC Mutual Fund", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/HDFC_Bank_Logo.svg", aum: "₹4.8L Cr", features: ["Top Performer", "Diversified Portfolio", "Expert Management"] },
     { name: "ICICI Prudential MF", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", aum: "₹4.2L Cr", features: ["Technology Funds", "Index Funds", "SIP Options"] },
     { name: "Axis Mutual Fund", logo: "axis.png", aum: "₹2.8L Cr", features: ["Growth Focused", "Sector Funds", "Goal Based Investing"] },
-    { name: "UTI Mutual Fund", logo: "UTI.png", aum: "₹2.2L Cr", features: ["Pioneer in MF", "Balanced Approach", "Long Term Wealth"] }
+    { name: "UTI Mutual Fund", logo: "UTI.png", aum: "₹2.2L Cr", features: ["Pioneer in MF", "Balanced Approach", "Long Term Wealth"] },
+    { name: "Parag Parikh Flexi Cap Fund", logo: "parag.jpeg", aum: "₹50,000 Cr+", features: ["Flexi Cap Strategy", "Value Investing", "Consistent Performer"] }
   ],
   
   pmsAif: [
@@ -89,7 +96,8 @@ const bankData = {
     { name: "ICICI Securities", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", minInvestment: "₹25L", features: ["Research Backed", "Risk Management", "Tax Efficient"] },
     { name: "Axis Securities", logo: "axis.png", minInvestment: "₹1Cr", features: ["High Net Worth", "Customized Solutions", "Expert Advisory"] },
     { name: "Kotak Securities", logo: "KS.png", minInvestment: "₹25L", features: ["Wealth Management", "Alternative Funds", "Premium Service"] },
-    { name: "SBI Securities", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", minInvestment: "₹50L", features: ["Institutional Quality", "Diversified Strategies", "Long Term Focus"] }
+    { name: "SBI Securities", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", minInvestment: "₹50L", features: ["Institutional Quality", "Diversified Strategies", "Long Term Focus"] },
+    { name: "Parag Parikh", logo: "parag.jpeg", minInvestment: "₹1Cr", features: ["Value Investing", "Long-term Focus", "Quality Portfolio"] }
   ],
   
   realEstateInvestments: [
@@ -97,43 +105,70 @@ const bankData = {
     { name: "ICICI Realty", logo: "https://upload.wikimedia.org/wikipedia/commons/1/12/ICICI_Bank_Logo.svg", minInvestment: "₹50L", features: ["Residential Projects", "Commercial Spaces", "Land Banking"] },
     { name: "SBI Realty", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cc/SBI-logo.svg", minInvestment: "₹25L", features: ["Government Backed", "Prime Locations", "Affordable Housing"] },
     { name: "Axis Realty Partners", logo: "axis.png", minInvestment: "₹2Cr", features: ["Premium Properties", "High Returns", "Professional Management"] },
-    { name: "Kotak Realty Fund", logo: "KL.png", minInvestment: "₹1Cr", features: ["Diversified Portfolio", "Risk Mitigation", "Expert Selection"] }
+    { name: "Kotak Realty Fund", logo: "KL.png", minInvestment: "₹1Cr", features: ["Diversified Portfolio", "Risk Mitigation", "Expert Selection"] },
+    { 
+      name: "Auction & Distress Sale Properties", 
+      logo: "auction.png", 
+      minInvestment: "Varies", 
+      features: [
+        "Bank Auction Properties", 
+        "NPA Asset Sales", 
+        "Below-Market Value Deals"
+      ],
+      description: "Specialized service for acquiring properties through bank auctions and distress sales at 20-40% below market rates. Our experts guide you through the entire process from property identification to successful acquisition, including legal due diligence and financing solutions."
+    }
   ]
 };
 
-const ServiceCard = ({ icon, title, description, onClick, isExpanded = false }) => (
-  <div
-    className={`group relative bg-gradient-to-br from-white to-blue-50/30 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-blue-100/50 cursor-pointer overflow-hidden ${
-      isExpanded ? 'ring-2 ring-blue-600/30 shadow-blue-600/10' : ''
-    }`}
-    onClick={onClick}
-  >
-    {/* Animated background gradient */}
-    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-    
-    {/* Decorative elements */}
-    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-600/10 to-transparent rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-700"></div>
-    
-    <div className="relative z-10">
-      <div className="mb-6 bg-gradient-to-br from-blue-600/10 to-blue-500/5 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-        <div className="p-2 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700">
-          {React.cloneElement(icon, { className: "h-6 w-6 text-white" })}
+interface ServiceCardProps {
+  icon?: React.ReactElement;
+  title?: string;
+  description?: string;
+  onClick?: () => void;
+  isExpanded?: boolean;
+  image?: string;
+  serviceType?: string;
+}
+
+const ServiceCard = ({ 
+  title, 
+  onClick, 
+  image,
+  serviceType
+}: ServiceCardProps) => {
+  // Always use the image card with hover effects
+  return (
+    <div
+      className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer h-64 bg-white"
+      onClick={onClick}
+    >
+      <div className="relative w-full h-full">
+        <img
+          src={image || "/homeloan.jpg"}
+          alt={title || 'Service Image'}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+            const target = e.target as HTMLImageElement;
+            target.onerror = null;
+            target.style.display = 'none';
+            // If the image fails to load, set a fallback background
+            const parent = target.parentElement;
+            if (parent) {
+              parent.style.background = 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)';
+              parent.style.display = 'flex';
+              parent.style.alignItems = 'center';
+              parent.style.justifyContent = 'center';
+            }
+          }}
+        />
+        {/* Gradient overlay with title */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+          <div className="text-white font-bold text-xl">{title}</div>
         </div>
       </div>
-      
-      <h3 className="text-xl font-bold mb-4 text-blue-900 group-hover:text-blue-800 transition-colors duration-300">
-        {title}
-      </h3>
-      
-      <p className="text-gray-600 mb-6 text-sm leading-relaxed">{description}</p>
-      
-      <div className="inline-flex items-center text-blue-600 font-semibold group-hover:text-blue-700 transition-all duration-300 group-hover:translate-x-1">
-        {isExpanded ? 'Hide Details' : 'View Options'} 
-        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const BankModal = ({ isOpen, onClose, title, banks, type, setLoginOpen }) => {
   const emailcookie = Cookie.get("finvest");
@@ -177,11 +212,11 @@ const BankModal = ({ isOpen, onClose, title, banks, type, setLoginOpen }) => {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-center mb-6">
-                  <div className="relative w-14 h-14 mr-4">
+                  <div className="relative w-20 h-20 mr-4 flex-shrink-0">
                     <img 
                       src={bank.logo} 
                       alt={bank.name}
-                      className="w-full h-full object-contain rounded-xl shadow-sm"
+                      className="w-full h-full object-contain rounded-xl shadow-sm p-1 bg-white"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12 l10 5 10-5'/%3E%3C/svg%3E";
@@ -241,60 +276,51 @@ const Services = ({ setLoginOpen }) => {
   const services = [
     // Loans Row
     {
-      icon: <Factory className="h-6 w-6" />,
       title: "Working Capital",
-      description: "Flexible financing solutions for your business operations and cash flow management with competitive rates.",
-      serviceType: "workingCapital"
+      serviceType: "workingCapital",
+      image: "/workingloan.png"
     },
     {
-      icon: <Building2 className="h-6 w-6" />,
       title: "Loan Against Property",
-      description: "Leverage your property value for business expansion or personal needs with attractive terms.",
-      serviceType: "loanAgainstProperty"
+      serviceType: "loanAgainstProperty",
+      image: "/lap.jpg"
     },
     {
-      icon: <Home className="h-6 w-6" />,
       title: "Home Loan",
-      description: "Make your dream home a reality with attractive interest rates and flexible tenure options.",
-      serviceType: "homeLoan"
+      serviceType: "homeLoan",
+      image: "/homeloan.jpg"
     },
     // Insurance Row
     {
-      icon: <Heart className="h-6 w-6" />,
       title: "Health Insurance",
-      description: "Comprehensive health coverage for you and your family's medical expenses with cashless treatment.",
-      serviceType: "healthInsurance"
+      serviceType: "healthInsurance",
+      image: "/health.png"
     },
     {
-      icon: <Users className="h-6 w-6" />,
       title: "Life Insurance",
-      description: "Secure your family's financial future with term and endowment plans from trusted insurers.",
-      serviceType: "lifeInsurance"
+      serviceType: "lifeInsurance",
+      image: "/Life.png"
     },
     {
-      icon: <Car className="h-6 w-6" />,
       title: "Motor, Travel & Property",
-      description: "Complete protection for your vehicle, travel, and property insurance needs in one place.",
-      serviceType: "motorTravelProperty"
+      serviceType: "motorTravelProperty",
+      image: "/motortravelproperty.png"
     },
     // Investment Row
     {
-      icon: <TrendingUp className="h-6 w-6" />,
       title: "Mutual Funds",
-      description: "Diversified investment options to grow your wealth through professional fund management expertise.",
-      serviceType: "mutualFunds"
+      serviceType: "mutualFunds",
+      image: "/homeloan.jpg"
     },
     {
-      icon: <PieChart className="h-6 w-6" />,
       title: "PMS/AIF",
-      description: "Portfolio Management Services and Alternative Investment Funds for high net worth individuals.",
-      serviceType: "pmsAif"
+      serviceType: "pmsAif",
+      image: "/pmsaif.png"
     },
     {
-      icon: <MapPin className="h-6 w-6" />,
       title: "Real Estate Investments",
-      description: "Invest in prime real estate projects and REITs for long-term wealth creation opportunities.",
-      serviceType: "realEstateInvestments"
+      serviceType: "realEstateInvestments",
+      image: "/realestate.png"
     }
   ];
 
@@ -376,9 +402,9 @@ const Services = ({ setLoginOpen }) => {
                     style={{ animationDelay: `${(categoryIndex * 3 + index + 1) * 150}ms` }}
                   >
                     <ServiceCard
-                      icon={service.icon}
                       title={service.title}
-                      description={service.description}
+                      image={service.image}
+                      serviceType={service.serviceType}
                       onClick={() => serviceclicked(service.serviceType, service.title)}
                     />
                   </div>

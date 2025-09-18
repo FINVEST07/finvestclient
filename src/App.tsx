@@ -22,6 +22,7 @@ import About from "./pages/About";
 import Refer from "./pages/Refer";
 import Services from "./pages/service";
 import Contact from "./pages/Contact";
+import BecomePartner from "./pages/BecomePartner";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="/refer" element={<Refer />} />
            
             <Route path="/services" element={<Services />} />
+            <Route path="/become-partner" element={<BecomePartner />} />
             
 
 

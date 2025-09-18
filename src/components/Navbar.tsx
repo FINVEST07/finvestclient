@@ -88,9 +88,8 @@ const Navbar = ({ setLoginOpen }) => {
             </a>
 
             <a
-              href="/customerdashboard"
+              href="/become-partner"
               className="nav-link"
-              onClick={handleBecomePartnerClick}
             >
               Become a Partner
             </a>
@@ -210,10 +209,9 @@ const Navbar = ({ setLoginOpen }) => {
             </a>
 
             <a
-              href="/customerdashboard"
+              href="/become-partner"
               className="px-4"
-              onClick={(e) => {
-                handleBecomePartnerClick(e);
+              onClick={() => {
                 setIsOpen(false);
               }}
             >
