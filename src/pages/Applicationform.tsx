@@ -23,6 +23,9 @@ const Applicationform = () => {
   const [adminrank, setAdminRank] = useState("");
   const [apply, setApply] = useState("false");
 
+  // Keep a baseline of originally loaded data so we can diff on save
+  const [originalData, setOriginalData] = useState<any>({});
+
 
   const [formData, setFormData] = useState({
     email: "",
@@ -149,6 +152,8 @@ const Applicationform = () => {
           }
         }
         setFormData(updatedFormData);
+        // set baseline for diffing
+        setOriginalData(updatedFormData);
       }
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -272,22 +277,43 @@ const Applicationform = () => {
       const textPayload: Record<string, any> = {};
       const imageFields: string[] = [];
 
-      for (const key in formData) {
-        const val = formData[key];
-        // Exclude file-like fields from payload; send them as files instead
-        if (typeof val === "object" && val && val.content && val.type) {
-          imageFields.push(key);
-        } else if (typeof val === "string" && val.startsWith("data:")) {
-          // legacy base64 string
-          imageFields.push(key);
-        } else {
-          textPayload[key] = val;
-        }
-      }
+      // Helper to determine if value is a "new" file (base64/object) that needs upload
+      const isNewFileValue = (val: any) => {
+        return (
+          (typeof val === "object" && val && val.content && val.type) ||
+          (typeof val === "string" && val.startsWith("data:"))
+        );
+      };
 
+      // Always include identifiers
+      textPayload.email = formData.email;
       textPayload.servicename = serviceData.servicename;
       if (applicationId) {
         textPayload.applicationId = applicationId;
+      }
+
+      // Compute diff: only include changed text fields and new files
+      for (const key in formData) {
+        const curr = formData[key];
+        const orig = originalData ? originalData[key] : undefined;
+
+        // Files: only queue for upload if it's a new base64/object value
+        if (isNewFileValue(curr)) {
+          imageFields.push(key);
+          continue;
+        }
+
+        // Skip keys that are clearly file URLs (already uploaded) to avoid resending
+        if (typeof curr === "string" && (curr.startsWith("http://") || curr.startsWith("https://"))) {
+          // treat as unchanged file unless explicitly altered to base64 (handled above)
+          continue;
+        }
+
+        // For primitive/text fields, include only if changed from baseline
+        const changed = JSON.stringify(curr) !== JSON.stringify(orig);
+        if (changed) {
+          textPayload[key] = curr;
+        }
       }
 
       // Calculate total payload size
@@ -296,9 +322,9 @@ const Applicationform = () => {
         imageFields,
         formData
       );
-      const maxSize = 3.9 * 1024 * 1024; // 3.9 MB in bytes
+      const maxSize = 4 * 1024 * 1024; // 4 MB in bytes
       if (totalSize > maxSize) {
-        toast.error("Payload size exceeds 3.9 MB. Please remove some  files.");
+        toast.error("Payload size exceeds 4 MB. Please remove some files or upload fewer at once.");
         return false;
       }
 
@@ -334,6 +360,11 @@ const Applicationform = () => {
       }
 
       toast.success(response.data.message);
+      // Update baseline with server-returned user (contains latest URLs for files)
+      if (response?.data?.user) {
+        setOriginalData(response.data.user);
+        setFormData((prev) => ({ ...prev, ...response.data.user }));
+      }
       return true;
     } catch (error) {
       console.error("Error saving multipart form data:", error);
@@ -377,6 +408,10 @@ const Applicationform = () => {
 
       textPayload.servicename = serviceData.servicename;
       textPayload.servicetype = serviceData.type;
+      // Force server to create a brand new application regardless of any existing applicationId
+      textPayload.applyMode = 'new';
+      // Safety: ensure no applicationId is passed if present in component state
+      if (textPayload.applicationId) delete textPayload.applicationId;
 
       form.append("payload", JSON.stringify(textPayload));
 

@@ -59,12 +59,16 @@ const DocumentFormSection = ({
         // @ts-expect-error err
         resolve(window.pdfjsLib);
       };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
 
   // Compress PDF file
   const compressPdf = async (file: File): Promise<Blob | File> => {
     try {
-      // If already small enough
-      if (file.size <= 2 * 1024 * 1024) {
+      // If already small enough (allow up to ~4MB per UI guidance)
+      if (file.size <= 4 * 1024 * 1024) {
         return file;
       }
 
@@ -104,7 +108,7 @@ const DocumentFormSection = ({
 
       const pdfBlob = newPdf.output('blob');
       if (pdfBlob.size >= file.size) {
-        if (file.size <= 3 * 1024 * 1024) {
+        if (file.size <= 4 * 1024 * 1024) {
           return file;
         } else {
           throw new Error('Unable to compress PDF to acceptable size. Please use a smaller file.');
@@ -113,16 +117,13 @@ const DocumentFormSection = ({
       return pdfBlob;
     } catch (error) {
       console.error('Error compressing PDF:', error);
-      if (file.size > 2 * 1024 * 1024) {
-        throw new Error('PDF file is too large and compression failed. Please use a file smaller than 2MB or compress it manually.');
+      if (file.size > 4 * 1024 * 1024) {
+        throw new Error('PDF file is too large and compression failed. Please use a file smaller than 4MB or compress it manually.');
       }
       return file;
     }
   };
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  };
+  
 
   const handleDeleteDocument = async (fieldKey: string, value: any) => {
     try {
@@ -228,39 +229,75 @@ const DocumentFormSection = ({
     if (typeof value === "object" && value.content) {
       return value.type && value.type.startsWith("image/");
     }
-    return (
-      typeof value === "string" &&
-      (value.startsWith("data:image") ||
-        value.startsWith("http://") ||
-        value.startsWith("https://"))
-    );
+    if (typeof value === "string") {
+      // data URL for images
+      if (value.startsWith("data:image")) return true;
+      // URLs: ensure we do NOT treat PDFs as images
+      if (value.startsWith("http://") || value.startsWith("https://")) {
+        const lower = value.toLowerCase();
+        const isPdfUrl = lower.endsWith('.pdf') || lower.includes('.pdf?') || lower.includes('.pdf#') || lower.includes('/raw/upload/');
+        return !isPdfUrl; // only true if not a PDF URL
+      }
+    }
+    return false;
   };
 
   const isPdfField = (value) => {
     if (typeof value === "object" && value.content) {
       return value.type === "application/pdf";
     }
+    if (typeof value === "string") {
+      const v = value.toLowerCase();
+      // Detect standard .pdf URLs and Cloudinary raw URLs without extension
+      return v.endsWith('.pdf') || v.includes('.pdf?') || v.includes('.pdf#') || v.includes('/raw/upload/');
+    }
     return false;
   };
 
   const downloadFile = (fileData, label) => {
+    const safeLabel = label.replace(/ /g, "_");
+
     if (typeof fileData === "object" && fileData.content) {
-      // Create download link
+      // Base64 object from current session
       const link = document.createElement('a');
       link.href = fileData.content;
-      
-      if (fileData.type === "application/pdf") {
-        link.download = `${label.replace(/ /g, "_")}.pdf`;
-      } else {
-        link.download = `${label.replace(/ /g, "_")}.${fileData.type.split('/')[1]}`;
-      }
-      
+      link.download = fileData.type === "application/pdf" ? `${safeLabel}.pdf` : `${safeLabel}.${fileData.type.split('/')[1]}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else {
-      // Legacy support for old image format
-      downloadPDF(fileData, label);
+      return;
+    }
+
+    if (typeof fileData === 'string') {
+      // If this is a server URL: handle PDFs directly, images via legacy image->PDF
+      if (isPdfField(fileData)) {
+        // Fetch as blob to ensure correct Content-Type and filename extension
+        fetch(fileData)
+          .then((res) => res.blob())
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${safeLabel}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          })
+          .catch(() => {
+            // Fallback: open in new tab
+            const link = document.createElement('a');
+            link.href = fileData;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          });
+        return;
+      }
+      // Legacy support for image URLs: render into a PDF for consistent download experience
+      return downloadPDF(fileData, label);
     }
   };
 
