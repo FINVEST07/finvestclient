@@ -79,7 +79,7 @@ const AdminSidebar = () => {
           onClick={() => handleNavigation("/admindashboard", "dashboard")}
         >
           <DashboardIcon width={30} fill={"#D6B549"} />
-          <span className="text-2xl self-center text-[#D6B549]">DashBoard</span>
+          <span className="text-xl self-center text-[#D6B549]">DashBoard</span>
         </div>
          <div
           className={`flex gap-4 cursor-pointer ${
@@ -88,7 +88,7 @@ const AdminSidebar = () => {
           onClick={() => handleNavigation("/admincustomers", "customers")}
         >
           <UsersIcon width={30} fill={"#D6B549"} />
-          <span className="text-2xl self-center text-[#D6B549]">Customers</span>
+          <span className="text-xl self-center text-[#D6B549]">Customers</span>
         </div>
         <div
           className={`flex gap-4 cursor-pointer ${
@@ -97,11 +97,22 @@ const AdminSidebar = () => {
           onClick={() => handleNavigation("/adminapplications", "applications")}
         >
           <ApplicationIcon width={30} fill={"#D6B549"} />
-          <span className="text-2xl self-center text-[#D6B549]">
+          <span className="text-xl self-center text-[#D6B549]">
             Applications
           </span>
         </div>
-       
+        <div
+          className={`flex gap-4 cursor-pointer ${
+            activeTab === "blogs" ? "bg-slate-600 p-4" : ""
+          }`}
+          onClick={() => handleNavigation("/adminblogs", "blogs")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width={30} className="self-center" fill="#D6B549">
+            <path d="M290.7 93.2L138.5 245.4c-4.1 4.1-6.8 9.2-8 14.5L112 334.9c-2.9 13.1 8.8 24.8 21.9 21.9l75.1-18.5c5.3-1.3 10.4-4 14.5-8L376 178.1 290.7 93.2zM497.9 74.2l-60.1-60.1c-18.7-18.7-49.1-18.7-67.9 0L331 53.1l97.9 97.9 68.9-68.9c18.8-18.7 18.8-49.1.1-67.9zM64 64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-17.7-14.3-32-32-32s-32 14.3-32 32V448c0 17.7-14.3 32-32 32H64c-17.7 0-32-14.3-32-32V128c0-17.7 14.3-32 32-32H256c17.7 0 32-14.3 32-32s-14.3-32-32-32H64z"/>
+          </svg>
+          <span className="text-xl self-center text-[#D6B549]">Blogs & Media</span>
+        </div>
+        
         <div
           className={`flex gap-4 cursor-pointer ${
             activeTab === "settings" ? "bg-slate-600 p-4" : ""
@@ -109,7 +120,7 @@ const AdminSidebar = () => {
           onClick={() => handleNavigation("/settings", "settings")}
         >
           <SettingsIcon width={30} fill={"#D6B549"} />
-          <span className="text-2xl self-center text-[#D6B549]">Settings</span>
+          <span className="text-xl self-center text-[#D6B549]">Settings</span>
         </div>
         <button
           className="mt-[10vh] bg-red-700 z-50 px-4 py-2 text-white rounded-md"

@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminCustomers from "./components/AdminCustomers";
 import Settings from "./components/Settings";
 import AdminApplications from "./pages/AdminApplications";
+import AdminBlogsMedia from "./pages/AdminBlogsMedia";
 import { useState, useEffect } from "react";
 import LoanCalculator from "./pages/LoanCalculator";
 import About from "./pages/About";
@@ -90,6 +91,7 @@ const App = () => {
                 <Route path="/admindashboard" element={<AdminDashboard />} />
                 <Route path="/admincustomers" element={<AdminCustomers />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/adminblogs" element={<AdminBlogsMedia />} />
               </>
             )}
             
