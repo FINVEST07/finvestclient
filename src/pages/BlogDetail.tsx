@@ -94,13 +94,19 @@ const BlogDetail = () => {
         ) : (
           <article className="bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden">
             {blog.thumbnailUrl && (
-              <div className="w-full max-h-[60vh] bg-blue-50">
-                <img src={blog.thumbnailUrl} alt={blog.title} className="w-full h-full object-contain" />
+              <div className="w-full bg-blue-50">
+                <div className="aspect-video md:aspect-[16/7] lg:aspect-[16/6] w-full">
+                  <img
+                    src={blog.thumbnailUrl}
+                    alt={blog.title}
+                    className="w-full h-auto object-contain block"
+                  />
+                </div>
               </div>
             )}
             <div className="p-6 md:p-10">
-              <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">{blog.title}</h1>
-              <div className="prose max-w-none text-gray-800 whitespace-pre-wrap">{blog.content}</div>
+              <h1 className="text-2xl md:text-4xl font-bold text-blue-900 mb-4 leading-snug">{blog.title}</h1>
+              <div className="prose prose-blue max-w-none text-gray-800 whitespace-pre-wrap break-words">{blog.content}</div>
             </div>
           </article>
         )}

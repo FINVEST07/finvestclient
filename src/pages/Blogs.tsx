@@ -50,18 +50,31 @@ const Blogs = () => {
         ) : blogs.length === 0 ? (
           <div className="text-center text-gray-500 py-20">No blogs to show</div>
         ) : (
-          <div className="space-y-6 mx-12">
+          <div className="space-y-6 md:mx-12">
             {blogs.map((b) => (
-              <a key={b._id} className="grid md:grid-cols-3 gap-4 items-stretch bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden hover:-translate-y-0.5 transition-all" href={`/blogs/${b.slug || b._id}` }>
+              <a
+                key={b._id}
+                className="grid md:grid-cols-3 gap-0 md:gap-4 items-stretch bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden hover:-translate-y-0.5 transition-all"
+                href={`/blogs/${b.slug || b._id}`}
+              >
                 <div className="p-6 md:col-span-2 flex flex-col justify-center">
                   <h2 className="text-2xl font-bold text-blue-900 mb-2">{b.title}</h2>
                   <p className="text-gray-700 leading-relaxed line-clamp-4 whitespace-pre-line">{b.content}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-blue-900 font-semibold">
+                    Read full article
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  </span>
                 </div>
-                <div className="aspect-square bg-blue-50 grid place-items-center">
+                <div className="bg-blue-50">
                   {b.thumbnailUrl ? (
-                    <img src={b.thumbnailUrl} alt={b.title} className="w-full h-full object-cover" loading="lazy" />
+                    <img
+                      src={b.thumbnailUrl}
+                      alt={b.title}
+                      className="w-full h-auto block"
+                      loading="lazy"
+                    />
                   ) : (
-                    <div className="text-blue-700">No Image</div>
+                    <div className="h-full w-full grid place-items-center text-blue-700 p-6">No Image</div>
                   )}
                 </div>
               </a>
@@ -71,6 +84,6 @@ const Blogs = () => {
       </div>
     </section>
   );
-};
+}; 
 
 export default Blogs;
