@@ -24,6 +24,9 @@ import Refer from "./pages/Refer";
 import Services from "./pages/service";
 import Contact from "./pages/Contact";
 import BecomePartner from "./pages/BecomePartner";
+import Blogs from "./pages/Blogs";
+import Gallery from "./pages/Gallery";
+import BlogDetail from "./pages/BlogDetail";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +84,9 @@ const App = () => {
            
             <Route path="/services" element={<Services />} />
             <Route path="/become-partner" element={<BecomePartner />} />
+            <Route path="/blogs" element={<Blogs />} />
+            <Route path="/blogs/:slug" element={<BlogDetail />} />
+            <Route path="/gallery" element={<Gallery />} />
             
 
 

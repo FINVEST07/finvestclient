@@ -146,6 +146,28 @@ const AdminBlogsMedia = () => {
         },
         width: "220px",
       },
+      {
+        name: "",
+        cell: (row: any) => (
+          <button
+            onClick={async () => {
+              if (!confirm("Delete this blog?")) return;
+              try {
+                await axios.delete(`${import.meta.env.VITE_API_URI}blogs/${row._id}`);
+                toast.success("Blog deleted");
+                loadBlogs();
+              } catch (e: any) {
+                console.error(e);
+                toast.error(e?.response?.data?.message || "Delete failed");
+              }
+            }}
+            className="px-3 py-1 bg-red-600 text-white rounded"
+          >
+            Delete
+          </button>
+        ),
+        width: "110px",
+      },
     ],
     []
   );
@@ -247,8 +269,24 @@ const AdminBlogsMedia = () => {
               ) : (
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
                   {media.map((m) => (
-                    <div key={m._id} className="bg-slate-800 border border-slate-700 rounded-md overflow-hidden">
-                      <img src={m.url} alt={m.text || "media"} className="w-full h-36 object-cover" loading="lazy" />
+                    <div key={m._id} className="relative group bg-slate-800 border border-slate-700 rounded-md overflow-hidden">
+                      <img src={m.url} alt={"media"} className="w-full h-36 object-cover" loading="lazy" />
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Delete this image?")) return;
+                          try {
+                            await axios.delete(`${import.meta.env.VITE_API_URI}media/${m._id}`);
+                            toast.success("Image deleted");
+                            loadMedia();
+                          } catch (e: any) {
+                            console.error(e);
+                            toast.error(e?.response?.data?.message || "Delete failed");
+                          }
+                        }}
+                        className="absolute top-2 right-2 opacity-90 bg-red-600 text-white text-xs px-2 py-1 rounded hover:opacity-100"
+                      >
+                        Delete
+                      </button>
                     </div>
                   ))}
                 </div>

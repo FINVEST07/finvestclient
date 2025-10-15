@@ -33,3 +33,4 @@ Disallow: /applicationform
 Disallow: /settings
 Disallow: /customer-dashboard
 Allow: /
+Sitemap: https://finvestcorp.com/sitemap.xml

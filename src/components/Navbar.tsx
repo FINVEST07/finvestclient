@@ -80,9 +80,6 @@ const Navbar = ({ setLoginOpen }) => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-1">
-            <a href="/about" className="nav-link">
-              About
-            </a>
             <a href="/services" className="nav-link">
               Services
             </a>
@@ -102,9 +99,8 @@ const Navbar = ({ setLoginOpen }) => {
                 <RupeeIcon width={10} />
               </div>
             </a>
-            <a href="/contact" className="nav-link">
-              Contact
-            </a>
+            <a href="/blogs" className="nav-link">Blogs</a>
+            <a href="/gallery" className="nav-link">Gallery</a>
           </div>
 
           <div className="hidden md:flex items-center space-x-4 ">
@@ -197,9 +193,7 @@ const Navbar = ({ setLoginOpen }) => {
                 Dashboard
               </a>
             )}
-            <a href="/about" className="px-4" onClick={() => setIsOpen(false)}>
-              About
-            </a>
+            
             <a
               href="/services"
               className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
@@ -233,12 +227,11 @@ const Navbar = ({ setLoginOpen }) => {
               </div>
             </a>
 
-            <a
-              href="/contact"
-              className="px-4"
-              onClick={() => setIsOpen(false)}
-            >
-              Contact
+            <a href="/blogs" className="px-4" onClick={() => setIsOpen(false)}>
+              Blogs
+            </a>
+            <a href="/gallery" className="px-4" onClick={() => setIsOpen(false)}>
+              Gallery
             </a>
           </div>
 
