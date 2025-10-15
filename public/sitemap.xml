@@ -12,13 +12,141 @@
   <url>
     <loc>https://www.finvestcorp.com/contact</loc>
   </url>
-    <url>
+  <url>
     <loc>https://www.finvestcorp.com/refer</loc>
   </url>
   <url>
     <loc>https://www.finvestcorp.com/become-partner</loc>
   </url>
   <url>
-    <loc>https://www.finvestcorp.com/loan-calculator</loc>
+    <loc>https://www.finvestcorp.com/loancalculator</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/blogs</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/gallery</loc>
+  </url>
+
+  <!-- Info pages -->
+  <url>
+    <loc>https://www.finvestcorp.com/info/home-loan</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/home-loan-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/home-loan-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/home-loan-dsa</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/home-loan-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/mortgage-loan-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/mortgage-loan-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/mortgage-loan-dsa</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/mortgage-loan-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/cgtmse-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/cgtmse-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/cgtmse-dsa</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/cgtmse-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/msme-loan-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/msme-loan-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/msme-loan-dsa</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/msme-loan-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/business-loan-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/business-loan-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/business-loan-dsa</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/business-loan-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/personal-loan-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/personal-loan-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/personal-loan-dsa</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/personal-loan-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/life-insurance-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/life-insurance-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/life-insurance-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/health-insurance-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/health-insurance-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/health-insurance-advisor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/mutual-fund-agent</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/mutual-fund-consultant</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/mutual-fund-advisor</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/mutual-fund-distributor</loc>
+  </url>
+
+  <url>
+    <loc>https://www.finvestcorp.com/info/auction-property-advisor</loc>
+  </url>
+  <url>
+    <loc>https://www.finvestcorp.com/info/auction-property-consultant</loc>
   </url>
 </urlset>
