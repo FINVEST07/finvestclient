@@ -27,6 +27,7 @@ import BecomePartner from "./pages/BecomePartner";
 import Blogs from "./pages/Blogs";
 import Gallery from "./pages/Gallery";
 import BlogDetail from "./pages/BlogDetail";
+import ServiceInfo from "./pages/ServiceInfo";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,8 @@ const App = () => {
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blogs/:slug" element={<BlogDetail />} />
             <Route path="/gallery" element={<Gallery />} />
+            {/* SEO keyword info routes */}
+            <Route path="/info/:slug" element={<ServiceInfo />} />
             
 
 
