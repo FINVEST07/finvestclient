@@ -39,7 +39,7 @@ const BlogDetail = () => {
   const canonicalUrl = typeof window !== 'undefined' ? `${window.location.origin}/blogs/${slug}` : `/blogs/${slug}`;
 
   return (
-    <section className="pt-28 pb-16 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
+    <section className="pt-6 pb-16 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
       <Helmet>
         <title>{blog ? `${blog.title} - FINVESTCORP` : 'Blog - FINVESTCORP'}</title>
         <meta name="description" content={description} />
