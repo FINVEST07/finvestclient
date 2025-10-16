@@ -24,6 +24,7 @@ const AdminBlogsMedia = () => {
   const [isMediaOpen, setIsMediaOpen] = useState<boolean>(false);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaSubmitting, setMediaSubmitting] = useState<boolean>(false);
+  const [mediaLabel, setMediaLabel] = useState<string>("");
 
   useEffect(() => {
     const storedRank = localStorage.getItem("rank");
@@ -370,6 +371,15 @@ const AdminBlogsMedia = () => {
             </div>
             <div className="space-y-4">
               <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Label</label>
+                <input
+                  value={mediaLabel}
+                  onChange={(e) => setMediaLabel(e.target.value)}
+                  placeholder="Enter a short label"
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Image</label>
                 <div
                   onDragOver={(e) => e.preventDefault()}
@@ -400,11 +410,13 @@ const AdminBlogsMedia = () => {
                     setMediaSubmitting(true);
                     const form = new FormData();
                     form.append("image", mediaFile);
+                    if (mediaLabel.trim()) form.append("label", mediaLabel.trim());
                     const res = await axios.post(`${import.meta.env.VITE_API_URI}media`, form, { headers: { "Content-Type": "multipart/form-data" } });
                     if (res.data?.status) {
                       toast.success(res.data?.message || "Image posted");
                       setIsMediaOpen(false);
                       setMediaFile(null);
+                      setMediaLabel("");
                       loadMedia();
                     } else {
                       toast.error(res.data?.message || "Failed to upload image");

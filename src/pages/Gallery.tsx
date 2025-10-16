@@ -64,16 +64,21 @@ const Gallery = () => {
         ) : media.length === 0 ? (
           <div className="text-center text-gray-500 py-20">No images to show</div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-5">
             {media.map((m, idx) => (
               <button
                 key={m._id}
                 type="button"
-                className="bg-white rounded-xl shadow border border-blue-100/50 overflow-hidden text-left"
+                className="group bg-white rounded-xl shadow-xl p-4 pb-0 pt-6 hover:shadow-md border border-blue-200 overflow-hidden text-left transition-shadow"
                 onClick={() => { setCurrentIndex(idx); setLightboxOpen(true); }}
               >
                 <div className="aspect-[3/4] w-full bg-blue-50">
-                  <img src={m.url} alt="media" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={m.url} alt={m.label || 'media'} className="w-full h-full object-cover" loading="lazy" />
+                </div>
+                <div className="px-3 py-2">
+                  <p className="text-sm lg:text-base xl:text-lg 2xl:text-xl text-center text-blue-900 line-clamp-2 min-h-[2.5rem]">
+                    {m.label || m.text || 'Untitled'}
+                  </p>
                 </div>
               </button>
             ))}
