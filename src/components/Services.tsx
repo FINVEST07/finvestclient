@@ -278,17 +278,17 @@ const Services = ({ setLoginOpen }) => {
     {
       title: "Working Capital",
       serviceType: "workingCapital",
-      image: "/workingloan.png"
+      image: "/msme.png"
     },
     {
       title: "Loan Against Property",
       serviceType: "loanAgainstProperty",
-      image: "/lap.jpg"
+      image: "/lap.png"
     },
     {
       title: "Home Loan",
       serviceType: "homeLoan",
-      image: "/homeloan.jpg"
+      image: "/home_loan.jpeg"
     },
     // Insurance Row
     {
