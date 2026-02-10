@@ -5,20 +5,9 @@ import {
   BarChart4, 
   Shield, 
   Briefcase, 
-  ArrowRight, 
   X, 
-  Home,
-  Building2,
-  Factory,
-  Heart,
-  Users,
-  Car,
-  Plane,
-  TrendingUp,
-  PieChart,
-  MapPin
 } from "lucide-react";
-import { Helmet } from 'react-helmet-async';
+
 import ToastContainerComponent from "./ToastContainerComponent";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
