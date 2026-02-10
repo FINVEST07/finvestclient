@@ -12,11 +12,18 @@ const AdminBlogsMedia = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPostOpen, setIsPostOpen] = useState<boolean>(false);
+  const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
+  const [editingBlogId, setEditingBlogId] = useState<string>("");
 
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const [editTitle, setEditTitle] = useState<string>("");
+  const [editContent, setEditContent] = useState<string>("");
+  const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
+  const [editSubmitting, setEditSubmitting] = useState<boolean>(false);
 
   // media state
   const [media, setMedia] = useState<any[]>([]);
@@ -44,6 +51,47 @@ const AdminBlogsMedia = () => {
       setBlogs([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (!editingBlogId) {
+      toast.error("No blog selected");
+      return;
+    }
+    if (!editTitle.trim() || !editContent.trim()) {
+      toast.error("Title and content are required");
+      return;
+    }
+    try {
+      setEditSubmitting(true);
+      const form = new FormData();
+      form.append("title", editTitle);
+      form.append("content", editContent);
+      if (editThumbnail) form.append("thumbnail", editThumbnail);
+
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URI}blogs/${editingBlogId}`,
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      if (res.data?.status) {
+        toast.success(res.data?.message || "Blog updated");
+        setIsEditOpen(false);
+        setEditingBlogId("");
+        setEditTitle("");
+        setEditContent("");
+        setEditThumbnail(null);
+        loadBlogs();
+      } else {
+        toast.error(res.data?.message || "Failed to update blog");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.response?.data?.message || "Something went wrong");
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -150,24 +198,38 @@ const AdminBlogsMedia = () => {
       {
         name: "",
         cell: (row: any) => (
-          <button
-            onClick={async () => {
-              if (!confirm("Delete this blog?")) return;
-              try {
-                await axios.delete(`${import.meta.env.VITE_API_URI}blogs/${row._id}`);
-                toast.success("Blog deleted");
-                loadBlogs();
-              } catch (e: any) {
-                console.error(e);
-                toast.error(e?.response?.data?.message || "Delete failed");
-              }
-            }}
-            className="px-3 py-1 bg-red-600 text-white rounded"
-          >
-            Delete
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setEditingBlogId(row._id);
+                setEditTitle(row?.title || "");
+                setEditContent(row?.content || "");
+                setEditThumbnail(null);
+                setIsEditOpen(true);
+              }}
+              className="px-3 py-1 bg-blue-600 text-white rounded"
+            >
+              Edit
+            </button>
+            <button
+              onClick={async () => {
+                if (!confirm("Delete this blog?")) return;
+                try {
+                  await axios.delete(`${import.meta.env.VITE_API_URI}blogs/${row._id}`);
+                  toast.success("Blog deleted");
+                  loadBlogs();
+                } catch (e: any) {
+                  console.error(e);
+                  toast.error(e?.response?.data?.message || "Delete failed");
+                }
+              }}
+              className="px-3 py-1 bg-red-600 text-white rounded"
+            >
+              Delete
+            </button>
+          </div>
         ),
-        width: "110px",
+        width: "200px",
       },
     ],
     []
@@ -355,6 +417,70 @@ const AdminBlogsMedia = () => {
                 className="px-4 py-2 rounded-md bg-[#D6B549] text-slate-900 font-medium disabled:opacity-70"
               >
                 {submitting ? "Posting..." : "Post"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setIsEditOpen(false)} />
+          <div className="relative w-[90%] max-w-2xl bg-white rounded-lg shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-slate-800">Edit Blog</h3>
+              <button
+                onClick={() => setIsEditOpen(false)}
+                className="text-slate-500 hover:text-slate-700"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                  placeholder="Enter title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 h-40 resize-y focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                  placeholder="Write your blog content..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Replace Thumbnail (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEditThumbnail(e.target.files?.[0] || null)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setIsEditOpen(false)}
+                className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                disabled={editSubmitting}
+                className="px-4 py-2 rounded-md bg-[#D6B549] text-slate-900 font-medium disabled:opacity-70"
+              >
+                {editSubmitting ? "Saving..." : "Save"}
               </button>
             </div>
           </div>

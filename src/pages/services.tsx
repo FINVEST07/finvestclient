@@ -19,7 +19,7 @@ import {
   MapPin
 } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
-import ToastContainerComponent from "./ToastContainerComponent";
+import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Cookie from "js-cookie";

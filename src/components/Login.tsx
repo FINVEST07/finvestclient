@@ -350,11 +350,8 @@ const Login = ({ setLoginOpen, loginopen }) => {
             {step === "form" ? (
               <>
                 <CloseIcon />
-                <h2 className="text-2xl font-bold mb-4 text-center cursor-pointer">
-                  <span onClick={() => setSectionOpen("register")}>
-                    Register
-                  </span>{" "}
-                  | <span onClick={() => setSectionOpen("login")}>Login</span>
+                <h2 className="text-2xl font-bold mb-4 text-center">
+                  {sectionopen === "register" ? "Register" : "Login"}
                 </h2>
 
                 {sectionopen === "register" ? (
@@ -414,6 +411,20 @@ const Login = ({ setLoginOpen, loginopen }) => {
                       value="Send Otp"
                       className="w-full bg-blue-900 text-white py-2 rounded-lg transition"
                     />
+
+                    <p className="text-center text-sm mt-4 text-gray-600">
+                      Already have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSectionOpen("login");
+                          setError("");
+                        }}
+                        className="text-blue-900 underline"
+                      >
+                        Login
+                      </button>
+                    </p>
                   </form>
                 ) : (
                   <form>
@@ -511,6 +522,20 @@ const Login = ({ setLoginOpen, loginopen }) => {
                     >
                       Login
                     </button>
+
+                    <p className="text-center text-sm mt-4 text-gray-600">
+                      Don’t have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSectionOpen("register");
+                          setError("");
+                        }}
+                        className="text-blue-900 underline"
+                      >
+                        Register
+                      </button>
+                    </p>
                   </form>
                 )}
               </>

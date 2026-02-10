@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -32,14 +32,13 @@ import ServiceInfo from "./pages/ServiceInfo";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [adminrank, setAdminRank] = useState<number | null>(null);
-
-  useEffect(() => {
+  const RequireSuperAdmin = ({ children }: { children: any }) => {
     const storedRank = localStorage.getItem("rank");
-    if (storedRank) {
-      setAdminRank(Number(storedRank));
+    if (storedRank === "1" || storedRank === 1 || Number(storedRank) === 1) {
+      return children;
     }
-  }, []);
+    return <Navigate to="/admin" replace />;
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -91,18 +90,38 @@ const App = () => {
             {/* SEO keyword info routes */}
             <Route path="/info/:slug" element={<ServiceInfo />} />
             
-
-
-
-
-            {adminrank == 1 && (
-              <>
-                <Route path="/admindashboard" element={<AdminDashboard />} />
-                <Route path="/admincustomers" element={<AdminCustomers />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/adminblogs" element={<AdminBlogsMedia />} />
-              </>
-            )}
+            <Route
+              path="/admindashboard"
+              element={
+                <RequireSuperAdmin>
+                  <AdminDashboard />
+                </RequireSuperAdmin>
+              }
+            />
+            <Route
+              path="/admincustomers"
+              element={
+                <RequireSuperAdmin>
+                  <AdminCustomers />
+                </RequireSuperAdmin>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireSuperAdmin>
+                  <Settings />
+                </RequireSuperAdmin>
+              }
+            />
+            <Route
+              path="/adminblogs"
+              element={
+                <RequireSuperAdmin>
+                  <AdminBlogsMedia />
+                </RequireSuperAdmin>
+              }
+            />
             
             <Route path="/adminapplications" element={<AdminApplications />} />
             <Route path="*" element={<NotFound />} />
