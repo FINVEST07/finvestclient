@@ -7,6 +7,24 @@ import { ArrowLeft } from "lucide-react";
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
+const normalizeQuillHtml = (html: string) => {
+  if (!html) return "";
+  // Quill uses <p><br></p> for empty lines. When rendered with typography margins
+  // this can create huge vertical gaps. Remove leading/trailing empties and
+  // collapse consecutive empties.
+  let out = html;
+
+  const emptyParaRegex = "<p>\\s*(?:<br\\s*\\/?\\s*>|&nbsp;|\\s)*\\s*<\\/p>";
+  // Remove leading empty paragraphs
+  out = out.replace(new RegExp(`^(\\s*${emptyParaRegex}\\s*)+`, "i"), "");
+  // Remove trailing empty paragraphs
+  out = out.replace(new RegExp(`(\\s*${emptyParaRegex}\\s*)+$`, "i"), "");
+  // Collapse multiple empty paragraphs into a single one
+  out = out.replace(new RegExp(`(\\s*${emptyParaRegex}\\s*){2,}`, "gi"), "<p><br /></p>");
+
+  return out;
+};
+
 const BlogDetail = () => {
   const { slug } = useParams();
   const [blog, setBlog] = useState<any>(null);
@@ -107,8 +125,8 @@ const BlogDetail = () => {
             <div className="p-6 md:p-10">
               <h1 className="text-2xl md:text-4xl font-bold text-blue-900 mb-4 leading-snug">{blog.title}</h1>
               <div
-                className="prose prose-blue max-w-none text-gray-800 break-words prose-a:text-blue-700 prose-a:underline hover:prose-a:text-blue-900 prose-ol:list-decimal prose-ul:list-disc prose-li:my-1"
-                dangerouslySetInnerHTML={{ __html: blog.content || "" }}
+                className="prose prose-blue max-w-none text-gray-800 break-words prose-a:text-blue-700 prose-a:underline hover:prose-a:text-blue-900 prose-ol:list-decimal prose-ul:list-disc prose-li:my-0 prose-p:my-1"
+                dangerouslySetInnerHTML={{ __html: normalizeQuillHtml(blog.content || "") }}
               />
             </div>
           </article>

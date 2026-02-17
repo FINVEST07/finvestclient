@@ -57,6 +57,16 @@ const AdminBlogsMedia = () => {
     "align",
   ];
 
+  const normalizeQuillHtmlForStorage = (html: string) => {
+    if (!html) return "";
+    let out = html;
+    const emptyParaRegex = "<p>\\s*(?:<br\\s*\\/?\\s*>|&nbsp;|\\s)*\\s*<\\/p>";
+
+    out = out.replace(new RegExp(`(\\s*${emptyParaRegex}\\s*)+`, "gi"), "<br />");
+    out = out.replace(/(<br\s*\/?>\s*){3,}/gi, "<br /><br />");
+    return out.trim();
+  };
+
   const isVideoFile = (file: File) => file.type?.startsWith("video/");
   const isVideoUrl = (url?: string) => {
     if (!url) return false;
@@ -123,7 +133,7 @@ const AdminBlogsMedia = () => {
       setEditSubmitting(true);
       const form = new FormData();
       form.append("title", editTitle);
-      form.append("content", editContent);
+      form.append("content", normalizeQuillHtmlForStorage(editContent));
       if (editThumbnail) form.append("thumbnail", editThumbnail);
 
       const res = await axios.put(
@@ -180,7 +190,7 @@ const AdminBlogsMedia = () => {
       setSubmitting(true);
       const form = new FormData();
       form.append("title", title);
-      form.append("content", content);
+      form.append("content", normalizeQuillHtmlForStorage(content));
       if (thumbnail) form.append("thumbnail", thumbnail);
 
       const res = await axios.post(`${import.meta.env.VITE_API_URI}blogs`, form, {
@@ -463,7 +473,7 @@ const AdminBlogsMedia = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
-                <div className="admin-blog-quill-post border border-slate-300 rounded-md overflow-hidden">
+                <div className="admin-blog-quill-post relative border border-slate-300 rounded-md">
                   <ReactQuill
                     theme="snow"
                     value={content}
@@ -475,6 +485,10 @@ const AdminBlogsMedia = () => {
                 </div>
                 <style>{`
                   .admin-blog-quill-post .ql-container { height: 260px; overflow-y: auto; }
+                  .admin-blog-quill-post .ql-tooltip { z-index: 50; }
+                  .admin-blog-quill-post .ql-tooltip { left: 8px !important; }
+                  .admin-blog-quill-post .ql-tooltip { max-width: calc(100% - 16px); }
+                  .admin-blog-quill-post .ql-tooltip input { width: 220px; max-width: 60vw; }
                 `}</style>
               </div>
               <div>
@@ -534,7 +548,7 @@ const AdminBlogsMedia = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
-                <div className="admin-blog-quill-edit border border-slate-300 rounded-md overflow-hidden">
+                <div className="admin-blog-quill-edit relative border border-slate-300 rounded-md">
                   <ReactQuill
                     theme="snow"
                     value={editContent}
@@ -546,6 +560,10 @@ const AdminBlogsMedia = () => {
                 </div>
                 <style>{`
                   .admin-blog-quill-edit .ql-container { height: 260px; overflow-y: auto; }
+                  .admin-blog-quill-edit .ql-tooltip { z-index: 50; }
+                  .admin-blog-quill-edit .ql-tooltip { left: 8px !important; }
+                  .admin-blog-quill-edit .ql-tooltip { max-width: calc(100% - 16px); }
+                  .admin-blog-quill-edit .ql-tooltip input { width: 220px; max-width: 60vw; }
                 `}</style>
               </div>
               <div>
