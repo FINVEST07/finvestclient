@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 import Login from "@/components/Login";
-
+import EnquiryModal from "@/components/EnquiryModal";
 
 const About = () => (
   <section id="about" className="section-padding bg-white">
@@ -210,7 +210,7 @@ const WhyChooseUs = () => (
 );
 
 const Index = () => {
-  const [loginopen, setLoginOpen] = useState(true);
+  const [loginopen, setLoginOpen] = useState(false);
   useEffect(() => {
     // Add smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -282,6 +282,7 @@ const Index = () => {
       <Navbar setLoginOpen={setLoginOpen} />
       <Hero />
       <Login setLoginOpen={setLoginOpen} loginopen={loginopen} />
+      <EnquiryModal />
       <Services setLoginOpen={setLoginOpen} />
       <About />
       <WhyChooseUs />

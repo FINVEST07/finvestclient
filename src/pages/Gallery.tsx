@@ -10,6 +10,24 @@ const Gallery = () => {
   const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
+  const isVideoUrl = (url?: string) => {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return (
+      lower.includes("/video/upload/") ||
+      lower.endsWith(".mp4") ||
+      lower.endsWith(".webm") ||
+      lower.endsWith(".mov") ||
+      lower.endsWith(".m4v")
+    );
+  };
+
+  const isVideoItem = (item: any) => {
+    const rt = String(item?.resource_type || "").toLowerCase();
+    if (rt === "video") return true;
+    return isVideoUrl(item?.url);
+  };
+
   const loadMedia = async () => {
     try {
       setLoading(true);
@@ -73,7 +91,17 @@ const Gallery = () => {
                 onClick={() => { setCurrentIndex(idx); setLightboxOpen(true); }}
               >
                 <div className="aspect-[3/4] w-full bg-blue-50">
-                  <img src={m.url} alt={m.label || 'media'} className="w-full h-full object-cover" loading="lazy" />
+                  {isVideoItem(m) ? (
+                    <video
+                      src={m.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      controls
+                      preload="metadata"
+                    />
+                  ) : (
+                    <img src={m.url} alt={m.label || 'media'} className="w-full h-full object-cover" loading="lazy" />
+                  )}
                 </div>
                 <div className="px-3 py-2">
                   <p className="text-sm lg:text-base xl:text-lg 2xl:text-xl text-center text-blue-900 line-clamp-2 min-h-[2.5rem]">
@@ -96,7 +124,17 @@ const Gallery = () => {
             ‹
           </button>
           <div className="max-w-[90vw] max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
-            <img src={media[currentIndex].url} alt="media" className="w-full h-full object-contain" />
+            {isVideoItem(media[currentIndex]) ? (
+              <video
+                src={media[currentIndex].url}
+                className="w-full h-full object-contain"
+                controls
+                autoPlay
+                preload="metadata"
+              />
+            ) : (
+              <img src={media[currentIndex].url} alt="media" className="w-full h-full object-contain" />
+            )}
           </div>
           <button
             aria-label="Next"

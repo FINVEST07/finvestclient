@@ -106,7 +106,10 @@ const BlogDetail = () => {
             )}
             <div className="p-6 md:p-10">
               <h1 className="text-2xl md:text-4xl font-bold text-blue-900 mb-4 leading-snug">{blog.title}</h1>
-              <div className="prose prose-blue max-w-none text-gray-800 whitespace-pre-wrap break-words">{blog.content}</div>
+              <div
+                className="prose prose-blue max-w-none text-gray-800 break-words prose-a:text-blue-700 prose-a:underline hover:prose-a:text-blue-900 prose-ol:list-decimal prose-ul:list-disc prose-li:my-1"
+                dangerouslySetInnerHTML={{ __html: blog.content || "" }}
+              />
             </div>
           </article>
         )}

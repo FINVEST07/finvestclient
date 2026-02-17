@@ -31,6 +31,7 @@ const Customerdashboard = () => {
     email: "",
     customer_id: "",
     servicename: "",
+    createdAt: "",
   });
 
   const [isAnimationPaused, setIsAnimationPaused] = useState(false);
@@ -272,7 +273,9 @@ const Customerdashboard = () => {
   };
 
   const formatDate = (isoDate) => {
+    if (!isoDate) return "-";
     const date = new Date(isoDate);
+    if (isNaN(date.getTime())) return "-";
     const day = date.getDate().toString().padStart(2, "0");
     const month = date.toLocaleString("en-US", { month: "short" });
     const year = date.getFullYear();
@@ -336,6 +339,9 @@ const Customerdashboard = () => {
                   Name
                 </th>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
+                  Registered&nbsp;Date
+                </th>
+                <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   DOB
                 </th>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
@@ -351,6 +357,9 @@ const Customerdashboard = () => {
                 </td>
                 <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   {customer.fullName}
+                </td>
+                <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
+                  {formatDate(customer.createdAt)}
                 </td>
                 <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   {customer.dob}

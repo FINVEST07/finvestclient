@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Menu, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Cookie from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import StockTicker from "@/components/Stocknews";
 import BusinessNews from "@/components/BusinessNews";
 
@@ -11,8 +11,18 @@ const Navbar = ({ setLoginOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profiledropopen, setProfiledropopen] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const closeTimeoutRef = useRef<number | null>(null);
+  const calculatorWrapperRef = useRef<HTMLDivElement | null>(null);
+  const calculatorButtonRef = useRef<HTMLButtonElement | null>(null);
+  const calculatorItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isCalculatorActive =
+    location.pathname === "/loancalculator" ||
+    location.pathname === "/loan-eligibility-calculator";
 
   const RupeeIcon = ({ width }) => {
     return (
@@ -58,6 +68,89 @@ const Navbar = ({ setLoginOpen }) => {
     };
   }, []);
 
+  const clearCloseTimeout = () => {
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleClose = () => {
+    clearCloseTimeout();
+    closeTimeoutRef.current = window.setTimeout(() => {
+      setCalculatorOpen(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (!calculatorOpen) return;
+      const wrapper = calculatorWrapperRef.current;
+      if (!wrapper) return;
+      if (!wrapper.contains(e.target as Node)) {
+        setCalculatorOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onMouseDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [calculatorOpen]);
+
+  const focusCalculatorItem = (index: number) => {
+    const el = calculatorItemRefs.current[index];
+    if (el) el.focus();
+  };
+
+  const onCalculatorButtonKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>
+  ) => {
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setCalculatorOpen(true);
+      window.setTimeout(() => focusCalculatorItem(0), 0);
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setCalculatorOpen(false);
+    }
+  };
+
+  const onCalculatorMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setCalculatorOpen(false);
+      calculatorButtonRef.current?.focus();
+      return;
+    }
+
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") {
+      return;
+    }
+
+    e.preventDefault();
+    const items = calculatorItemRefs.current;
+    const activeIndex = items.findIndex((n) => n === document.activeElement);
+
+    const lastIndex = items.length - 1;
+    if (e.key === "Home") return focusCalculatorItem(0);
+    if (e.key === "End") return focusCalculatorItem(lastIndex);
+
+    if (activeIndex === -1) {
+      return focusCalculatorItem(0);
+    }
+
+    if (e.key === "ArrowDown") {
+      return focusCalculatorItem(activeIndex === lastIndex ? 0 : activeIndex + 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      return focusCalculatorItem(activeIndex === 0 ? lastIndex : activeIndex - 1);
+    }
+  };
+
   return (
     <nav
       className={`fixed top-0  w-full z-50 transition-all duration-300 ${
@@ -68,7 +161,7 @@ const Navbar = ({ setLoginOpen }) => {
     >
       <div className="container-custom">
         <div className="flex items-center justify-between">
-          <a href="/" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img
               src="/fin_lo.png"
               alt="FinvestCorp Logo"
@@ -76,31 +169,91 @@ const Navbar = ({ setLoginOpen }) => {
             <span className="font-playfair text-xl md:text-2xl font-semibold text-blue-900">
               FinvestCorp<span className="text-blue-400">.</span>
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-1">
-            <a href="/services" className="nav-link">
+            <Link to="/services" className={`nav-link ${location.pathname === "/services" ? "text-blue-900" : ""}`}>
               Services
-            </a>
+            </Link>
 
-            <a
-              href="/become-partner"
-              className="nav-link"
+            <Link
+              to="/become-partner"
+              className={`nav-link ${location.pathname === "/become-partner" ? "text-blue-900" : ""}`}
             >
               Become a Partner
-            </a>
-            <a href="/loancalculator" className="nav-link">
-              Loan Calculator
-            </a>
-            <a href="/refer" className="nav-link flex items-center gap-2">
+            </Link>
+
+            <div
+              ref={calculatorWrapperRef}
+              className="relative"
+              onMouseEnter={() => {
+                clearCloseTimeout();
+                setCalculatorOpen(true);
+              }}
+              onMouseLeave={() => {
+                scheduleClose();
+              }}
+            >
+              <button
+                ref={calculatorButtonRef}
+                type="button"
+                className={`nav-link ${isCalculatorActive ? "text-blue-900" : ""}`}
+                aria-haspopup="menu"
+                aria-expanded={calculatorOpen}
+                onClick={() => setCalculatorOpen((v) => !v)}
+                onKeyDown={onCalculatorButtonKeyDown}
+              >
+                Calculator
+              </button>
+              {calculatorOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-0 top-full pt-2"
+                  onMouseEnter={() => {
+                    clearCloseTimeout();
+                  }}
+                  onMouseLeave={() => {
+                    scheduleClose();
+                  }}
+                  onKeyDown={onCalculatorMenuKeyDown}
+                >
+                  <div className="w-56 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden">
+                  <Link
+                    role="menuitem"
+                    to="/loancalculator"
+                    className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                    onClick={() => setCalculatorOpen(false)}
+                    ref={(el) => {
+                      calculatorItemRefs.current[0] = el;
+                    }}
+                  >
+                    EMI Calculator
+                  </Link>
+                  <Link
+                    role="menuitem"
+                    to="/loan-eligibility-calculator"
+                    className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                    onClick={() => setCalculatorOpen(false)}
+                    ref={(el) => {
+                      calculatorItemRefs.current[1] = el;
+                    }}
+                  >
+                    Loan Eligibility Calculator
+                  </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link to="/refer" className={`nav-link flex items-center gap-2 ${location.pathname === "/refer" ? "text-blue-900" : ""}`}>
               Refer & Earn
               <div className="bg-blue-100 flex items-center p-2 rounded-xl">
                 <RupeeIcon width={10} />
               </div>
-            </a>
-            <a href="/blogs" className="nav-link">Blogs</a>
-            <a href="/gallery" className="nav-link">Gallery</a>
+            </Link>
+            <Link to="/blogs" className={`nav-link ${location.pathname === "/blogs" ? "text-blue-900" : ""}`}>Blogs</Link>
+            <Link to="/gallery" className={`nav-link ${location.pathname === "/gallery" ? "text-blue-900" : ""}`}>Gallery</Link>
           </div>
 
           <div className="hidden md:flex items-center space-x-4 ">
@@ -212,9 +365,41 @@ const Navbar = ({ setLoginOpen }) => {
               Become a Partner
             </a>
 
-            <a href="/loancalculator" className="px-4">
-              Loan Calculator
-            </a>
+            <button
+              type="button"
+              className="px-4 text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+              aria-haspopup="menu"
+              aria-expanded={calculatorOpen}
+              onClick={() => setCalculatorOpen((v) => !v)}
+            >
+              Calculator
+            </button>
+            {calculatorOpen && (
+              <div role="menu" className="pl-6 flex flex-col space-y-2">
+                <a
+                  role="menuitem"
+                  href="/loancalculator"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={() => {
+                    setCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  EMI Calculator
+                </a>
+                <a
+                  role="menuitem"
+                  href="/loan-eligibility-calculator"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={() => {
+                    setCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  Loan Eligibility Calculator
+                </a>
+              </div>
+            )}
 
             <a
               href="/refer"

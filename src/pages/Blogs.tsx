@@ -4,6 +4,8 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
 const Blogs = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -59,7 +61,9 @@ const Blogs = () => {
               >
                 <div className="p-6 md:col-span-2 flex flex-col justify-center">
                   <h2 className="text-2xl font-bold text-blue-900 mb-2">{b.title}</h2>
-                  <p className="text-gray-700 leading-relaxed line-clamp-4 whitespace-pre-line">{b.content}</p>
+                  <p className="text-gray-700 leading-relaxed line-clamp-4 whitespace-pre-line">
+                    {typeof b.content === "string" ? stripHtml(b.content) : ""}
+                  </p>
                   <span className="mt-4 inline-flex items-center gap-2 text-blue-900 font-semibold">
                     Read full article
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>

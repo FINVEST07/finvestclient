@@ -4,6 +4,9 @@ import DataTable from "react-data-table-component";
 import axios from "axios";
 import { toast } from "sonner";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
+import { Share2 } from "lucide-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const AdminBlogsMedia = () => {
   const [adminRank, setAdminRank] = useState<number | null>(null);
@@ -32,6 +35,59 @@ const AdminBlogsMedia = () => {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaSubmitting, setMediaSubmitting] = useState<boolean>(false);
   const [mediaLabel, setMediaLabel] = useState<string>("");
+
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link"],
+      [{ align: [] }],
+      ["clean"],
+    ],
+  };
+
+  const quillFormats = [
+    "header",
+    "bold",
+    "italic",
+    "list",
+    "bullet",
+    "link",
+    "align",
+  ];
+
+  const isVideoFile = (file: File) => file.type?.startsWith("video/");
+  const isVideoUrl = (url?: string) => {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return (
+      lower.includes("/video/upload/") ||
+      lower.endsWith(".mp4") ||
+      lower.endsWith(".webm") ||
+      lower.endsWith(".mov") ||
+      lower.endsWith(".m4v")
+    );
+  };
+
+  const shareOrCopyLink = async (url: string) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ url });
+        return;
+      }
+    } catch (e) {
+      // ignore and fallback to clipboard
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to copy link");
+    }
+  };
 
   useEffect(() => {
     const storedRank = localStorage.getItem("rank");
@@ -319,7 +375,7 @@ const AdminBlogsMedia = () => {
                 onClick={() => setIsMediaOpen(true)}
                 className="px-4 py-2 bg-[#D6B549] text-slate-900 font-medium rounded-md hover:brightness-95"
               >
-                Post Image
+                Post
               </button>
             </div>
             <div className="mt-5">
@@ -333,13 +389,34 @@ const AdminBlogsMedia = () => {
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
                   {media.map((m) => (
                     <div key={m._id} className="relative group bg-slate-800 border border-slate-700 rounded-md overflow-hidden">
-                      <img src={m.url} alt={"media"} className="w-full h-36 object-cover" loading="lazy" />
+                      {isVideoUrl(m.url) ? (
+                        <video
+                          src={m.url}
+                          className="w-full h-36 object-cover"
+                          muted
+                          controls
+                          preload="metadata"
+                        />
+                      ) : (
+                        <img src={m.url} alt={"media"} className="w-full h-36 object-cover" loading="lazy" />
+                      )}
+
+                      <button
+                        onClick={() => shareOrCopyLink(m.url)}
+                        className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white p-2 rounded hover:bg-slate-900"
+                        aria-label="Share"
+                        title="Share / Copy link"
+                        type="button"
+                      >
+                        <Share2 size={16} />
+                      </button>
+
                       <button
                         onClick={async () => {
-                          if (!confirm("Delete this image?")) return;
+                          if (!confirm("Delete this media?")) return;
                           try {
                             await axios.delete(`${import.meta.env.VITE_API_URI}media/${m._id}`);
-                            toast.success("Image deleted");
+                            toast.success("Media deleted");
                             loadMedia();
                           } catch (e: any) {
                             console.error(e);
@@ -386,12 +463,19 @@ const AdminBlogsMedia = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 h-40 resize-y focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
-                  placeholder="Write your blog content..."
-                />
+                <div className="admin-blog-quill-post border border-slate-300 rounded-md overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={content}
+                    onChange={(val) => setContent(val)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Write your blog content..."
+                  />
+                </div>
+                <style>{`
+                  .admin-blog-quill-post .ql-container { height: 260px; overflow-y: auto; }
+                `}</style>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Thumbnail</label>
@@ -450,12 +534,19 @@ const AdminBlogsMedia = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
-                <textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 h-40 resize-y focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
-                  placeholder="Write your blog content..."
-                />
+                <div className="admin-blog-quill-edit border border-slate-300 rounded-md overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={editContent}
+                    onChange={(val) => setEditContent(val)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Write your blog content..."
+                  />
+                </div>
+                <style>{`
+                  .admin-blog-quill-edit .ql-container { height: 260px; overflow-y: auto; }
+                `}</style>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Replace Thumbnail (optional)</label>
@@ -492,7 +583,7 @@ const AdminBlogsMedia = () => {
           <div className="absolute inset-0 bg-black/60" onClick={() => setIsMediaOpen(false)} />
           <div className="relative w-[90%] max-w-2xl bg-white rounded-lg shadow-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-slate-800">Post Image</h3>
+              <h3 className="text-xl font-semibold text-slate-800">Post</h3>
               <button onClick={() => setIsMediaOpen(false)} className="text-slate-500 hover:text-slate-700" aria-label="Close">✕</button>
             </div>
             <div className="space-y-4">
@@ -506,7 +597,7 @@ const AdminBlogsMedia = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Image</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Post</label>
                 <div
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
@@ -516,13 +607,32 @@ const AdminBlogsMedia = () => {
                   }}
                   className="w-full border-2 border-dashed border-slate-300 rounded-md p-6 text-center bg-slate-50 flex flex-col items-center justify-center"
                 >
-                  <p className="text-slate-600 mb-2">Drag & drop an image here</p>
+                  <p className="text-slate-600 mb-2">Drag & drop an image or video here</p>
                   <p className="text-slate-500 text-sm">or</p>
                   <div className="mt-3">
-                    <input type="file" accept="image/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="block mx-auto" />
+                    <input type="file" accept="image/*,video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="block mx-auto" />
                   </div>
                   {mediaFile && (
                     <div className="mt-3 text-slate-700 text-sm">Selected: {mediaFile.name}</div>
+                  )}
+
+                  {mediaFile && (
+                    <div className="mt-4 w-full">
+                      {isVideoFile(mediaFile) ? (
+                        <video
+                          src={URL.createObjectURL(mediaFile)}
+                          className="w-full max-h-64 rounded"
+                          controls
+                          preload="metadata"
+                        />
+                      ) : (
+                        <img
+                          src={URL.createObjectURL(mediaFile)}
+                          alt="Preview"
+                          className="w-full max-h-64 object-contain rounded"
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -531,21 +641,21 @@ const AdminBlogsMedia = () => {
               <button onClick={() => setIsMediaOpen(false)} className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</button>
               <button
                 onClick={async () => {
-                  if (!mediaFile) { toast.error("Please select an image"); return; }
+                  if (!mediaFile) { toast.error("Please select a file"); return; }
                   try {
                     setMediaSubmitting(true);
                     const form = new FormData();
-                    form.append("image", mediaFile);
+                    form.append("file", mediaFile);
                     if (mediaLabel.trim()) form.append("label", mediaLabel.trim());
                     const res = await axios.post(`${import.meta.env.VITE_API_URI}media`, form, { headers: { "Content-Type": "multipart/form-data" } });
                     if (res.data?.status) {
-                      toast.success(res.data?.message || "Image posted");
+                      toast.success(res.data?.message || "Media posted");
                       setIsMediaOpen(false);
                       setMediaFile(null);
                       setMediaLabel("");
                       loadMedia();
                     } else {
-                      toast.error(res.data?.message || "Failed to upload image");
+                      toast.error(res.data?.message || "Failed to upload media");
                     }
                   } catch (e: any) {
                     console.error(e);

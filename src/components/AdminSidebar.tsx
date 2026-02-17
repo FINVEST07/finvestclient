@@ -34,6 +34,14 @@ const ApplicationIcon = (props) => {
   );
 };
 
+const EnquiryIcon = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
+      <path d="M64 112c-8.8 0-16 7.2-16 16l0 256c0 8.8 7.2 16 16 16l384 0c8.8 0 16-7.2 16-16l0-256c0-8.8-7.2-16-16-16L64 112zM48 64l416 0c35.3 0 64 28.7 64 64l0 256c0 35.3-28.7 64-64 64L48 448c-35.3 0-64-28.7-64-64L-16 128C-16 92.7 12.7 64 48 64zm64 96c0-8.8 7.2-16 16-16l256 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-256 0c-8.8 0-16-7.2-16-16zm0 96c0-8.8 7.2-16 16-16l256 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-256 0c-8.8 0-16-7.2-16-16zm0 96c0-8.8 7.2-16 16-16l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16z" />
+    </svg>
+  );
+};
+
 const UsersIcon = (props) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" {...props}>
@@ -100,6 +108,16 @@ const AdminSidebar = () => {
           <span className="text-lg self-center text-[#D6B549]">
             Applications
           </span>
+        </div>
+
+        <div
+          className={`flex gap-3 cursor-pointer items-center ${
+            activeTab === "enquiries" ? "bg-slate-600 p-3 rounded-md" : ""
+          }`}
+          onClick={() => handleNavigation("/adminenquiries", "enquiries")}
+        >
+          <EnquiryIcon width={26} fill={"#D6B549"} />
+          <span className="text-lg self-center text-[#D6B549]">Enquiries</span>
         </div>
         <div
           className={`flex gap-3 cursor-pointer items-center ${

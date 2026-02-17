@@ -17,8 +17,10 @@ import AdminCustomers from "./components/AdminCustomers";
 import Settings from "./components/Settings";
 import AdminApplications from "./pages/AdminApplications";
 import AdminBlogsMedia from "./pages/AdminBlogsMedia";
+import AdminEnquiries from "./pages/AdminEnquiries";
 import { useState, useEffect } from "react";
 import LoanCalculator from "./pages/LoanCalculator";
+import LoanEligibilityCalculator from "./pages/LoanEligibilityCalculator";
 import About from "./pages/About";
 import Refer from "./pages/Refer";
 import Services from "./pages/service";
@@ -78,6 +80,10 @@ const App = () => {
             <Route path="/applicationform" element={<Applicationform />} />
             <Route path="/admin" element={<Adminlogin />} />
             <Route path="/loancalculator" element={<LoanCalculator />} />
+            <Route
+              path="/loan-eligibility-calculator"
+              element={<LoanEligibilityCalculator />}
+            />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/refer" element={<Refer />} />
@@ -119,6 +125,15 @@ const App = () => {
               element={
                 <RequireSuperAdmin>
                   <AdminBlogsMedia />
+                </RequireSuperAdmin>
+              }
+            />
+
+            <Route
+              path="/adminenquiries"
+              element={
+                <RequireSuperAdmin>
+                  <AdminEnquiries />
                 </RequireSuperAdmin>
               }
             />
