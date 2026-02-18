@@ -106,23 +106,23 @@ const EnquiryModal = () => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-blue-100/50 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-blue-100/50 bg-white/95">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-blue-100/50 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-blue-100/50 bg-white/95">
           <div>
-            <h3 className="text-xl font-bold text-blue-900">Enquiry</h3>
+            <h3 className="text-lg font-bold text-blue-900">Enquiry</h3>
             <p className="text-sm text-gray-600">Tell us what you’re looking for</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-2 rounded-lg hover:bg-blue-50 text-blue-900"
+            className="px-3 py-1.5 rounded-lg hover:bg-blue-50 text-blue-900 text-sm"
           >
             Close
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={onSubmit} className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="md:col-span-1">
               <label className="block text-sm font-semibold text-blue-900 mb-1">
                 Name
@@ -132,7 +132,7 @@ const EnquiryModal = () => {
                 value={formData.name}
                 onChange={onChange}
                 required
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="Your name"
               />
             </div>
@@ -147,7 +147,7 @@ const EnquiryModal = () => {
                 value={formData.email}
                 onChange={onChange}
                 required
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="you@example.com"
               />
             </div>
@@ -161,7 +161,7 @@ const EnquiryModal = () => {
                 value={formData.mobile}
                 onChange={onChange}
                 required
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="10-digit mobile"
               />
             </div>
@@ -175,7 +175,7 @@ const EnquiryModal = () => {
                 value={formData.city}
                 onChange={onChange}
                 required
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="Your city"
               />
             </div>
@@ -189,7 +189,7 @@ const EnquiryModal = () => {
                 value={formData.service}
                 onChange={onChange}
                 required
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30 bg-white"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 bg-white"
               >
                 <option value="">Select</option>
                 <option value="loan">Loan</option>
@@ -207,7 +207,7 @@ const EnquiryModal = () => {
                 value={formData.amount}
                 onChange={onChange}
                 required
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="Requested amount"
               />
             </div>
@@ -220,24 +220,24 @@ const EnquiryModal = () => {
                 name="referralCode"
                 value={formData.referralCode}
                 onChange={onChange}
-                className="w-full border border-blue-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
+                className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="(Optional)"
               />
             </div>
           </div>
 
-          <div className="mt-6 flex items-center gap-3 justify-end">
+          <div className="mt-4 flex items-center gap-2 justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-blue-200 text-blue-900 hover:bg-blue-50 transition"
+              className="px-3 py-1.5 rounded-lg border border-blue-200 text-blue-900 hover:bg-blue-50 transition text-sm"
             >
               Not now
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded-lg bg-blue-900 text-white hover:bg-blue-800 transition"
+              className="px-4 py-1.5 rounded-lg bg-blue-900 text-white hover:bg-blue-800 transition text-sm"
             >
               {submitting ? "Submitting..." : "Submit"}
             </button>

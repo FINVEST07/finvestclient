@@ -336,10 +336,10 @@ const Customerdashboard = () => {
                   Customer&nbsp;ID
                 </th>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
-                  Name
+                  Registered&nbsp;Date
                 </th>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
-                  Registered&nbsp;Date
+                  Name
                 </th>
                 <th className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   DOB
@@ -356,10 +356,10 @@ const Customerdashboard = () => {
                   {customer.customer_id}
                 </td>
                 <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
-                  {customer.fullName}
+                  {formatDate(customer.createdAt)}
                 </td>
                 <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
-                  {formatDate(customer.createdAt)}
+                  {customer.fullName}
                 </td>
                 <td className="border-2 border-[#0F172A] p-2 text-xs md:text-sm lg:text-lg">
                   {customer.dob}

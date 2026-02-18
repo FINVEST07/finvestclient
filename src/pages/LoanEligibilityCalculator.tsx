@@ -8,7 +8,7 @@ type FormState = {
   foir: string;
   existingEmi: string;
   tenureYears: string;
-  emiPerLakh: string;
+  interestRate: string;
 };
 
 export default function LoanEligibilityCalculator() {
@@ -17,7 +17,7 @@ export default function LoanEligibilityCalculator() {
     foir: "70",
     existingEmi: "",
     tenureYears: "",
-    emiPerLakh: "733",
+    interestRate: "8",
   });
 
   const [error, setError] = useState<string>("");
@@ -28,20 +28,39 @@ export default function LoanEligibilityCalculator() {
     const foir = Number(form.foir);
     const existingEmi = Number(form.existingEmi);
     const tenureYears = Number(form.tenureYears);
-    const emiPerLakh = Number(form.emiPerLakh);
+    const interestRate = Number(form.interestRate);
 
-    return { income, foir, existingEmi, tenureYears, emiPerLakh };
+    return { income, foir, existingEmi, tenureYears, interestRate };
   }, [form]);
 
+  const emiPerLakh = useMemo(() => {
+    const tenureYears = Number(form.tenureYears);
+    const interestRate = Number(form.interestRate);
+
+    if (!Number.isFinite(tenureYears) || tenureYears <= 0) return null;
+    if (!Number.isFinite(interestRate) || interestRate <= 0) return null;
+
+    const amount = 100000; // 1 Lakh
+    const monthlyRate = interestRate / 100 / 12;
+    const numPayments = tenureYears * 12;
+
+    const monthlyPayment =
+      (amount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+      (Math.pow(1 + monthlyRate, numPayments) - 1);
+
+    if (!Number.isFinite(monthlyPayment) || monthlyPayment <= 0) return null;
+    return Number(monthlyPayment.toFixed(2));
+  }, [form.interestRate, form.tenureYears]);
+
   useEffect(() => {
-    const { income, foir, existingEmi, tenureYears, emiPerLakh } = parsed;
+    const { income, foir, existingEmi, tenureYears } = parsed;
 
     if (
       !form.income ||
       !form.foir ||
       !form.existingEmi ||
       !form.tenureYears ||
-      !form.emiPerLakh
+      !form.interestRate
     ) {
       setEligibleLakhs(null);
       setError("Please fill all fields.");
@@ -52,17 +71,22 @@ export default function LoanEligibilityCalculator() {
       !Number.isFinite(income) ||
       !Number.isFinite(foir) ||
       !Number.isFinite(existingEmi) ||
-      !Number.isFinite(tenureYears) ||
-      !Number.isFinite(emiPerLakh)
+      !Number.isFinite(tenureYears)
     ) {
       setEligibleLakhs(null);
       setError("Please enter valid numbers.");
       return;
     }
 
-    if (income <= 0 || existingEmi < 0 || tenureYears <= 0 || emiPerLakh <= 0) {
+    if (income <= 0 || existingEmi < 0 || tenureYears <= 0) {
       setEligibleLakhs(null);
       setError("Values must be greater than 0 (Existing EMI can be 0).");
+      return;
+    }
+
+    if (emiPerLakh == null) {
+      setEligibleLakhs(null);
+      setError("Please enter valid tenure and interest rate.");
       return;
     }
 
@@ -72,7 +96,7 @@ export default function LoanEligibilityCalculator() {
       return;
     }
 
-    const eligible = ((income * (foir / 100) - existingEmi) / emiPerLakh);
+    const eligible = (income * (foir / 100) - existingEmi) / emiPerLakh;
 
     if (!Number.isFinite(eligible) || eligible <= 0) {
       setEligibleLakhs(null);
@@ -87,6 +111,18 @@ export default function LoanEligibilityCalculator() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const formatEligibleAmount = (lakhs: number) => {
+    if (!Number.isFinite(lakhs)) return "-";
+
+    if (lakhs >= 100) {
+      const crores = lakhs / 100;
+      const formatted = Number(crores.toFixed(2)).toString();
+      return `${formatted} Crore`;
+    }
+
+    return `${Number(lakhs.toFixed(2)).toString()} Lakhs`;
   };
 
   return (
@@ -107,9 +143,6 @@ export default function LoanEligibilityCalculator() {
             <h1 className="text-2xl md:text-3xl font-bold text-blue-900">
               Loan Eligibility Calculator
             </h1>
-            <p className="text-sm md:text-base text-gray-600 mt-1">
-              Eligible Loan = ((Income × FOIR%) − Existing EMI) ÷ EMI per Lakh
-            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
@@ -173,19 +206,19 @@ export default function LoanEligibilityCalculator() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-blue-900 mb-1">
-                    EMI per Lakh
+                    Rate of Interest (%)
                   </label>
                   <input
-                    name="emiPerLakh"
-                    value={form.emiPerLakh}
+                    name="interestRate"
+                    value={form.interestRate}
                     onChange={handleChange}
                     inputMode="numeric"
                     className="w-full border border-blue-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600/30"
-                    placeholder="e.g. 733"
+                    placeholder="e.g. 8"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    This should be the EMI for ₹1 Lakh for the chosen rate/tenure.
-                  </p>
+                  {/* <p className="text-xs text-gray-500 mt-1">
+                    EMI per Lakh (auto): {emiPerLakh != null ? `₹${emiPerLakh.toFixed(2)}` : "-"}
+                  </p> */}
                 </div>
               </div>
 
@@ -204,7 +237,7 @@ export default function LoanEligibilityCalculator() {
               <div className="mt-4 rounded-2xl bg-white border border-blue-100/60 p-5 shadow-sm">
                 <p className="text-sm text-gray-600">Eligible Loan</p>
                 <p className="text-3xl font-extrabold text-blue-900 mt-1">
-                  {eligibleLakhs != null ? `${eligibleLakhs.toFixed(2)} Lakhs` : "-"}
+                  {eligibleLakhs != null ? formatEligibleAmount(eligibleLakhs) : "-"}
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
                   Result is shown in Lakhs with 2 decimals.

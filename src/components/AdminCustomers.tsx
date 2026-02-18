@@ -74,6 +74,11 @@ const AdminCustomers = () => {
       width: "100px",
     },
     {
+      name: "Registered Date",
+      selector: (row: Customer) => formatDate(row.createdAt),
+      width: "150px",
+    },
+    {
       name: "Name",
       selector: (row: Customer) => row.fullName || "N/A",
       width: "150px",
@@ -87,11 +92,6 @@ const AdminCustomers = () => {
       name: "Email ID",
       selector: (row: Customer) => row.email || "N/A",
       width: "250px",
-    },
-    {
-      name: "Registered Date",
-      selector: (row: Customer) => formatDate(row.createdAt),
-      width: "150px",
     },
   ];
 
