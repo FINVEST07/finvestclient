@@ -12,6 +12,7 @@ const Navbar = ({ setLoginOpen }) => {
   const [scrolled, setScrolled] = useState(false);
   const [profiledropopen, setProfiledropopen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [mobileCalculatorOpen, setMobileCalculatorOpen] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const calculatorWrapperRef = useRef<HTMLDivElement | null>(null);
   const calculatorButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -350,7 +351,10 @@ const Navbar = ({ setLoginOpen }) => {
             <a
               href="/services"
               className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setMobileCalculatorOpen(false);
+              }}
             >
               Services
             </a>
@@ -360,6 +364,7 @@ const Navbar = ({ setLoginOpen }) => {
               className="px-4"
               onClick={() => {
                 setIsOpen(false);
+                setMobileCalculatorOpen(false);
               }}
             >
               Become a Partner
@@ -369,24 +374,28 @@ const Navbar = ({ setLoginOpen }) => {
               type="button"
               className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
               aria-haspopup="menu"
-              aria-expanded={calculatorOpen}
-              onClick={() => setCalculatorOpen((v) => !v)}
+              aria-expanded={mobileCalculatorOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileCalculatorOpen((prev) => !prev);
+              }}
             >
               <span className="flex-1 py-1">Calculator</span>
 
               <ChevronDown
-                className={`h-4 w-4 transition-transform ${calculatorOpen ? "rotate-180" : ""}`}
+                className={`h-4 w-4 transition-transform ${mobileCalculatorOpen ? "rotate-180" : ""}`}
                 aria-hidden="true"
               />
             </button>
-            {calculatorOpen && (
+            {mobileCalculatorOpen && (
               <div role="menu" className="pl-6 flex flex-col space-y-2">
                 <Link
                   role="menuitem"
                   to="/loancalculator"
                   className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
-                  onClick={() => {
-                    setCalculatorOpen(false);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCalculatorOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -396,8 +405,9 @@ const Navbar = ({ setLoginOpen }) => {
                   role="menuitem"
                   to="/loan-eligibility-calculator"
                   className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
-                  onClick={() => {
-                    setCalculatorOpen(false);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCalculatorOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -406,23 +416,40 @@ const Navbar = ({ setLoginOpen }) => {
               </div>
             )}
 
-            <a
-              href="/refer"
-              onClick={() => setIsOpen(false)}
+            <Link
+              to="/refer"
+              onClick={() => {
+                setIsOpen(false);
+                setMobileCalculatorOpen(false);
+              }}
               className="px-4 flex items-center gap-2"
             >
               Refer & Earn
               <div className="bg-blue-100 flex items-center p-1.5 rounded-xl">
                 <RupeeIcon width={10} />
               </div>
-            </a>
+            </Link>
 
-            <a href="/blogs" className="px-4" onClick={() => setIsOpen(false)}>
+            <Link
+              to="/blogs"
+              className="px-4"
+              onClick={() => {
+                setIsOpen(false);
+                setMobileCalculatorOpen(false);
+              }}
+            >
               Blogs
-            </a>
-            <a href="/gallery" className="px-4" onClick={() => setIsOpen(false)}>
+            </Link>
+            <Link
+              to="/gallery"
+              className="px-4"
+              onClick={() => {
+                setIsOpen(false);
+                setMobileCalculatorOpen(false);
+              }}
+            >
               Gallery
-            </a>
+            </Link>
           </div>
 
           {!emailcookie ? (
@@ -430,6 +457,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setLoginOpen(true);
                 setIsOpen(false);
+                setMobileCalculatorOpen(false);
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
             >
@@ -440,6 +468,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 Cookie.remove("finvest"); // Fixed: was "email", should be "finvest"
                 setIsOpen(false);
+                setMobileCalculatorOpen(false);
                 window.location.reload();
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
