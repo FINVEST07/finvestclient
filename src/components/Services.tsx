@@ -179,7 +179,7 @@ const BankModal = ({ isOpen, onClose, title, banks, type, setLoginOpen }) => {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-blue-100/50 animate-scale-in">
-        <div className="p-8 border-b border-blue-100/50 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-sm rounded-t-3xl">
+        <div className="p-6 md:p-8 border-b border-blue-100/50 flex justify-between items-center sticky top-0 z-20 bg-white/95 backdrop-blur-sm rounded-t-3xl">
           <div>
             <h2 className="text-3xl font-bold text-blue-900 mb-2">{title}</h2>
             <p className="text-gray-600">Choose from our trusted partners</p>
@@ -192,8 +192,8 @@ const BankModal = ({ isOpen, onClose, title, banks, type, setLoginOpen }) => {
           </button>
         </div>
         
-        <div className="p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="p-5 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-8">
             {banks.map((bank, index) => (
               <div 
                 key={index} 
@@ -201,7 +201,7 @@ const BankModal = ({ isOpen, onClose, title, banks, type, setLoginOpen }) => {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-center mb-6">
-                  <div className="relative w-20 h-20 mr-4 flex-shrink-0">
+                  <div className="relative w-14 h-14 md:w-20 md:h-20 mr-3 md:mr-4 flex-shrink-0 overflow-hidden">
                     <img 
                       src={bank.logo} 
                       alt={bank.name}

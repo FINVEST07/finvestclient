@@ -1,6 +1,6 @@
 
 import { useRef, useState, useEffect } from "react";
-import { Menu, X, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Cookie from "js-cookie";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -367,18 +367,23 @@ const Navbar = ({ setLoginOpen }) => {
 
             <button
               type="button"
-              className="px-4 text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+              className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
               aria-haspopup="menu"
               aria-expanded={calculatorOpen}
               onClick={() => setCalculatorOpen((v) => !v)}
             >
-              Calculator
+              <span className="flex-1 py-1">Calculator</span>
+
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${calculatorOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
             </button>
             {calculatorOpen && (
               <div role="menu" className="pl-6 flex flex-col space-y-2">
-                <a
+                <Link
                   role="menuitem"
-                  href="/loancalculator"
+                  to="/loancalculator"
                   className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
                   onClick={() => {
                     setCalculatorOpen(false);
@@ -386,10 +391,10 @@ const Navbar = ({ setLoginOpen }) => {
                   }}
                 >
                   EMI Calculator
-                </a>
-                <a
+                </Link>
+                <Link
                   role="menuitem"
-                  href="/loan-eligibility-calculator"
+                  to="/loan-eligibility-calculator"
                   className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
                   onClick={() => {
                     setCalculatorOpen(false);
@@ -397,7 +402,7 @@ const Navbar = ({ setLoginOpen }) => {
                   }}
                 >
                   Loan Eligibility Calculator
-                </a>
+                </Link>
               </div>
             )}
 

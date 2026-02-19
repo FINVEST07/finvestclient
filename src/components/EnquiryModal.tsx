@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Cookie from "js-cookie";
 import axios from "axios";
+import { z } from "zod";
 
 const ENQUIRY_SUBMITTED_COOKIE = "finvest_enquiry_submitted";
 
@@ -10,6 +11,7 @@ const EnquiryModal = () => {
   const [open, setOpen] = useState(false);
   const reopenTimeoutRef = useRef<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState<string>("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -63,23 +65,44 @@ const EnquiryModal = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setValidationError("");
   };
+
+  const enquirySchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Please enter a valid email"),
+    mobile: z
+      .string()
+      .transform((v) => v.replace(/\D/g, ""))
+      .refine((v) => v.length === 10, "Mobile number must be 10 digits"),
+    city: z.string().min(1, "City is required"),
+    service: z.enum(["loan", "insurance", "investment"]),
+    amount: z.string().min(1, "Amount is required"),
+    referralCode: z.string().optional(),
+  });
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      const parsedForm = enquirySchema.safeParse(formData);
+      if (!parsedForm.success) {
+        const firstIssue = parsedForm.error.issues[0];
+        setValidationError(firstIssue?.message || "Please check your inputs.");
+        return;
+      }
+
       setSubmitting(true);
       const res = await axios.post(
         `${import.meta.env.VITE_API_URI}sendenquiry`,
         {
-          name: formData.name,
-          email: formData.email,
-          mobile: formData.mobile,
-          city: formData.city,
-          service: formData.service,
-          amount: formData.amount,
-          referralCode: formData.referralCode,
+          name: parsedForm.data.name,
+          email: parsedForm.data.email,
+          mobile: parsedForm.data.mobile,
+          city: parsedForm.data.city,
+          service: parsedForm.data.service,
+          amount: parsedForm.data.amount,
+          referralCode: parsedForm.data.referralCode,
         },
         {
           headers: {
@@ -121,7 +144,7 @@ const EnquiryModal = () => {
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-4">
+        <form noValidate onSubmit={onSubmit} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="md:col-span-1">
               <label className="block text-sm font-semibold text-blue-900 mb-1">
@@ -131,7 +154,6 @@ const EnquiryModal = () => {
                 name="name"
                 value={formData.name}
                 onChange={onChange}
-                required
                 className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="Your name"
               />
@@ -146,7 +168,6 @@ const EnquiryModal = () => {
                 name="email"
                 value={formData.email}
                 onChange={onChange}
-                required
                 className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="you@example.com"
               />
@@ -160,7 +181,8 @@ const EnquiryModal = () => {
                 name="mobile"
                 value={formData.mobile}
                 onChange={onChange}
-                required
+                maxLength={10}
+                inputMode="numeric"
                 className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="10-digit mobile"
               />
@@ -174,7 +196,6 @@ const EnquiryModal = () => {
                 name="city"
                 value={formData.city}
                 onChange={onChange}
-                required
                 className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="Your city"
               />
@@ -188,7 +209,6 @@ const EnquiryModal = () => {
                 name="service"
                 value={formData.service}
                 onChange={onChange}
-                required
                 className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30 bg-white"
               >
                 <option value="">Select</option>
@@ -206,7 +226,6 @@ const EnquiryModal = () => {
                 name="amount"
                 value={formData.amount}
                 onChange={onChange}
-                required
                 className="w-full border border-blue-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30"
                 placeholder="Requested amount"
               />
@@ -225,6 +244,12 @@ const EnquiryModal = () => {
               />
             </div>
           </div>
+
+          {validationError && (
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {validationError}
+            </div>
+          )}
 
           <div className="mt-4 flex items-center gap-2 justify-end">
             <button

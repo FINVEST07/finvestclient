@@ -5,6 +5,7 @@ import ToastContainerComponent from "./ToastContainerComponent";
 import Cookie from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
 
 const Login = ({ setLoginOpen, loginopen }) => {
   const [step, setStep] = useState("form"); // 'form', 'verify', or 'forgot-password'
@@ -272,16 +273,34 @@ const Login = ({ setLoginOpen, loginopen }) => {
 
   const sendOtp = async (e) => {
     e.preventDefault();
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return; // prevent the API call if password is too short
+
+    const registerSchema = z.object({
+      name: z.string().min(1, "Name is required"),
+      email: z.string().email("Please enter a valid email"),
+      mobile: z
+        .string()
+        .transform((v) => v.replace(/\D/g, ""))
+        .refine((v) => v.length === 10, "Mobile number must be 10 digits"),
+      password: z.string().min(8, "Password must be at least 8 characters"),
+    });
+
+    const parsed = registerSchema.safeParse(formData);
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      const message = firstIssue?.message || "Please check your inputs.";
+      setError(message);
+      toast.error(message);
+      return;
     }
 
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URI}adduser`,
         {
-          payload: formData,
+          payload: {
+            ...formData,
+            mobile: parsed.data.mobile,
+          },
         }
       );
 
@@ -355,7 +374,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
                 </h2>
 
                 {sectionopen === "register" ? (
-                  <form onSubmit={sendOtp}>
+                  <form noValidate onSubmit={sendOtp}>
                     <input
                       type="text"
                       name="name"
@@ -363,7 +382,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
                       value={formData.name}
                       onChange={handleChange}
                       className="w-full p-2 mb-3 border rounded-lg"
-                      required
                     />
                     <input
                       type="email"
@@ -372,7 +390,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full p-2 mb-3 border rounded-lg"
-                      required
                     />
                     <input
                       type="tel"
@@ -381,7 +398,8 @@ const Login = ({ setLoginOpen, loginopen }) => {
                       value={formData.mobile}
                       onChange={handleChange}
                       className="w-full p-2 mb-3 border rounded-lg"
-                      required
+                      maxLength={10}
+                      inputMode="numeric"
                     />
                     <div className="relative">
                       <input
@@ -391,7 +409,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
                         value={formData.password}
                         onChange={handleChange}
                         className="w-full p-2 mb-3 border rounded-lg"
-                        required
                       />
                       <button
                         type="button"
