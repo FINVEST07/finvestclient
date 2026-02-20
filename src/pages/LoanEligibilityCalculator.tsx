@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import LoanEligibilityGuide from "@/components/EligibilityCalculatorBlogs";
 
 type FormState = {
   income: string;
@@ -254,6 +255,7 @@ export default function LoanEligibilityCalculator() {
           </div>
         </div>
       </div>
+    <LoanEligibilityGuide/>
     </div>
   );
 }
