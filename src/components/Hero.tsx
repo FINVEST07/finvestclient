@@ -12,7 +12,7 @@ const Hero = () => {
           content="FINVESTCORP offers expert financial advice on loans, insurance, and investments. Trusted by 1,500+ clients across India since 2013."
         />
       </Helmet>
-      <section className=" xl:mt-[36vh] mt-[28vh] md:pt-4 pb-16 2xl:pb-20 relative 2xl:mt-[25vh] overflow-hidden">
+      <section className=" xl:mt-[33vh] mt-[28vh] md:pt-4 pb-16 2xl:pb-20 relative 2xl:mt-[25vh] overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-0 right-0 w-full h-full bg-blue-50 opacity-50 -z-10"></div>
         <div className="absolute top-1/3 -right-64 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl -z-10"></div>
@@ -28,7 +28,7 @@ const Hero = () => {
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-playfair leading-tight text-blue-900">
+              <h1 className="text-4xl md:text-5xl 2xl:text-6xl font-bold font-playfair leading-tight text-blue-900">
                 Smart Finance and Investments, <br />
                 <span className="relative">
                   Secure Future
@@ -36,11 +36,30 @@ const Hero = () => {
                 </span>
               </h1>
 
-              <p className="text-finance-slate text-lg md:text-xl max-w-xl">
+
+              <p className="text-finance-slate text-lg 2xl:text-xl max-w-xl">
                 Personalized investment strategies and loan solutions to help
                 you achieve your financial goals with confidence and peace of
                 mind.
               </p>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.dispatchEvent(new Event("finvest:open-enquiry"));
+                  }}
+                  className="relative inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-900 text-white font-semibold shadow-lg border border-blue-100/70 overflow-hidden"
+                >
+                  {/* <span className="pointer-events-none absolute -left-6 -top-6 h-16 w-16 rounded-full bg-white/90 blur-md" />
+                  <span className="pointer-events-none absolute left-10 -top-8 h-20 w-20 rounded-full bg-blue-100/80 blur-md" />
+                  <span className="pointer-events-none absolute -right-8 -top-5 h-18 w-18 rounded-full bg-white/80 blur-md" />
+                  <span className="pointer-events-none absolute -left-8 bottom-0 h-16 w-16 rounded-full bg-blue-100/70 blur-md" /> */}
+                  <span className="relative inline-flex items-center gap-2">
+                    Enquire Now
+                    <ChevronRight className="h-4 w-4" />
+                  </span>
+                </button>
+              </div>
 
               <div className="pt-6 flex flex-col sm:flex-row gap-6 sm:gap-12 text-finance-slate">
                 <div className="flex items-center">

@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MailIcon, PhoneIcon, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -14,19 +14,20 @@ import Cookie from "js-cookie";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
-    phone: "",
+    mobile: "",
     city: "",
     service: "",
-    message: "",
-    refercode: "",
+    amount: "",
+    referralCode: "",
   });
 
   const emailcookie = Cookie.get("finvest");
 
   const [responsetext, setResponsetext] = useState("");
+  const [validationError, setValidationError] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (responsetext) {
@@ -44,18 +45,51 @@ const ContactForm = () => {
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
+    setValidationError("");
   };
+
+  const enquirySchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Please enter a valid email"),
+    mobile: z
+      .string()
+      .transform((v) => v.replace(/\D/g, ""))
+      .refine((v) => v.length === 10, "Mobile number must be 10 digits"),
+    city: z.string().min(1, "City is required"),
+    service: z.enum(["loan", "insurance", "investment"], {
+      errorMap: () => ({ message: "Please select a service" }),
+    }),
+    amount: z.string().min(1, "Amount is required"),
+    referralCode: z.string().optional(),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      const parsedForm = enquirySchema.safeParse(formData);
+      if (!parsedForm.success) {
+        const firstIssue = parsedForm.error.issues[0];
+        const msg = firstIssue?.message || "Please check your inputs.";
+        setValidationError(msg);
+        return;
+      }
+
+      setSubmitting(true);
       const response = await axios.post(
         `${import.meta.env.VITE_API_URI}sendenquiry`,
-        formData
+        {
+          name: parsedForm.data.name,
+          email: parsedForm.data.email,
+          mobile: parsedForm.data.mobile,
+          city: parsedForm.data.city,
+          service: parsedForm.data.service,
+          amount: parsedForm.data.amount,
+          referralCode: parsedForm.data.referralCode,
+        }
       );
       if (!response.data.status) {
-        toast.error(response.data.message);
+        setValidationError(response.data.message || "Something Went Wrong");
         return;
       }
 
@@ -64,18 +98,19 @@ const ContactForm = () => {
       setResponsetext("Thank you for Enquiry😊");
 
       setFormData({
-        firstName: "",
-        lastName: "",
+        name: "",
         email: "",
-        phone: "",
+        mobile: "",
         service: "",
-        message: "",
         city: "",
-        refercode: "",
+        amount: "",
+        referralCode: "",
       });
     } catch (err) {
       console.error(err);
-      toast.error("Something Went Wrong");
+      setValidationError("Something Went Wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -146,28 +181,15 @@ const ContactForm = () => {
         {/* Form & Info */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
           <Card className="p-6 lg:col-span-3 animate-fade-in-left">
-            <form onSubmit={handleSubmit}>
-              {/* Name Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your first name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    placeholder="Enter your last name"
-                  />
-                </div>
+            <form noValidate onSubmit={handleSubmit}>
+              <div className="space-y-2 mb-6">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Your name"
+                />
               </div>
 
               {/* Contact Fields */}
@@ -179,18 +201,18 @@ const ContactForm = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    required
                     placeholder="Enter your email"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="mobile">Mobile</Label>
                   <Input
-                    id="phone"
-                    required
-                    value={formData.phone}
+                    id="mobile"
+                    value={formData.mobile}
                     onChange={handleChange}
-                    placeholder="Enter your phone number"
+                    maxLength={10}
+                    inputMode="numeric"
+                    placeholder="10-digit mobile"
                   />
                 </div>
               </div>
@@ -202,7 +224,6 @@ const ContactForm = () => {
                   id="service"
                   value={formData.service}
                   onChange={handleChange}
-                  required
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                 >
                   <option value="" disabled>
@@ -219,36 +240,37 @@ const ContactForm = () => {
                   <Label>City</Label>
                   <Input
                     id="city"
-                    required
                     value={formData.city}
                     onChange={handleChange}
                     placeholder="Enter city name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Referral Code</Label>
+                  <Label>Amount</Label>
                   <Input
-                    id="refercode"
-                    required
-                    value={formData.refercode}
+                    id="amount"
+                    value={formData.amount}
                     onChange={handleChange}
-                    placeholder="Enter your Employee / Partner ID"
+                    placeholder="Requested amount"
                   />
                 </div>
               </div>
 
-              {/* Message */}
-              <div className="space-y-2 mt-6 mb-6">
-                <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  value={formData.message}
+              <div className="space-y-2 mb-6">
+                <Label>Referral Code</Label>
+                <Input
+                  id="referralCode"
+                  value={formData.referralCode}
                   onChange={handleChange}
-                  required
-                  placeholder="Tell us about your financial goals and how we can help"
-                  cols={3}
+                  placeholder="(Optional)"
                 />
               </div>
+
+              {validationError && (
+                <p className="text-center text-sm text-red-700 my-2">
+                  {validationError}
+                </p>
+              )}
 
               {responsetext && (
                 <p className="text-center text-base md:text-xl xl:text-2xl my-1">
@@ -259,9 +281,10 @@ const ContactForm = () => {
               {/* Button */}
               <Button
                 type="submit"
+                disabled={submitting}
                 className="w-full bg-blue-900 hover:bg-blue-900/ collages9 0 text-white"
               >
-                Submit Inquiry
+                {submitting ? "Submitting..." : "Submit Inquiry"}
               </Button>
             </form>
           </Card>

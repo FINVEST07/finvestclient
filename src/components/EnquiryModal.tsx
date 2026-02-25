@@ -13,7 +13,7 @@ const EnquiryModal = () => {
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string>("");
 
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     name: "",
     email: "",
     mobile: "",
@@ -21,7 +21,9 @@ const EnquiryModal = () => {
     service: "" as ServiceType,
     amount: "",
     referralCode: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const hasSubmitted = () => Cookie.get(ENQUIRY_SUBMITTED_COOKIE) === "1";
 
@@ -47,13 +49,22 @@ const EnquiryModal = () => {
       setOpen(true);
     }
 
+    const onOpenEnquiry = () => {
+      setOpen(true);
+    };
+
+    window.addEventListener("finvest:open-enquiry", onOpenEnquiry);
+
     return () => {
       clearReopenTimeout();
+      window.removeEventListener("finvest:open-enquiry", onOpenEnquiry);
     };
   }, []);
 
   const onClose = () => {
     setOpen(false);
+    setFormData(initialFormData);
+    setValidationError("");
 
     if (!hasSubmitted()) {
       scheduleReopen();
@@ -76,7 +87,9 @@ const EnquiryModal = () => {
       .transform((v) => v.replace(/\D/g, ""))
       .refine((v) => v.length === 10, "Mobile number must be 10 digits"),
     city: z.string().min(1, "City is required"),
-    service: z.enum(["loan", "insurance", "investment"]),
+    service: z.enum(["loan", "insurance", "investment"], {
+      errorMap: () => ({ message: "Please select a service" }),
+    }),
     amount: z.string().min(1, "Amount is required"),
     referralCode: z.string().optional(),
   });
@@ -117,6 +130,8 @@ const EnquiryModal = () => {
 
       Cookie.set(ENQUIRY_SUBMITTED_COOKIE, "1", { expires: 365 });
       clearReopenTimeout();
+      setFormData(initialFormData);
+      setValidationError("");
       setOpen(false);
     } catch (error) {
       console.error("Failed to submit enquiry:", error);
@@ -252,13 +267,6 @@ const EnquiryModal = () => {
           )}
 
           <div className="mt-4 flex items-center gap-2 justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 rounded-lg border border-blue-200 text-blue-900 hover:bg-blue-50 transition text-sm"
-            >
-              Not now
-            </button>
             <button
               type="submit"
               disabled={submitting}
