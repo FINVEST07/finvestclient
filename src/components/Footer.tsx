@@ -1,20 +1,16 @@
-import React from "react";
-import { Facebook, Twitter, Instagram, Linkedin, ArrowUp } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 import Cookie from "js-cookie";
 import ToastContainerComponent from "./ToastContainerComponent";
 import {toast} from "react-toastify"
 import { useNavigate } from "react-router-dom";
+import { FaWhatsapp } from "react-icons/fa";
 
 const Footer = ({ setLoginOpen }) => {
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
   const emailcookie = Cookie.get("finvest");
+
+  const whatsappPhone = "919892204806";
+  const whatsappLink = `https://wa.me/${whatsappPhone}`;
 
   const navigate = useNavigate();
 
@@ -138,8 +134,7 @@ const Footer = ({ setLoginOpen }) => {
             <h4 className="text-lg font-medium mb-6">Contact Us</h4>
             <ul className="space-y-3 text-base">
               <li className="text-white/70">
-                G2, Mecca Tower, Gaothan Lane No 1,
-                Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058 <br />
+                Andheri West, Mumbai - 400058 <br />
               </li>
               <li>
                 <a
@@ -189,13 +184,17 @@ const Footer = ({ setLoginOpen }) => {
         </div>
       </div>
 
-      <button
-        onClick={scrollToTop}
-        className="fixed bottom-8 right-8 bg-blue-200 text-blue-900 p-3 rounded-full shadow-lg  transition-all duration-300 z-50"
-        aria-label="Scroll to top"
+      <a
+        href={whatsappLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-8 right-8 bg-[#25D366] hover:bg-[#1EBE5D] text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 group hover:scale-105 active:scale-95"
+        aria-label="Chat on WhatsApp"
       >
-        <ArrowUp className="h-5 w-5" />
-      </button>
+        <span className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-white/40 group-hover:ring-white/60" />
+        <span className="pointer-events-none absolute inset-0 rounded-full bg-[#25D366]/40 animate-ping" />
+        <FaWhatsapp className="h-6 w-6" aria-hidden="true" />
+      </a>
     </footer>
   );
 };

@@ -242,6 +242,28 @@ const Navbar = ({ setLoginOpen }) => {
                   >
                     Loan Eligibility Calculator
                   </Link>
+                  <Link
+                    role="menuitem"
+                    to="/sipcalculator"
+                    className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                    onClick={() => setCalculatorOpen(false)}
+                    ref={(el) => {
+                      calculatorItemRefs.current[2] = el;
+                    }}
+                  >
+                    SIP Calculator
+                  </Link>
+                  <Link
+                    role="menuitem"
+                    to="/fdcalculator"
+                    className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                    onClick={() => setCalculatorOpen(false)}
+                    ref={(el) => {
+                      calculatorItemRefs.current[3] = el;
+                    }}
+                  >
+                    FD Calculator
+                  </Link>                  
                   </div>
                 </div>
               )}
@@ -413,6 +435,30 @@ const Navbar = ({ setLoginOpen }) => {
                 >
                   Loan Eligibility Calculator
                 </Link>
+                <Link
+                  role="menuitem"
+                  to="/sipcalculator"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  SIP Calculator
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/fdcalculator"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  FD Calculator
+                </Link>                
               </div>
             )}
 

@@ -264,7 +264,7 @@ const ContactForm = () => {
                 <ContactInfo
                   icon={<MapPin className="h-5 w-5 text-blue-900" />}
                   title="Office Address"
-                  text="G2, Mecca Tower, Gaothan Lane No 1, Behind Paaneri, S.V. Road, Andheri West, Mumbai - 400058"
+                  text="Andheri West, Mumbai - 400058"
                 />
                 <ContactInfo
                   icon={<Clock className="h-5 w-5 text-blue-900" />}

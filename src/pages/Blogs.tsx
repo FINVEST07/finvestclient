@@ -6,6 +6,17 @@ import { ArrowLeft } from "lucide-react";
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
+const formatBlogDate = (value: unknown) => {
+  if (!value) return "";
+  const d = new Date(value as any);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 const Blogs = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -68,6 +79,11 @@ const Blogs = () => {
                     Read full article
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                   </span>
+                  {b?.createdAt ? (
+                    <span className="mt-3 text-xs text-gray-500 font-medium">
+                      {formatBlogDate(b.createdAt)}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="bg-blue-50">
                   {b.thumbnailUrl ? (
@@ -88,6 +104,6 @@ const Blogs = () => {
       </div>
     </section>
   );
-}; 
+};
 
 export default Blogs;

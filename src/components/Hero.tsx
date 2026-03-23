@@ -23,7 +23,7 @@ const Hero = () => {
             {/* Left column - Text content */}
             <div className="lg:w-1/2 space-y-6 animate-fade-in">
               <div className="inline-block mt-2 md:mt-0 ">
-                <span className="bg-blue-200 text-blue-900 text-sm font-medium py-1 px-3 rounded-full border border-blue-900">
+                <span className="bg-blue-200 text-blue-900 text-sm font-medium py-1 px-3 rounded-full border border-blue-900 mt-3">
                   Financial Solutions & Freedom Starts Here
                 </span>
               </div>

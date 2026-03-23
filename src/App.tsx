@@ -30,6 +30,8 @@ import Blogs from "./pages/Blogs";
 import Gallery from "./pages/Gallery";
 import BlogDetail from "./pages/BlogDetail";
 import ServiceInfo from "./pages/ServiceInfo";
+import SipCalculator from "./pages/SipCalculator";
+import FDCalculator from "./pages/FdCalculator";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +86,8 @@ const App = () => {
               path="/loan-eligibility-calculator"
               element={<LoanEligibilityCalculator />}
             />
+            <Route path="/sipcalculator" element={<SipCalculator />} />
+            <Route path="/fdcalculator" element={<FDCalculator />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/refer" element={<Refer />} />

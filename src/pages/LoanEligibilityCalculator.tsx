@@ -4,6 +4,79 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import LoanEligibilityGuide from "@/components/EligibilityCalculatorBlogs";
 
+interface LoanDetails {
+  amount: number;
+  interestRate: number;
+  term: number;
+  extraPayment: number;
+}
+
+interface PaymentDetails {
+  month: number;
+  principal: number;
+  interest: number;
+  balance: number;
+}
+
+const calculateLoan = ({
+  amount,
+  interestRate,
+  term,
+  extraPayment,
+}: LoanDetails): {
+  monthlyPayment: number;
+  totalInterest: number;
+  totalPaid: number;
+  schedule: PaymentDetails[];
+} => {
+  const monthlyRate = interestRate / 100 / 12;
+  const numPayments = term * 12;
+
+  // Calculate monthly payment using the loan amortization formula
+  const monthlyPayment =
+    (amount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+    (Math.pow(1 + monthlyRate, numPayments) - 1);
+
+  let balance = amount;
+  let totalInterest = 0;
+  const schedule: PaymentDetails[] = [];
+
+  for (let month = 1; month <= numPayments && balance > 0; month++) {
+    const interest = balance * monthlyRate;
+    let principal = monthlyPayment + extraPayment - interest;
+
+    if (principal > balance) {
+      principal = balance;
+    }
+
+    balance -= principal;
+    totalInterest += interest;
+
+    schedule.push({
+      month,
+      principal: Number(principal.toFixed(2)),
+      interest: Number(interest.toFixed(2)),
+      balance: Number(balance.toFixed(2)),
+    });
+
+    if (balance <= 0) break;
+  }
+
+  return {
+    monthlyPayment: Number(monthlyPayment.toFixed(2)),
+    totalInterest: Number(totalInterest.toFixed(2)),
+    totalPaid: Number((amount + totalInterest).toFixed(2)),
+    schedule,
+  };
+};
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  }).format(value);
+};
+
 type FormState = {
   income: string;
   foir: string;
@@ -23,6 +96,29 @@ export default function LoanEligibilityCalculator() {
 
   const [error, setError] = useState<string>("");
   const [eligibleLakhs, setEligibleLakhs] = useState<number | null>(null);
+
+  const eligiblePrincipal = useMemo(() => {
+    if (eligibleLakhs == null) return null;
+    const p = eligibleLakhs * 100000;
+    if (!Number.isFinite(p) || p <= 0) return null;
+    return p;
+  }, [eligibleLakhs]);
+
+  const loanSummary = useMemo(() => {
+    if (eligiblePrincipal == null) return null;
+    const interestRate = Number(form.interestRate);
+    const term = Number(form.tenureYears);
+
+    if (!Number.isFinite(interestRate) || interestRate <= 0) return null;
+    if (!Number.isFinite(term) || term <= 0) return null;
+
+    return calculateLoan({
+      amount: eligiblePrincipal,
+      interestRate,
+      term,
+      extraPayment: 0,
+    });
+  }, [eligiblePrincipal, form.interestRate, form.tenureYears]);
 
   const parsed = useMemo(() => {
     const income = Number(form.income);
@@ -244,6 +340,40 @@ export default function LoanEligibilityCalculator() {
                   Result is shown in Lakhs with 2 decimals.
                 </p>
               </div>
+
+              {eligiblePrincipal != null && loanSummary != null ? (
+                <div className="mt-5 bg-white p-6 rounded-lg shadow-lg border border-[#D6B549]/20">
+                  <h2 className="text-2xl font-bold text-[#252C3D] mb-6">
+                    Loan Summary
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="bg-[#EBECED] p-4 rounded-md">
+                      <p className="text-sm text-[#252C3D] uppercase tracking-wide">
+                        Monthly Payment
+                      </p>
+                      <p className="text-2xl font-semibold text-[#D6B549]">
+                        {formatCurrency(loanSummary.monthlyPayment)}
+                      </p>
+                    </div>
+                    <div className="bg-[#EBECED] p-4 rounded-md">
+                      <p className="text-sm text-[#252C3D] uppercase tracking-wide">
+                        Total Interest
+                      </p>
+                      <p className="text-2xl font-semibold text-[#D6B549]">
+                        {formatCurrency(loanSummary.totalInterest)}
+                      </p>
+                    </div>
+                    <div className="bg-[#EBECED] p-4 rounded-md">
+                      <p className="text-sm text-[#252C3D] uppercase tracking-wide">
+                        Total Paid
+                      </p>
+                      <p className="text-2xl font-semibold text-[#D6B549]">
+                        {formatCurrency(loanSummary.totalPaid)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               {/* <a
                 href="/services"
