@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async"
 import { LineChart, ArrowUpRight, ArrowLeft } from "lucide-react";
 
+// 
 const About = () => (
   <section id="about" className="section-padding pt-6 bg-white">
     <div className="container-custom">
