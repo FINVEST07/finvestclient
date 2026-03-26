@@ -13,10 +13,16 @@ const Navbar = ({ setLoginOpen }) => {
   const [profiledropopen, setProfiledropopen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [mobileCalculatorOpen, setMobileCalculatorOpen] = useState(false);
+  const [investorZoneOpen, setInvestorZoneOpen] = useState(false);
+  const [mobileInvestorZoneOpen, setMobileInvestorZoneOpen] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
+  const investorCloseTimeoutRef = useRef<number | null>(null);
   const calculatorWrapperRef = useRef<HTMLDivElement | null>(null);
   const calculatorButtonRef = useRef<HTMLButtonElement | null>(null);
   const calculatorItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const investorZoneWrapperRef = useRef<HTMLDivElement | null>(null);
+  const investorZoneButtonRef = useRef<HTMLButtonElement | null>(null);
+  const investorZoneItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +30,11 @@ const Navbar = ({ setLoginOpen }) => {
   const isCalculatorActive =
     location.pathname === "/loancalculator" ||
     location.pathname === "/loan-eligibility-calculator";
+
+  const isInvestorZoneActive =
+    location.pathname === "/investor-zone/auction-properties" ||
+    location.pathname === "/investor-zone/distress-properties" ||
+    location.pathname.startsWith("/investor-zone/");
 
   const RupeeIcon = ({ width }) => {
     return (
@@ -83,6 +94,20 @@ const Navbar = ({ setLoginOpen }) => {
     }, 150);
   };
 
+  const clearInvestorCloseTimeout = () => {
+    if (investorCloseTimeoutRef.current) {
+      window.clearTimeout(investorCloseTimeoutRef.current);
+      investorCloseTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleInvestorClose = () => {
+    clearInvestorCloseTimeout();
+    investorCloseTimeoutRef.current = window.setTimeout(() => {
+      setInvestorZoneOpen(false);
+    }, 150);
+  };
+
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       if (!calculatorOpen) return;
@@ -98,6 +123,22 @@ const Navbar = ({ setLoginOpen }) => {
       document.removeEventListener("mousedown", onMouseDown);
     };
   }, [calculatorOpen]);
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (!investorZoneOpen) return;
+      const wrapper = investorZoneWrapperRef.current;
+      if (!wrapper) return;
+      if (!wrapper.contains(e.target as Node)) {
+        setInvestorZoneOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onMouseDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [investorZoneOpen]);
 
   const focusCalculatorItem = (index: number) => {
     const el = calculatorItemRefs.current[index];
@@ -152,6 +193,59 @@ const Navbar = ({ setLoginOpen }) => {
     }
   };
 
+  const focusInvestorZoneItem = (index: number) => {
+    const el = investorZoneItemRefs.current[index];
+    if (el) el.focus();
+  };
+
+  const onInvestorZoneButtonKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>
+  ) => {
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setInvestorZoneOpen(true);
+      window.setTimeout(() => focusInvestorZoneItem(0), 0);
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setInvestorZoneOpen(false);
+    }
+  };
+
+  const onInvestorZoneMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setInvestorZoneOpen(false);
+      investorZoneButtonRef.current?.focus();
+      return;
+    }
+
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") {
+      return;
+    }
+
+    e.preventDefault();
+    const items = investorZoneItemRefs.current;
+    const activeIndex = items.findIndex((n) => n === document.activeElement);
+
+    const lastIndex = items.length - 1;
+    if (e.key === "Home") return focusInvestorZoneItem(0);
+    if (e.key === "End") return focusInvestorZoneItem(lastIndex);
+
+    if (activeIndex === -1) {
+      return focusInvestorZoneItem(0);
+    }
+
+    if (e.key === "ArrowDown") {
+      return focusInvestorZoneItem(activeIndex === lastIndex ? 0 : activeIndex + 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      return focusInvestorZoneItem(activeIndex === 0 ? lastIndex : activeIndex - 1);
+    }
+  };
+
   return (
     <nav
       className={`fixed top-0  w-full z-50 transition-all duration-300 ${
@@ -184,6 +278,68 @@ const Navbar = ({ setLoginOpen }) => {
             >
               Become a Partner
             </Link>
+
+            <div
+              ref={investorZoneWrapperRef}
+              className="relative"
+              onMouseEnter={() => {
+                clearInvestorCloseTimeout();
+                setInvestorZoneOpen(true);
+              }}
+              onMouseLeave={() => {
+                scheduleInvestorClose();
+              }}
+            >
+              <button
+                ref={investorZoneButtonRef}
+                type="button"
+                className={`nav-link ${isInvestorZoneActive ? "text-blue-900" : ""}`}
+                aria-haspopup="menu"
+                aria-expanded={investorZoneOpen}
+                onClick={() => setInvestorZoneOpen((v) => !v)}
+                onKeyDown={onInvestorZoneButtonKeyDown}
+              >
+                Investor Zone
+              </button>
+              {investorZoneOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-0 top-full pt-2"
+                  onMouseEnter={() => {
+                    clearInvestorCloseTimeout();
+                  }}
+                  onMouseLeave={() => {
+                    scheduleInvestorClose();
+                  }}
+                  onKeyDown={onInvestorZoneMenuKeyDown}
+                >
+                  <div className="w-56 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden">
+                    <Link
+                      role="menuitem"
+                      to="/investor-zone/auction-properties"
+                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      onClick={() => setInvestorZoneOpen(false)}
+                      ref={(el) => {
+                        investorZoneItemRefs.current[0] = el;
+                      }}
+                    >
+                      Auction Properties
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/investor-zone/distress-properties"
+                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      onClick={() => setInvestorZoneOpen(false)}
+                      ref={(el) => {
+                        investorZoneItemRefs.current[1] = el;
+                      }}
+                    >
+                      Distress Properties
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div
               ref={calculatorWrapperRef}
@@ -376,6 +532,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
               }}
             >
               Services
@@ -387,10 +544,59 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
               }}
             >
               Become a Partner
             </a>
+
+            <button
+              type="button"
+              className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+              aria-haspopup="menu"
+              aria-expanded={mobileInvestorZoneOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileInvestorZoneOpen((prev) => !prev);
+              }}
+            >
+              <span className="flex-1 py-1">Investor Zone</span>
+
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${mobileInvestorZoneOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+            {mobileInvestorZoneOpen && (
+              <div role="menu" className="pl-6 flex flex-col space-y-2">
+                <Link
+                  role="menuitem"
+                  to="/investor-zone/auction-properties"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  Auction Properties
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/investor-zone/distress-properties"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  Distress Properties
+                </Link>
+              </div>
+            )}
 
             <button
               type="button"
@@ -467,6 +673,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
               }}
               className="px-4 flex items-center gap-2"
             >
@@ -482,6 +689,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
               }}
             >
               Blogs
@@ -492,6 +700,7 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
               }}
             >
               Gallery
@@ -504,6 +713,7 @@ const Navbar = ({ setLoginOpen }) => {
                 setLoginOpen(true);
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
             >
@@ -515,6 +725,7 @@ const Navbar = ({ setLoginOpen }) => {
                 Cookie.remove("finvest"); // Fixed: was "email", should be "finvest"
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
+                setMobileInvestorZoneOpen(false);
                 window.location.reload();
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"

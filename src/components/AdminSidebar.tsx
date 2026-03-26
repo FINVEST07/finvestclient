@@ -50,6 +50,14 @@ const UsersIcon = (props) => {
   );
 };
 
+const PropertiesIcon = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" {...props}>
+      <path d="M575.8 255.5c0 18-15 32.1-33 32.1l-32 0 0 160.2c0 35.3-28.7 64.2-64 64.2l-128 0 0-128.1c0-17.7-14.3-32.1-32-32.1l-64 0c-17.7 0-32 14.3-32 32.1l0 128.1-128 0c-35.3 0-64-28.9-64-64.2l0-160.2-32 0c-18 0-33-14-33-32.1c0-9 4-17.5 10.8-23.4l256-223.2c12-10.5 30-10.5 42 0l256 223.2c6.8 5.9 10.8 14.4 10.8 23.4z" />
+    </svg>
+  );
+};
+
 const AdminSidebar = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -88,6 +96,15 @@ const AdminSidebar = () => {
         >
           <DashboardIcon width={26} fill={"#D6B549"} />
           <span className="text-lg self-center text-[#D6B549]">DashBoard</span>
+        </div>
+         <div
+          className={`flex gap-3 cursor-pointer items-center ${
+            activeTab === "properties" ? "bg-slate-600 p-3 rounded-md" : ""
+          }`}
+          onClick={() => handleNavigation("/admin/properties", "properties")}
+        >
+          <PropertiesIcon width={26} fill={"#D6B549"} />
+          <span className="text-lg self-center text-[#D6B549]">Properties</span>
         </div>
          <div
           className={`flex gap-3 cursor-pointer items-center ${

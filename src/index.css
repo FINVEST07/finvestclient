@@ -165,4 +165,36 @@
   animation: marquee 20s linear infinite;
 }
 
+@keyframes propertyFloatSlow {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) rotate(2deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+@keyframes propertyFloatFast {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, 6px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.property-bg-float-slow {
+  animation: propertyFloatSlow 8s ease-in-out infinite;
+}
+
+.property-bg-float-fast {
+  animation: propertyFloatFast 5.5s ease-in-out infinite;
+}
+
   

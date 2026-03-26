@@ -18,6 +18,7 @@ import Settings from "./components/Settings";
 import AdminApplications from "./pages/AdminApplications";
 import AdminBlogsMedia from "./pages/AdminBlogsMedia";
 import AdminEnquiries from "./pages/AdminEnquiries";
+import AdminProperties from "./pages/AdminProperties";
 import { useState, useEffect } from "react";
 import LoanCalculator from "./pages/LoanCalculator";
 import LoanEligibilityCalculator from "./pages/LoanEligibilityCalculator";
@@ -32,6 +33,9 @@ import BlogDetail from "./pages/BlogDetail";
 import ServiceInfo from "./pages/ServiceInfo";
 import SipCalculator from "./pages/SipCalculator";
 import FDCalculator from "./pages/FdCalculator";
+import AuctionProperties from "./pages/AuctionProperties";
+import DistressProperties from "./pages/DistressProperties";
+import PropertyDetail from "./pages/PropertyDetail";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +100,9 @@ const App = () => {
             <Route path="/become-partner" element={<BecomePartner />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blogs/:slug" element={<BlogDetail />} />
+            <Route path="/investor-zone/auction-properties" element={<AuctionProperties />} />
+            <Route path="/investor-zone/distress-properties" element={<DistressProperties />} />
+            <Route path="/investor-zone/:type/:propertyId" element={<PropertyDetail />} />
             <Route path="/gallery" element={<Gallery />} />
             {/* SEO keyword info routes */}
             <Route path="/info/:slug" element={<ServiceInfo />} />
@@ -138,6 +145,14 @@ const App = () => {
               element={
                 <RequireSuperAdmin>
                   <AdminEnquiries />
+                </RequireSuperAdmin>
+              }
+            />
+            <Route
+              path="/admin/properties"
+              element={
+                <RequireSuperAdmin>
+                  <AdminProperties />
                 </RequireSuperAdmin>
               }
             />
