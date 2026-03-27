@@ -5,9 +5,8 @@ import axios from "axios";
 import { toast } from "sonner";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Share2 } from "lucide-react";
-import { useQuill } from "react-quilljs";
-import "quill/dist/quill.snow.css";
-import { useRef } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const AdminBlogsMedia = () => {
   const [adminRank, setAdminRank] = useState<number | null>(null);
@@ -47,34 +46,6 @@ const AdminBlogsMedia = () => {
       ["clean"],
     ],
   };
-
-  const { quill: postQuill, quillRef: postQuillRef } = useQuill({ modules: quillModules });
-  const { quill: editQuill, quillRef: editQuillRef } = useQuill({ modules: quillModules });
-
-  // Sync postQuill content to state
-  useEffect(() => {
-    if (postQuill) {
-      postQuill.on("text-change", () => {
-        setContent(postQuill.root.innerHTML);
-      });
-    }
-  }, [postQuill]);
-
-  // Sync editQuill content to state
-  useEffect(() => {
-    if (editQuill) {
-      editQuill.on("text-change", () => {
-        setEditContent(editQuill.root.innerHTML);
-      });
-    }
-  }, [editQuill]);
-
-  // Set editQuill content when editing a blog
-  useEffect(() => {
-    if (editQuill && editContent && isEditOpen) {
-      editQuill.root.innerHTML = editContent;
-    }
-  }, [editQuill, editContent, isEditOpen]);
 
   const quillFormats = [
     "header",
@@ -503,7 +474,14 @@ const AdminBlogsMedia = () => {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
                 <div className="admin-blog-quill-post relative border border-slate-300 rounded-md">
-                  <div ref={postQuillRef} />
+                  <ReactQuill
+                    theme="snow"
+                    value={content}
+                    onChange={(val) => setContent(val)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Write your blog content..."
+                  />
                 </div>
                 <style>{`
                   .admin-blog-quill-post .ql-container { height: 260px; overflow-y: auto; }
@@ -571,7 +549,14 @@ const AdminBlogsMedia = () => {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
                 <div className="admin-blog-quill-edit relative border border-slate-300 rounded-md">
-                  <div ref={editQuillRef} />
+                  <ReactQuill
+                    theme="snow"
+                    value={editContent}
+                    onChange={(val) => setEditContent(val)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Write your blog content..."
+                  />
                 </div>
                 <style>{`
                   .admin-blog-quill-edit .ql-container { height: 260px; overflow-y: auto; }

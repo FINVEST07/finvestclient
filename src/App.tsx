@@ -41,22 +41,10 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const RequireSuperAdmin = ({ children }: { children: any }) => {
-    const [mounted, setMounted] = useState(false);
-    const [isAllowed, setIsAllowed] = useState<boolean>(false);
-
-    useEffect(() => {
-      setMounted(true);
-
-      try {
-        const storedRank = localStorage.getItem("rank");
-        setIsAllowed(storedRank === "1" || storedRank === (1 as any) || Number(storedRank) === 1);
-      } catch {
-        setIsAllowed(false);
-      }
-    }, []);
-
-    if (!mounted) return null;
-    if (isAllowed) return children;
+    const storedRank = localStorage.getItem("rank");
+    if (storedRank === "1" || storedRank === 1 || Number(storedRank) === 1) {
+      return children;
+    }
     return <Navigate to="/admin" replace />;
   };
 
