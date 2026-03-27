@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useQuill } from "react-quilljs";
+import "quill/dist/quill.snow.css";
 
 export type PropertyTypeOption =
   | "Flat"
@@ -129,6 +129,24 @@ const PostPropertyModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [photoError, setPhotoError] = useState<string>("");
+
+  const { quill, quillRef } = useQuill({ modules: quillModules });
+
+  // Sync quill content to form state
+  useEffect(() => {
+    if (quill) {
+      quill.on("text-change", () => {
+        setField("description", quill.root.innerHTML);
+      });
+    }
+  }, [quill]);
+
+  // Set quill content when editing
+  useEffect(() => {
+    if (quill && form.description && open) {
+      quill.root.innerHTML = form.description;
+    }
+  }, [quill, form.description, open]);
 
   useEffect(() => {
     if (!open) {
@@ -397,14 +415,7 @@ const PostPropertyModal = ({
                   errors.description ? "border-red-500" : "border-slate-300"
                 }`}
               >
-                <ReactQuill
-                  theme="snow"
-                  value={form.description}
-                  onChange={(value) => setField("description", value)}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  placeholder="Write property description..."
-                />
+                <div ref={quillRef} />
               </div>
               <style>{`
                 .property-description-quill .ql-container { height: 180px; overflow-y: auto; }
