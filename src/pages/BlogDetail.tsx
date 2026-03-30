@@ -4,6 +4,9 @@ import axios from "axios";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "react-toastify";
+import FavouriteHeartButton from "@/components/FavouriteHeartButton";
+import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
@@ -29,6 +32,9 @@ const BlogDetail = () => {
   const { slug } = useParams();
   const [blog, setBlog] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isFavourite, setIsFavourite] = useState<boolean>(false);
+  const [togglingFavourite, setTogglingFavourite] = useState<boolean>(false);
+  const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadBlog = async () => {
     try {
@@ -52,6 +58,41 @@ const BlogDetail = () => {
   useEffect(() => {
     if (slug) loadBlog();
   }, [slug]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !blog?._id) return;
+
+    const loadFavourites = async () => {
+      try {
+        const payload = await fetchFavourites();
+        const isFav = (payload.favourites || []).some(
+          (fav) => fav.type === "blog" && String(fav.id) === String(blog._id)
+        );
+        setIsFavourite(isFav);
+      } catch (error) {
+        setIsFavourite(false);
+      }
+    };
+
+    loadFavourites();
+  }, [isLoggedIn, blog?._id]);
+
+  const handleFavouriteToggle = async () => {
+    if (!isLoggedIn || !blog?._id || togglingFavourite) return;
+
+    const wasFavourite = isFavourite;
+    setIsFavourite(!wasFavourite);
+    setTogglingFavourite(true);
+
+    try {
+      await toggleFavourite(String(blog._id), "blog");
+    } catch (error: any) {
+      setIsFavourite(wasFavourite);
+      toast.error(error?.response?.data?.message || "Unable to update favourite");
+    } finally {
+      setTogglingFavourite(false);
+    }
+  };
 
   const description = blog ? (blog.content?.length ? stripHtml(blog.content).slice(0, 160) : blog.title) : "Read our latest financial insights and updates.";
   const canonicalUrl = typeof window !== 'undefined' ? `${window.location.origin}/blogs/${slug}` : `/blogs/${slug}`;
@@ -123,7 +164,16 @@ const BlogDetail = () => {
               </div>
             )}
             <div className="p-6 md:p-10">
-              <h1 className="text-2xl md:text-4xl font-bold text-blue-900 mb-4 leading-snug">{blog.title}</h1>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <h1 className="text-2xl md:text-4xl font-bold text-blue-900 leading-snug">{blog.title}</h1>
+                {isLoggedIn ? (
+                  <FavouriteHeartButton
+                    isFavourite={isFavourite}
+                    disabled={togglingFavourite}
+                    onToggle={handleFavouriteToggle}
+                  />
+                ) : null}
+              </div>
               <div
                 className="prose prose-blue max-w-none text-gray-800 break-words prose-a:text-blue-700 prose-a:underline hover:prose-a:text-blue-900 prose-ol:list-decimal prose-ul:list-disc prose-li:my-0 prose-p:my-1"
                 dangerouslySetInnerHTML={{ __html: normalizeQuillHtml(blog.content || "") }}

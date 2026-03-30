@@ -36,6 +36,10 @@ import FDCalculator from "./pages/FdCalculator";
 import AuctionProperties from "./pages/AuctionProperties";
 import DistressProperties from "./pages/DistressProperties";
 import PropertyDetail from "./pages/PropertyDetail";
+import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
+import AdminJobs from "./pages/AdminJobs";
+import Favourites from "./pages/Favourites";
 
 const queryClient = new QueryClient();
 
@@ -98,10 +102,17 @@ const App = () => {
            
             <Route path="/services" element={<Services />} />
             <Route path="/become-partner" element={<BecomePartner />} />
+            <Route path="/careers/jobs" element={<Jobs />} />
+            <Route path="/careers/jobs/:id" element={<JobDetail />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blogs/:slug" element={<BlogDetail />} />
+            <Route path="/favourites" element={<Favourites />} />
             <Route path="/investor-zone/auction-properties" element={<AuctionProperties />} />
-            <Route path="/investor-zone/distress-properties" element={<DistressProperties />} />
+            <Route path="/investor-zone/alternate-properties" element={<DistressProperties />} />
+            <Route
+              path="/investor-zone/distress-properties"
+              element={<Navigate to="/investor-zone/alternate-properties" replace />}
+            />
             <Route path="/investor-zone/:type/:propertyId" element={<PropertyDetail />} />
             <Route path="/gallery" element={<Gallery />} />
             {/* SEO keyword info routes */}
@@ -153,6 +164,14 @@ const App = () => {
               element={
                 <RequireSuperAdmin>
                   <AdminProperties />
+                </RequireSuperAdmin>
+              }
+            />
+            <Route
+              path="/admin/jobs"
+              element={
+                <RequireSuperAdmin>
+                  <AdminJobs />
                 </RequireSuperAdmin>
               }
             />

@@ -88,12 +88,24 @@ const ContactForm = () => {
           referralCode: parsedForm.data.referralCode,
         }
       );
-      if (!response.data.status) {
-        setValidationError(response.data.message || "Something Went Wrong");
+      const responseData = response.data || {};
+      const enquirySaved = Boolean(responseData.status || responseData.saved);
+
+      if (!enquirySaved) {
+        setValidationError(responseData.message || "Something Went Wrong");
         return;
       }
 
-      toast.success(response.data.message);
+      const adminWhatsappSent = responseData.notifications?.adminWhatsapp === true;
+      if (!adminWhatsappSent) {
+        setValidationError(
+          responseData.message ||
+            "Enquiry was saved, but client WhatsApp delivery failed. Please try again."
+        );
+        return;
+      }
+
+      toast.success(responseData.message || "Enquiry submitted successfully.");
 
       setResponsetext("Thank you for Enquiry😊");
 
@@ -108,7 +120,13 @@ const ContactForm = () => {
       });
     } catch (err) {
       console.error(err);
-      setValidationError("Something Went Wrong");
+      if (axios.isAxiosError(err)) {
+        setValidationError(
+          err.response?.data?.message || "Something Went Wrong"
+        );
+      } else {
+        setValidationError("Something Went Wrong");
+      }
     } finally {
       setSubmitting(false);
     }

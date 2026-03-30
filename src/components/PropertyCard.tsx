@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 
 interface PropertyPhoto {
   url: string;
@@ -6,39 +7,70 @@ interface PropertyPhoto {
 
 interface PropertyItem {
   _id: string;
-  propertyName: string;
+  headline: string;
   area: string;
   type: "Auction" | "Distress";
   propertyType: string;
-  price: number;
-  description: string;
+  bhk?: string;
+  offerPrice?: number;
+  estimatedMarketValue?: number;
+  location?: string;
+  district?: string;
+  possession?: "Physical" | "Symbolic" | string;
+  status?: "Available" | "Sold Out" | string;
+  emdDate?: string;
+  eoiDate?: string;
   photos?: PropertyPhoto[];
 }
 
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-
-const normalizeDescription = (html: string) => {
-  return stripHtml(html)
-    .replace(/&nbsp;|&#160;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-};
-
-const PropertyCard = ({ property }: { property: PropertyItem }) => {
-  const thumbnail = property.photos?.[0]?.url || "";
-  const cleanDescription = normalizeDescription(property.description || "");
-  const shortDescription = cleanDescription.length > 150 ? `${cleanDescription.slice(0, 150)}...` : cleanDescription;
-  const formattedPrice = new Intl.NumberFormat("en-IN", {
+const formatCurrency = (value?: number) => {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(Number(property.price) || 0);
+  }).format(Number(value) || 0);
+};
+
+const formatDate = (iso?: string) => {
+  if (!iso) return "-";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const PropertyCard = ({
+  property,
+  showFavourite,
+  isFavourite,
+  isToggling,
+  onToggleFavourite,
+}: {
+  property: PropertyItem;
+  showFavourite?: boolean;
+  isFavourite?: boolean;
+  isToggling?: boolean;
+  onToggleFavourite?: (propertyId: string) => void;
+}) => {
+  const thumbnail = property.photos?.[0]?.url || "";
+  const conditionalDateLabel = property.type === "Auction" ? "EMD Date" : "EOI Date";
+  const conditionalDateValue = property.type === "Auction" ? formatDate(property.emdDate) : formatDate(property.eoiDate);
 
   return (
     <article className="group relative isolate bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-slate-300">
+      {showFavourite ? (
+        <div className="absolute top-3 right-3 z-20">
+          <FavouriteHeartButton
+            isFavourite={Boolean(isFavourite)}
+            disabled={Boolean(isToggling)}
+            onToggle={() => onToggleFavourite?.(property._id)}
+          />
+        </div>
+      ) : null}
+
       {/* <div className="pointer-events-none absolute inset-0">
         <img
           src="/cardbg1.svg"
@@ -55,38 +87,45 @@ const PropertyCard = ({ property }: { property: PropertyItem }) => {
       </div> */}
       <div className="flex flex-col md:flex-row">
         <div className="relative z-10 p-3.5 md:p-4 flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5 mb-2">
-            <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-              {property.type}
-            </span>
-            <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-              {property.propertyType}
-            </span>
-            <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-              {property.area}
-            </span>
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+            <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">{property.type === "Distress" ? "Alternate" : property.type}</span>
+            <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">{property.status || "-"}</span>
           </div>
 
-          <h2 className="text-base md:text-lg font-bold text-slate-900 mb-1 line-clamp-1">{property.propertyName}</h2>
+          <h2 className="text-base md:text-lg font-bold text-slate-900 mb-3 line-clamp-2">{property.headline || "Property"}</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-sm mb-2">
             <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Area:</span> {property.area}
+              <span className="font-semibold text-slate-800">Property Type:</span> {property.propertyType || "-"}
             </p>
             <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Type:</span> {property.type}
+              <span className="font-semibold text-slate-800">Area:</span> {property.area || "-"}
             </p>
             <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Property Type:</span> {property.propertyType}
+              <span className="font-semibold text-slate-800">BHK:</span> {property.bhk || "-"}
             </p>
             <p className="font-bold text-slate-900 line-clamp-1">
-              <span className="font-semibold text-slate-800">Price:</span> {formattedPrice}
+              <span className="font-semibold text-slate-800">Offer Price:</span> {formatCurrency(property.offerPrice)}
+            </p>
+            <p className="text-slate-600 line-clamp-1">
+              <span className="font-semibold text-slate-800">Est. Market Value:</span> {formatCurrency(property.estimatedMarketValue)}
+            </p>
+            <p className="text-slate-600 line-clamp-1">
+              <span className="font-semibold text-slate-800">Location:</span> {property.location || "-"}
+            </p>
+            <p className="text-slate-600 line-clamp-1">
+              <span className="font-semibold text-slate-800">District:</span> {property.district || "-"}
+            </p>
+            <p className="text-slate-600 line-clamp-1">
+              <span className="font-semibold text-slate-800">Possession:</span> {property.possession || "-"}
+            </p>
+            <p className="text-slate-600 line-clamp-1">
+              <span className="font-semibold text-slate-800">Status:</span> {property.status || "-"}
+            </p>
+            <p className="text-slate-600 line-clamp-1">
+              <span className="font-semibold text-slate-800">{conditionalDateLabel}:</span> {conditionalDateValue}
             </p>
           </div>
-
-          <p className="text-[13px] text-slate-600 leading-relaxed line-clamp-2 whitespace-pre-line">
-            {shortDescription}
-          </p>
 
           <div className="mt-2.5 pt-2.5 border-t border-slate-100">
             <Link
@@ -103,7 +142,7 @@ const PropertyCard = ({ property }: { property: PropertyItem }) => {
           {thumbnail ? (
             <img
               src={thumbnail}
-              alt={property.propertyName}
+              alt={property.headline || "Property"}
               className="absolute inset-0 w-full h-full object-cover"
               loading="lazy"
             />

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
+import { toast } from "react-toastify";
+import FavouriteHeartButton from "@/components/FavouriteHeartButton";
+import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 interface PropertyPhoto {
   url: string;
@@ -12,36 +15,73 @@ interface PropertyPhoto {
 interface PropertyItem {
   _id: string;
   propertyId: string;
-  propertyName: string;
+  headline: string;
+  propertyOrSocietyName: string;
   area: string;
   type: "Auction" | "Distress";
+  bhk: string;
   floor: string;
   propertyType: string;
-  address: string;
-  phoneNumber: string;
-  price: number;
-  description: string;
+  offerPrice: number;
+  estimatedMarketValue: number;
+  location: string;
+  district: string;
+  possession: "Physical" | "Symbolic" | string;
+  status: "Available" | "Sold Out" | string;
+  emdDate?: string;
+  eoiDate?: string;
+  flatNo?: string;
+  fullAddress?: string;
+  bankName?: string;
+  contactPerson?: string;
+  contactNumber?: string;
+  pdfDocument?: {
+    url?: string;
+    original_filename?: string;
+  } | null;
   photos?: PropertyPhoto[];
 }
 
-const normalizeQuillHtml = (html: string) => {
-  if (!html) return "";
-  let out = html;
-
-  const emptyParaRegex = "<p>\\s*(?:<br\\s*\\/?\\s*>|&nbsp;|\\s)*\\s*<\\/p>";
-  out = out.replace(new RegExp(`^(\\s*${emptyParaRegex}\\s*)+`, "i"), "");
-  out = out.replace(new RegExp(`(\\s*${emptyParaRegex}\\s*)+$`, "i"), "");
-  out = out.replace(new RegExp(`(\\s*${emptyParaRegex}\\s*){2,}`, "gi"), "<p><br /></p>");
-
-  return out;
+const listingTypeLabel: Record<PropertyItem["type"], string> = {
+  Auction: "Auction",
+  Distress: "Alternate Properties",
 };
 
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+const formatCurrency = (value?: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+
+const formatPropertyDate = (iso?: string) => {
+  if (!iso) return "-";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const LockedRow = ({ label }: { label: string }) => (
+  <div className="rounded-xl bg-white px-5 py-4 border border-blue-100 flex items-center justify-between gap-2">
+    <span className="font-semibold text-blue-900">{label}</span>
+    <span className="inline-flex items-center gap-2 text-slate-500">
+      <Lock className="w-4 h-4" />
+      <span className="blur-sm select-none">Confidential</span>
+    </span>
+  </div>
+);
 
 const PropertyDetail = () => {
   const { propertyId, type } = useParams();
   const [property, setProperty] = useState<PropertyItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isFavourite, setIsFavourite] = useState<boolean>(false);
+  const [togglingFavourite, setTogglingFavourite] = useState<boolean>(false);
+  const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadProperty = async () => {
     if (!propertyId) return;
@@ -61,25 +101,51 @@ const PropertyDetail = () => {
     loadProperty();
   }, [propertyId]);
 
+  useEffect(() => {
+    if (!isLoggedIn || !property?._id) return;
+
+    const loadFavourites = async () => {
+      try {
+        const payload = await fetchFavourites();
+        const isFav = (payload.favourites || []).some(
+          (fav) => fav.type === "property" && String(fav.id) === String(property._id)
+        );
+        setIsFavourite(isFav);
+      } catch (error) {
+        setIsFavourite(false);
+      }
+    };
+
+    loadFavourites();
+  }, [isLoggedIn, property?._id]);
+
+  const handleFavouriteToggle = async () => {
+    if (!isLoggedIn || !property?._id || togglingFavourite) return;
+
+    const wasFavourite = isFavourite;
+    setIsFavourite(!wasFavourite);
+    setTogglingFavourite(true);
+
+    try {
+      await toggleFavourite(String(property._id), "property");
+    } catch (error: any) {
+      setIsFavourite(wasFavourite);
+      toast.error(error?.response?.data?.message || "Unable to update favourite");
+    } finally {
+      setTogglingFavourite(false);
+    }
+  };
+
   const normalizedType = (type || "").toLowerCase();
   const isAuctionPath = normalizedType === "auction";
-  const listingTitle = isAuctionPath ? "Auction Properties" : "Distress Properties";
+  const listingTitle = isAuctionPath ? "Auction Properties" : "Alternate Properties";
   const listingPath = isAuctionPath
     ? "/investor-zone/auction-properties"
-    : "/investor-zone/distress-properties";
+    : "/investor-zone/alternate-properties";
 
   const description = useMemo(() => {
     if (!property) return "Investor zone property details on FINVESTCORP.";
-    return stripHtml(property.description || "").slice(0, 170);
-  }, [property]);
-
-  const formattedPrice = useMemo(() => {
-    if (!property) return "-";
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(Number(property.price) || 0);
+    return `${property.headline || "Property"} in ${property.location || ""}, ${property.district || ""}`.trim();
   }, [property]);
 
   const canonicalUrl = typeof window !== "undefined"
@@ -89,29 +155,17 @@ const PropertyDetail = () => {
   return (
     <section className="pt-6 pb-16 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
       <Helmet>
-        <title>{property ? `${property.propertyName} - FINVESTCORP` : "Property - FINVESTCORP"}</title>
+        <title>{property ? `${property.headline || "Property"} - FINVESTCORP` : "Property - FINVESTCORP"}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:title" content={property ? property.propertyName : "Property"} />
+        <meta property="og:title" content={property ? property.headline || "Property" : "Property"} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="article" />
         {property?.photos?.[0]?.url && <meta property="og:image" content={property.photos[0].url} />}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={property ? property.propertyName : "Property"} />
+        <meta name="twitter:title" content={property ? property.headline || "Property" : "Property"} />
         <meta name="twitter:description" content={description} />
         {property?.photos?.[0]?.url && <meta name="twitter:image" content={property.photos[0].url} />}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: "/" },
-              { "@type": "ListItem", position: 2, name: "Investor Zone", item: "/investor-zone/auction-properties" },
-              { "@type": "ListItem", position: 3, name: listingTitle, item: listingPath },
-              { "@type": "ListItem", position: 4, name: property?.propertyName || "Property", item: canonicalUrl }
-            ]
-          })}
-        </script>
       </Helmet>
       <ToastContainerComponent />
 
@@ -121,16 +175,6 @@ const PropertyDetail = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to {listingTitle}
           </Link>
-        </div>
-
-        <div className="mb-5 text-sm text-blue-800 font-medium">
-          <Link to="/" className="hover:text-blue-900">Home</Link>
-          <span className="mx-2">&gt;</span>
-          <span>Investor Zone</span>
-          <span className="mx-2">&gt;</span>
-          <Link to={listingPath} className="hover:text-blue-900">{listingTitle}</Link>
-          <span className="mx-2">&gt;</span>
-          <span className="text-blue-900">{property?.propertyName || "Property"}</span>
         </div>
 
         {loading ? (
@@ -151,7 +195,7 @@ const PropertyDetail = () => {
                     >
                       <img
                         src={photo.url}
-                        alt={`${property.propertyName}-${idx + 1}`}
+                        alt={`${property.headline || "property"}-${idx + 1}`}
                         className="w-full h-full object-contain block bg-slate-50"
                         loading="lazy"
                       />
@@ -162,16 +206,25 @@ const PropertyDetail = () => {
             ) : null}
 
             <div className="p-6 md:p-10">
-              <h1 className="text-2xl md:text-6xl font-bold text-blue-900 mb-4 leading-snug">{property.propertyName}</h1>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <h1 className="text-2xl md:text-5xl font-bold text-blue-900 leading-snug">{property.headline || "Property"}</h1>
+                {isLoggedIn ? (
+                  <FavouriteHeartButton
+                    isFavourite={isFavourite}
+                    disabled={togglingFavourite}
+                    onToggle={handleFavouriteToggle}
+                  />
+                ) : null}
+              </div>
 
               <section className="mb-8">
-                <h2 className="text-3xl font-bold text-blue-600 mb-4">Property Details</h2>
+                <h2 className="text-3xl font-bold text-blue-600 mb-4">Basic Information</h2>
                 <div className="h-[2px] w-full bg-blue-200 mb-6" />
 
                 <div className="grid md:grid-cols-2 gap-4 text-slate-800">
                   <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Listing For:</span>
-                    <span>{property.type || "-"}</span>
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Headline:</span>
+                    <span>{property.headline || "-"}</span>
                   </div>
 
                   <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
@@ -180,50 +233,92 @@ const PropertyDetail = () => {
                   </div>
 
                   <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Society/Building:</span>
-                    <span>{property.propertyName || "-"}</span>
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Area:</span>
+                    <span>{property.area || "-"}</span>
                   </div>
 
                   <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Floor:</span>
-                    <span>{property.floor || "-"}</span>
+                    <span className="font-semibold text-blue-900 min-w-[160px]">BHK:</span>
+                    <span>{property.bhk || "-"}</span>
                   </div>
 
-                  {/* <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Property ID:</span>
-                    <span>{property.propertyId || "-"}</span>
-                  </div> */}
+                  <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Offer Price:</span>
+                    <span>{formatCurrency(property.offerPrice)}</span>
+                  </div>
 
-                  {/* <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
+                  <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Est. Market Value:</span>
+                    <span>{formatCurrency(property.estimatedMarketValue)}</span>
+                  </div>
+
+                  <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
                     <span className="font-semibold text-blue-900 min-w-[160px]">Location:</span>
-                    <span>{property.area || "-"}</span>
-                  </div> */}
+                    <span>{property.location || "-"}</span>
+                  </div>
 
-                  <div className="md:col-span-2 rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Address:</span>
-                    <span>{property.address || "-"}</span>
+                  <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">District:</span>
+                    <span>{property.district || "-"}</span>
+                  </div>
+
+                  <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Possession:</span>
+                    <span>{property.possession || "-"}</span>
+                  </div>
+
+                  <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Status:</span>
+                    <span>{property.status || "-"}</span>
+                  </div>
+
+                  <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">{property.type === "Auction" ? "EMD Date:" : "EOI Date:"}</span>
+                    <span>{formatPropertyDate(property.type === "Auction" ? property.emdDate : property.eoiDate)}</span>
+                  </div>
+
+                  <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Listing:</span>
+                    <span>{listingTypeLabel[property.type] || property.type || "-"}</span>
                   </div>
                 </div>
 
-                <div className="mt-6 rounded-3xl bg-gradient-to-r from-blue-900 to-blue-800 p-5 md:p-6 border border-blue-700">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="rounded-3xl bg-white/10 border border-blue-200/30 px-6 py-7 text-center text-white">
-                      <p className="text-lg font-semibold uppercase tracking-wide">Price</p>
-                      <p className="mt-2 text-4xl font-bold">{formattedPrice}</p>
-                    </div>
+                <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
+                  <h3 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
+                    <Lock className="w-5 h-5" /> Locked Information
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-4">Unlock full property details after enquiry</p>
 
-                    <div className="rounded-3xl bg-white/10 border border-blue-200/30 px-6 py-7 text-center text-white">
-                      <p className="text-lg font-semibold uppercase tracking-wide">Area</p>
-                      <p className="mt-2 text-4xl font-bold">{property.area || "-"}</p>
-                    </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <LockedRow label="Flat No" />
+                    <LockedRow label="Property / Society Name" />
+                    <LockedRow label="Floor" />
+                    <LockedRow label="Full Address" />
+                    <LockedRow label="Bank Name" />
+                    <LockedRow label="Contact Person" />
+                    <LockedRow label="Contact No" />
                   </div>
+                </div>
+
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <Link
+                    to={`/contact?propertyId=${property._id}&listing=${property.type}`}
+                    className="inline-flex items-center justify-center rounded-xl bg-blue-900 text-white px-6 py-3 font-semibold hover:bg-blue-800 transition-colors"
+                  >
+                    Get Details / Site Inspection Enquiry
+                  </Link>
+
+                  {property.pdfDocument?.url ? (
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white text-slate-500 px-6 py-3 font-semibold cursor-not-allowed"
+                      disabled
+                    >
+                      <Lock className="w-4 h-4" /> Download Property Document (Locked)
+                    </button>
+                  ) : null}
                 </div>
               </section>
-
-              <div
-                className="prose prose-blue max-w-none text-gray-800 break-words prose-a:text-blue-700 prose-a:underline hover:prose-a:text-blue-900 prose-ol:list-decimal prose-ul:list-disc prose-li:my-0 prose-p:my-1"
-                dangerouslySetInnerHTML={{ __html: normalizeQuillHtml(property.description || "") }}
-              />
             </div>
           </article>
         )}

@@ -4,6 +4,17 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 
+const formatGalleryDate = (value: unknown) => {
+  if (!value) return "";
+  const d = new Date(value as any);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 const Gallery = () => {
   const [media, setMedia] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -107,6 +118,11 @@ const Gallery = () => {
                   <p className="text-sm lg:text-base xl:text-lg 2xl:text-xl text-center text-blue-900 line-clamp-2 min-h-[2.5rem]">
                     {m.label || m.text || 'Untitled'}
                   </p>
+                  {m?.createdAt ? (
+                    <p className="mt-2 text-xs text-center text-gray-500 font-medium">
+                      {formatGalleryDate(m.createdAt)}
+                    </p>
+                  ) : null}
                 </div>
               </button>
             ))}

@@ -54,12 +54,24 @@ const Refer = () => {
         `${import.meta.env.VITE_API_URI}sendenquiry`,
         formData
       );
-      if (!response.data.status) {
-        toast.error(response.data.message);
+      const responseData = response.data || {};
+      const enquirySaved = Boolean(responseData.status || responseData.saved);
+
+      if (!enquirySaved) {
+        toast.error(responseData.message || "Something Went Wrong");
         return;
       }
 
-      toast.success(response.data.message);
+      const adminWhatsappSent = responseData.notifications?.adminWhatsapp === true;
+      if (!adminWhatsappSent) {
+        toast.error(
+          responseData.message ||
+            "Enquiry was saved, but client WhatsApp delivery failed. Please try again."
+        );
+        return;
+      }
+
+      toast.success(responseData.message || "Enquiry submitted successfully.");
 
       setResponsetext("Thank you for Enquiry😊");
 
@@ -76,7 +88,11 @@ const Refer = () => {
       
     } catch (err) {
       console.error(err);
-      toast.error("Something Went Wrong");
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Something Went Wrong");
+      } else {
+        toast.error("Something Went Wrong");
+      }
     }
   };
 

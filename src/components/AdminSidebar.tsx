@@ -58,6 +58,14 @@ const PropertiesIcon = (props) => {
   );
 };
 
+const JobsIcon = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
+      <path d="M184 48c0-8.8 7.2-16 16-16h112c8.8 0 16 7.2 16 16v16h48c26.5 0 48 21.5 48 48v32H88v-32c0-26.5 21.5-48 48-48h48V48zm128 16v-16H200v16h112zM88 176h336v224c0 26.5-21.5 48-48 48H136c-26.5 0-48-21.5-48-48V176zm144 64c0-8.8-7.2-16-16-16s-16 7.2-16 16v16h-16c-8.8 0-16 7.2-16 16s7.2 16 16 16h16v16c0 8.8 7.2 16 16 16s16-7.2 16-16v-16h16c8.8 0 16-7.2 16-16s-7.2-16-16-16h-16v-16z" />
+    </svg>
+  );
+};
+
 const AdminSidebar = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -146,6 +154,16 @@ const AdminSidebar = () => {
             <path d="M290.7 93.2L138.5 245.4c-4.1 4.1-6.8 9.2-8 14.5L112 334.9c-2.9 13.1 8.8 24.8 21.9 21.9l75.1-18.5c5.3-1.3 10.4-4 14.5-8L376 178.1 290.7 93.2zM497.9 74.2l-60.1-60.1c-18.7-18.7-49.1-18.7-67.9 0L331 53.1l97.9 97.9 68.9-68.9c18.8-18.7 18.8-49.1.1-67.9zM64 64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-17.7-14.3-32-32-32s-32 14.3-32 32V448c0 17.7-14.3 32-32 32H64c-17.7 0-32-14.3-32-32V128c0-17.7 14.3-32 32-32H256c17.7 0 32-14.3 32-32s-14.3-32-32-32H64z"/>
           </svg>
           <span className="text-lg self-center text-[#D6B549]">Blogs & Media</span>
+        </div>
+
+        <div
+          className={`flex gap-3 cursor-pointer items-center ${
+            activeTab === "jobs" ? "bg-slate-600 p-3 rounded-md" : ""
+          }`}
+          onClick={() => handleNavigation("/admin/jobs", "jobs")}
+        >
+          <JobsIcon width={26} fill={"#D6B549"} />
+          <span className="text-lg self-center text-[#D6B549]">Jobs</span>
         </div>
         
         <div

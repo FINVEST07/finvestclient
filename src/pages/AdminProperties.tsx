@@ -20,18 +20,48 @@ interface PropertyPhoto {
 interface PropertyRecord {
   _id: string;
   propertyId: string;
-  propertyName: string;
+  headline: string;
+  propertyOrSocietyName: string;
   area: string;
   type: PropertyListingType;
+  bhk: string;
   floor: string;
   propertyType: PropertyTypeOption;
-  address: string;
-  phoneNumber: string;
-  price: number;
-  description: string;
+  offerPrice: number;
+  estimatedMarketValue: number;
+  location: string;
+  district: string;
+  possession: "Physical" | "Symbolic";
+  status: "Available" | "Sold Out";
+  emdDate?: string;
+  eoiDate?: string;
+  flatNo?: string;
+  fullAddress?: string;
+  bankName?: string;
+  contactPerson?: string;
+  contactNumber?: string;
+  pdfDocument?: { url?: string } | null;
   photos: PropertyPhoto[];
   createdAt: string;
 }
+
+const listingTypeLabel: Record<PropertyListingType, string> = {
+  Auction: "Auction",
+  Distress: "Alternate Properties",
+};
+
+const formatPropertyDate = (iso: string) => {
+  if (!iso) return "-";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const AdminProperties = () => {
   const [properties, setProperties] = useState<PropertyRecord[]>([]);
@@ -81,15 +111,26 @@ const AdminProperties = () => {
     setModalMode("edit");
     setEditingPropertyId(property._id);
     setInitialValues({
-      propertyName: property.propertyName || "",
+      headline: property.headline || property.propertyOrSocietyName || "",
+      propertyOrSocietyName: property.propertyOrSocietyName || "",
       area: property.area || "",
       type: property.type || "",
+      bhk: property.bhk || "",
+      offerPrice: String(property.offerPrice || ""),
+      estimatedMarketValue: String(property.estimatedMarketValue || ""),
+      location: property.location || "",
+      district: property.district || "",
+      possession: property.possession || "",
+      status: property.status || "",
+      emdDate: property.emdDate ? String(property.emdDate).slice(0, 10) : "",
+      eoiDate: property.eoiDate ? String(property.eoiDate).slice(0, 10) : "",
+      flatNo: property.flatNo || "",
       floor: property.floor || "",
+      fullAddress: property.fullAddress || "",
+      bankName: property.bankName || "",
+      contactPerson: property.contactPerson || "",
+      contactNumber: property.contactNumber || "",
       propertyType: property.propertyType || "",
-      address: property.address || "",
-      phoneNumber: property.phoneNumber || "",
-      price: String(property.price || ""),
-      description: property.description || "",
     });
     setExistingPhotos((property.photos || []).map((photo) => photo.url).filter(Boolean));
     setIsPostOpen(true);
@@ -111,64 +152,65 @@ const AdminProperties = () => {
         width: "160px",
       },
       {
-        name: "Property / Society Name",
-        selector: (row: PropertyRecord) => row.propertyName,
+        name: "Headline",
+        selector: (row: PropertyRecord) => row.headline,
         wrap: true,
         width: "220px",
       },
       {
-        name: "Area",
-        selector: (row: PropertyRecord) => row.area,
+        name: "Property / Society",
+        selector: (row: PropertyRecord) => row.propertyOrSocietyName,
         width: "140px",
       },
       {
         name: "Type",
-        selector: (row: PropertyRecord) => row.type,
+        selector: (row: PropertyRecord) => listingTypeLabel[row.type] || row.type,
         width: "120px",
       },
       {
-        name: "Floor",
-        selector: (row: PropertyRecord) => row.floor,
+        name: "Location",
+        selector: (row: PropertyRecord) => row.location,
         width: "110px",
       },
       {
-        name: "Property Type",
-        selector: (row: PropertyRecord) => row.propertyType,
+        name: "District",
+        selector: (row: PropertyRecord) => row.district,
         width: "140px",
       },
       {
-        name: "Address",
-        selector: (row: PropertyRecord) => row.address,
-        width: "260px",
-        wrap: true,
+        name: "BHK",
+        selector: (row: PropertyRecord) => row.bhk,
+        width: "100px",
       },
       {
-        name: "Phone Number",
-        selector: (row: PropertyRecord) => row.phoneNumber,
-        width: "160px",
-      },
-      {
-        name: "Price",
+        name: "Offer Price",
         selector: (row: PropertyRecord) =>
           new Intl.NumberFormat("en-IN", {
             style: "currency",
             currency: "INR",
             maximumFractionDigits: 0,
-          }).format(row.price || 0),
+          }).format(row.offerPrice || 0),
         width: "160px",
       },
       {
-        name: "Description",
-        cell: (row: PropertyRecord) => {
-          const text = row.description || "";
-          const short = text.length > 80 ? `${text.slice(0, 80)}...` : text;
-          return (
-            <span title={text} className="block max-w-[260px]">
-              {short}
-            </span>
-          );
-        },
-        width: "280px",
+        name: "Est. Market Value",
+        selector: (row: PropertyRecord) =>
+          new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 0,
+          }).format(row.estimatedMarketValue || 0),
+        width: "160px",
+      },
+      {
+        name: "Status",
+        selector: (row: PropertyRecord) => row.status || "-",
+        width: "130px",
+      },
+      {
+        name: "Posted On",
+        selector: (row: PropertyRecord) => formatPropertyDate(row.createdAt),
+        width: "180px",
       },
       {
         name: "Photos",
@@ -255,19 +297,34 @@ const AdminProperties = () => {
       setPosting(true);
       const formData = new FormData();
 
-      formData.append("propertyName", payload.propertyName);
+      formData.append("headline", payload.headline);
+      formData.append("propertyOrSocietyName", payload.propertyOrSocietyName);
       formData.append("area", payload.area);
       formData.append("type", payload.type);
+      formData.append("bhk", payload.bhk);
+      formData.append("offerPrice", String(payload.offerPrice));
+      formData.append("estimatedMarketValue", String(payload.estimatedMarketValue));
+      formData.append("location", payload.location);
+      formData.append("district", payload.district);
+      formData.append("possession", payload.possession);
+      formData.append("status", payload.status);
+      formData.append("emdDate", payload.emdDate);
+      formData.append("eoiDate", payload.eoiDate);
+      formData.append("flatNo", payload.flatNo);
       formData.append("floor", payload.floor);
+      formData.append("fullAddress", payload.fullAddress);
+      formData.append("bankName", payload.bankName);
+      formData.append("contactPerson", payload.contactPerson);
+      formData.append("contactNumber", payload.contactNumber);
       formData.append("propertyType", payload.propertyType);
-      formData.append("address", payload.address);
-      formData.append("phoneNumber", payload.phoneNumber);
-      formData.append("price", String(payload.price));
-      formData.append("description", payload.description);
 
       payload.photos.forEach((photo) => {
         formData.append("photos", photo);
       });
+
+      if (payload.pdfDocument) {
+        formData.append("pdfDocument", payload.pdfDocument);
+      }
 
       const request =
         modalMode === "edit" && editingPropertyId

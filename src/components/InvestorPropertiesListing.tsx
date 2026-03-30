@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import PropertyCard from "@/components/PropertyCard";
+import { toast } from "react-toastify";
+import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 interface PropertyPhoto {
   url: string;
@@ -11,12 +13,19 @@ interface PropertyPhoto {
 
 interface PropertyItem {
   _id: string;
-  propertyName: string;
+  headline: string;
   area: string;
   type: "Auction" | "Distress";
   propertyType: string;
-  price: number;
-  description: string;
+  bhk?: string;
+  offerPrice?: number;
+  estimatedMarketValue?: number;
+  location?: string;
+  district?: string;
+  possession?: string;
+  status?: string;
+  emdDate?: string;
+  eoiDate?: string;
   photos?: PropertyPhoto[];
 }
 
@@ -29,6 +38,9 @@ const InvestorPropertiesListing = ({
 }) => {
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [favouriteIds, setFavouriteIds] = useState<Set<string>>(new Set());
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadProperties = async () => {
     try {
@@ -48,10 +60,67 @@ const InvestorPropertiesListing = ({
     loadProperties();
   }, [type]);
 
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const loadFavourites = async () => {
+      try {
+        const payload = await fetchFavourites();
+        const ids = new Set(
+          (payload.favourites || [])
+            .filter((fav) => fav.type === "property")
+            .map((fav) => String(fav.id))
+        );
+        setFavouriteIds(ids);
+      } catch (error) {
+        setFavouriteIds(new Set());
+      }
+    };
+
+    loadFavourites();
+  }, [isLoggedIn]);
+
+  const handlePropertyFavouriteToggle = async (propertyId: string) => {
+    if (!isLoggedIn) return;
+
+    const wasFavourite = favouriteIds.has(propertyId);
+    const nextIds = new Set(favouriteIds);
+    if (wasFavourite) {
+      nextIds.delete(propertyId);
+    } else {
+      nextIds.add(propertyId);
+    }
+    setFavouriteIds(nextIds);
+    setTogglingIds((prev) => new Set(prev).add(propertyId));
+
+    try {
+      await toggleFavourite(propertyId, "property");
+    } catch (error: any) {
+      setFavouriteIds((prev) => {
+        const rollback = new Set(prev);
+        if (wasFavourite) {
+          rollback.add(propertyId);
+        } else {
+          rollback.delete(propertyId);
+        }
+        return rollback;
+      });
+      toast.error(error?.response?.data?.message || "Unable to update favourite");
+    } finally {
+      setTogglingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(propertyId);
+        return next;
+      });
+    }
+  };
+
   const pageDescription = useMemo(
     () => `${title} on FINVESTCORP with location, type, pricing, and complete details.`,
     [title]
   );
+
+  const listingLabel = type === "Distress" ? "alternate" : "auction";
 
   return (
     <section className="pt-6 pb-16 mx-auto bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
@@ -79,11 +148,18 @@ const InvestorPropertiesListing = ({
             <span className="animate-spin inline-block w-8 h-8 border-4 border-t-transparent border-blue-600 rounded-full"></span>
           </div>
         ) : properties.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">No {type.toLowerCase()} properties to show</div>
+          <div className="text-center text-gray-500 py-20">No {listingLabel} properties to show</div>
         ) : (
           <div className="space-y-3 md:mx-12">
             {properties.map((property) => (
-              <PropertyCard key={property._id} property={property} />
+              <PropertyCard
+                key={property._id}
+                property={property}
+                showFavourite={isLoggedIn}
+                isFavourite={favouriteIds.has(String(property._id))}
+                isToggling={togglingIds.has(String(property._id))}
+                onToggleFavourite={handlePropertyFavouriteToggle}
+              />
             ))}
           </div>
         )}

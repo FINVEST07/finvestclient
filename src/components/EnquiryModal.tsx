@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import Cookie from "js-cookie";
 import axios from "axios";
 import { z } from "zod";
-
-const ENQUIRY_SUBMITTED_COOKIE = "finvest_enquiry_submitted";
 
 type ServiceType = "loan" | "insurance" | "investment" | "";
 
@@ -25,8 +22,6 @@ const EnquiryModal = () => {
 
   const [formData, setFormData] = useState(initialFormData);
 
-  const hasSubmitted = () => Cookie.get(ENQUIRY_SUBMITTED_COOKIE) === "1";
-
   const clearReopenTimeout = () => {
     if (reopenTimeoutRef.current) {
       window.clearTimeout(reopenTimeoutRef.current);
@@ -38,16 +33,12 @@ const EnquiryModal = () => {
     clearReopenTimeout();
 
     reopenTimeoutRef.current = window.setTimeout(() => {
-      if (!hasSubmitted()) {
-        setOpen(true);
-      }
-    }, 20000);
+      setOpen(true);
+    }, 55000);
   };
 
   useEffect(() => {
-    if (!hasSubmitted()) {
-      setOpen(true);
-    }
+    setOpen(true);
 
     const onOpenEnquiry = () => {
       setOpen(true);
@@ -65,10 +56,7 @@ const EnquiryModal = () => {
     setOpen(false);
     setFormData(initialFormData);
     setValidationError("");
-
-    if (!hasSubmitted()) {
-      scheduleReopen();
-    }
+    scheduleReopen();
   };
 
   const onChange = (
@@ -124,17 +112,41 @@ const EnquiryModal = () => {
         }
       );
 
-      if (!res.data?.status) {
+      const responseData = res.data || {};
+      const enquirySaved = Boolean(responseData.status || responseData.saved);
+
+      if (!enquirySaved) {
+        setValidationError(
+          responseData.message ||
+            "Unable to submit enquiry right now. Please try again."
+        );
         return;
       }
 
-      Cookie.set(ENQUIRY_SUBMITTED_COOKIE, "1", { expires: 365 });
+      const adminWhatsappSent = responseData.notifications?.adminWhatsapp === true;
+
+      if (!adminWhatsappSent) {
+        setValidationError(
+          responseData.message ||
+            "Enquiry was saved, but client WhatsApp delivery failed. Please submit once more."
+        );
+        return;
+      }
+
       clearReopenTimeout();
       setFormData(initialFormData);
       setValidationError("");
       setOpen(false);
     } catch (error) {
       console.error("Failed to submit enquiry:", error);
+      if (axios.isAxiosError(error)) {
+        setValidationError(
+          error.response?.data?.message ||
+            "Unable to submit enquiry right now. Please try again."
+        );
+      } else {
+        setValidationError("Unable to submit enquiry right now. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }

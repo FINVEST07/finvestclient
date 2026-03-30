@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 
 export type PropertyTypeOption =
   | "Flat"
@@ -13,45 +11,83 @@ export type PropertyTypeOption =
   | "Commercial";
 
 export type PropertyListingType = "Auction" | "Distress";
+export type PossessionType = "Physical" | "Symbolic";
+export type PropertyStatusType = "Available" | "Sold Out";
 
 export interface PropertyRecord {
   propertyId: string;
-  propertyName: string;
+  headline: string;
+  propertyOrSocietyName: string;
   area: string;
   type: PropertyListingType;
+  bhk: string;
   floor: string;
   propertyType: PropertyTypeOption;
-  address: string;
-  phoneNumber: string;
-  price: number;
-  description: string;
+  offerPrice: number;
+  estimatedMarketValue: number;
+  location: string;
+  district: string;
+  possession: PossessionType;
+  status: PropertyStatusType;
+  emdDate?: string;
+  eoiDate?: string;
+  flatNo: string;
+  fullAddress: string;
+  bankName: string;
+  contactPerson: string;
+  contactNumber: string;
   photos: string[];
   createdAt: string;
 }
 
 export interface PropertyFormPayload {
-  propertyName: string;
+  headline: string;
   area: string;
   type: PropertyListingType;
+  bhk: string;
+  offerPrice: number;
+  estimatedMarketValue: number;
+  location: string;
+  district: string;
+  possession: PossessionType;
+  status: PropertyStatusType;
+  emdDate: string;
+  eoiDate: string;
+
+  flatNo: string;
+  propertyOrSocietyName: string;
   floor: string;
+  fullAddress: string;
+  bankName: string;
+  contactPerson: string;
+  contactNumber: string;
+
   propertyType: PropertyTypeOption;
-  address: string;
-  phoneNumber: string;
-  price: number;
-  description: string;
   photos: File[];
+  pdfDocument: File | null;
 }
 
 export interface PropertyFormInitialValues {
-  propertyName: string;
+  headline: string;
+  propertyOrSocietyName: string;
   area: string;
   type: PropertyListingType | "";
+  bhk: string;
+  offerPrice: string;
+  estimatedMarketValue: string;
+  location: string;
+  district: string;
+  possession: PossessionType | "";
+  status: PropertyStatusType | "";
+  emdDate: string;
+  eoiDate: string;
+  flatNo: string;
   floor: string;
+  fullAddress: string;
+  bankName: string;
+  contactPerson: string;
+  contactNumber: string;
   propertyType: PropertyTypeOption | "";
-  address: string;
-  phoneNumber: string;
-  price: string;
-  description: string;
 }
 
 interface PostPropertyModalProps {
@@ -63,9 +99,13 @@ interface PostPropertyModalProps {
   onSubmit: (payload: PropertyFormPayload) => void | Promise<void>;
 }
 
-type FieldErrors = Partial<Record<keyof Omit<PropertyRecord, "propertyId" | "createdAt" | "photos"> | "photos", string>>;
+type FieldErrors = Partial<Record<keyof Omit<PropertyRecord, "propertyId" | "createdAt" | "photos"> | "photos" | "pdfDocument", string>>;
 
 const listingTypeOptions: PropertyListingType[] = ["Auction", "Distress"];
+const listingTypeLabel: Record<PropertyListingType, string> = {
+  Auction: "Auction",
+  Distress: "Alternate",
+};
 const propertyTypeOptions: PropertyTypeOption[] = [
   "Flat",
   "Bungalow",
@@ -76,45 +116,31 @@ const propertyTypeOptions: PropertyTypeOption[] = [
   "Plot",
   "Commercial",
 ];
+const possessionOptions: PossessionType[] = ["Physical", "Symbolic"];
+const statusOptions: PropertyStatusType[] = ["Available", "Sold Out"];
 
 const initialState = {
-  propertyName: "",
+  headline: "",
+  propertyOrSocietyName: "",
   area: "",
   type: "" as "" | PropertyListingType,
+  bhk: "",
+  offerPrice: "",
+  estimatedMarketValue: "",
+  location: "",
+  district: "",
+  possession: "" as "" | PossessionType,
+  status: "" as "" | PropertyStatusType,
+  emdDate: "",
+  eoiDate: "",
+  flatNo: "",
   floor: "",
+  fullAddress: "",
+  bankName: "",
+  contactPerson: "",
+  contactNumber: "",
   propertyType: "" as "" | PropertyTypeOption,
-  address: "",
-  phoneNumber: "",
-  price: "",
-  description: "",
 };
-
-const quillModules = {
-  toolbar: [
-    [{ header: [1, 2, 3, false] }],
-    ["bold", "italic"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link"],
-    [{ align: [] }],
-    ["clean"],
-  ],
-};
-
-const quillFormats = [
-  "header",
-  "bold",
-  "italic",
-  "list",
-  "bullet",
-  "link",
-  "align",
-];
-
-const getRichTextPlainValue = (html: string) =>
-  html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .trim();
 
 const PostPropertyModal = ({
   open,
@@ -126,6 +152,7 @@ const PostPropertyModal = ({
 }: PostPropertyModalProps) => {
   const [form, setForm] = useState(initialState);
   const [photos, setPhotos] = useState<File[]>([]);
+  const [pdfDocument, setPdfDocument] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [photoError, setPhotoError] = useState<string>("");
@@ -134,6 +161,7 @@ const PostPropertyModal = ({
     if (!open) {
       setForm(initialState);
       setPhotos([]);
+      setPdfDocument(null);
       setIsSubmitting(false);
       setErrors({});
       setPhotoError("");
@@ -142,18 +170,29 @@ const PostPropertyModal = ({
 
     if (mode === "edit" && initialValues) {
       setForm({
-        propertyName: initialValues.propertyName || "",
+        headline: initialValues.headline || "",
+        propertyOrSocietyName: initialValues.propertyOrSocietyName || "",
         area: initialValues.area || "",
         type: (initialValues.type as "" | PropertyListingType) || "",
+        bhk: initialValues.bhk || "",
+        offerPrice: initialValues.offerPrice || "",
+        estimatedMarketValue: initialValues.estimatedMarketValue || "",
+        location: initialValues.location || "",
+        district: initialValues.district || "",
+        possession: (initialValues.possession as "" | PossessionType) || "",
+        status: (initialValues.status as "" | PropertyStatusType) || "",
+        emdDate: initialValues.emdDate || "",
+        eoiDate: initialValues.eoiDate || "",
+        flatNo: initialValues.flatNo || "",
         floor: initialValues.floor || "",
-        propertyType:
-          (initialValues.propertyType as "" | PropertyTypeOption) || "",
-        address: initialValues.address || "",
-        phoneNumber: initialValues.phoneNumber || "",
-        price: initialValues.price || "",
-        description: initialValues.description || "",
+        fullAddress: initialValues.fullAddress || "",
+        bankName: initialValues.bankName || "",
+        contactPerson: initialValues.contactPerson || "",
+        contactNumber: initialValues.contactNumber || "",
+        propertyType: (initialValues.propertyType as "" | PropertyTypeOption) || "",
       });
       setPhotos([]);
+      setPdfDocument(null);
       setIsSubmitting(false);
       setErrors({});
       setPhotoError("");
@@ -203,21 +242,38 @@ const PostPropertyModal = ({
   const validate = () => {
     const nextErrors: FieldErrors = {};
 
-    if (!form.propertyName.trim()) nextErrors.propertyName = "Property / Society Name is required";
+    if (!form.headline.trim()) nextErrors.headline = "Headline is required";
+    if (!form.propertyOrSocietyName.trim()) nextErrors.propertyOrSocietyName = "Property / Society Name is required";
     if (!form.area.trim()) nextErrors.area = "Area is required";
     if (!form.type) nextErrors.type = "Type is required";
-    if (!form.propertyType) nextErrors.propertyType = "Property Type is required";
-    if (!form.address.trim()) nextErrors.address = "Address is required";
-    if (!form.phoneNumber.trim()) nextErrors.phoneNumber = "Phone Number is required";
-    if (form.phoneNumber && !/^\d{10,15}$/.test(form.phoneNumber.trim())) {
-      nextErrors.phoneNumber = "Phone Number must be numeric (10-15 digits)";
+    if (!form.bhk.trim()) nextErrors.bhk = "BHK is required";
+    if (!form.location.trim()) nextErrors.location = "Location is required";
+    if (!form.district.trim()) nextErrors.district = "District is required";
+    if (!form.possession) nextErrors.possession = "Possession is required";
+    if (!form.status) nextErrors.status = "Status is required";
+
+    if (!form.offerPrice.trim() || Number(form.offerPrice) <= 0) {
+      nextErrors.offerPrice = "Offer Price must be greater than 0";
+    }
+    if (!form.estimatedMarketValue.trim() || Number(form.estimatedMarketValue) <= 0) {
+      nextErrors.estimatedMarketValue = "Estimated Market Value must be greater than 0";
     }
 
-    if (!form.price.trim()) nextErrors.price = "Price is required";
-    if (form.price && Number(form.price) <= 0) nextErrors.price = "Price must be greater than 0";
-    if (!getRichTextPlainValue(form.description)) {
-      nextErrors.description = "Description is required";
+    if (form.type === "Auction" && !form.emdDate) {
+      nextErrors.emdDate = "EMD Date is required for Auction properties";
     }
+    if (form.type === "Distress" && !form.eoiDate) {
+      nextErrors.eoiDate = "EOI Date is required for Alternate properties";
+    }
+
+    if (!form.propertyType) nextErrors.propertyType = "Property Type is required";
+    if (!form.fullAddress.trim()) nextErrors.fullAddress = "Full Address is required";
+    if (!form.contactPerson.trim()) nextErrors.contactPerson = "Contact Person is required";
+    if (!form.contactNumber.trim()) nextErrors.contactNumber = "Contact Number is required";
+    if (form.contactNumber && !/^\d{10,15}$/.test(form.contactNumber.trim())) {
+      nextErrors.contactNumber = "Contact Number must be numeric (10-15 digits)";
+    }
+
     if (mode === "create" && photos.length === 0) {
       nextErrors.photos = "At least one photo is required";
     }
@@ -233,16 +289,28 @@ const PostPropertyModal = ({
     try {
       setIsSubmitting(true);
       await onSubmit({
-        propertyName: form.propertyName.trim(),
+        headline: form.headline.trim(),
         area: form.area.trim(),
         type: form.type as PropertyListingType,
+        bhk: form.bhk.trim(),
+        offerPrice: Number(form.offerPrice),
+        estimatedMarketValue: Number(form.estimatedMarketValue),
+        location: form.location.trim(),
+        district: form.district.trim(),
+        possession: form.possession as PossessionType,
+        status: form.status as PropertyStatusType,
+        emdDate: form.emdDate,
+        eoiDate: form.eoiDate,
+        flatNo: form.flatNo.trim(),
+        propertyOrSocietyName: form.propertyOrSocietyName.trim(),
         floor: form.floor.trim(),
+        fullAddress: form.fullAddress.trim(),
+        bankName: form.bankName.trim(),
+        contactPerson: form.contactPerson.trim(),
+        contactNumber: form.contactNumber.trim(),
         propertyType: form.propertyType as PropertyTypeOption,
-        address: form.address.trim(),
-        phoneNumber: form.phoneNumber.trim(),
-        price: Number(form.price),
-        description: form.description.trim(),
         photos,
+        pdfDocument,
       });
     } finally {
       setIsSubmitting(false);
@@ -276,26 +344,26 @@ const PostPropertyModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Property / Society Name <span className="text-red-600">*</span>
+                Headline <span className="text-red-600">*</span>
               </label>
               <input
-                value={form.propertyName}
-                onChange={(e) => setField("propertyName", e.target.value)}
-                className={inputClass("propertyName")}
+                value={form.headline}
+                onChange={(e) => setField("headline", e.target.value)}
+                className={inputClass("headline")}
               />
-              {errors.propertyName && <p className="text-xs text-red-600 mt-1">{errors.propertyName}</p>}
+              {errors.headline && <p className="text-xs text-red-600 mt-1">{errors.headline}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Area <span className="text-red-600">*</span>
+                Property / Society Name <span className="text-red-600">*</span>
               </label>
               <input
-                value={form.area}
-                onChange={(e) => setField("area", e.target.value)}
-                className={inputClass("area")}
+                value={form.propertyOrSocietyName}
+                onChange={(e) => setField("propertyOrSocietyName", e.target.value)}
+                className={inputClass("propertyOrSocietyName")}
               />
-              {errors.area && <p className="text-xs text-red-600 mt-1">{errors.area}</p>}
+              {errors.propertyOrSocietyName && <p className="text-xs text-red-600 mt-1">{errors.propertyOrSocietyName}</p>}
             </div>
 
             <div>
@@ -310,23 +378,11 @@ const PostPropertyModal = ({
                 <option value="">Select Type</option>
                 {listingTypeOptions.map((opt) => (
                   <option key={opt} value={opt}>
-                    {opt}
+                    {listingTypeLabel[opt]}
                   </option>
                 ))}
               </select>
               {errors.type && <p className="text-xs text-red-600 mt-1">{errors.type}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Floor
-              </label>
-              <input
-                value={form.floor}
-                onChange={(e) => setField("floor", e.target.value)}
-                className={inputClass("floor")}
-              />
-              {errors.floor && <p className="text-xs text-red-600 mt-1">{errors.floor}</p>}
             </div>
 
             <div>
@@ -350,66 +406,208 @@ const PostPropertyModal = ({
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Phone Number <span className="text-red-600">*</span>
+                Area <span className="text-red-600">*</span>
               </label>
               <input
-                value={form.phoneNumber}
-                onChange={(e) => setField("phoneNumber", e.target.value.replace(/\D/g, ""))}
-                className={inputClass("phoneNumber")}
-                maxLength={15}
+                value={form.area}
+                onChange={(e) => setField("area", e.target.value)}
+                className={inputClass("area")}
               />
-              {errors.phoneNumber && <p className="text-xs text-red-600 mt-1">{errors.phoneNumber}</p>}
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Address <span className="text-red-600">*</span>
-              </label>
-              <textarea
-                value={form.address}
-                onChange={(e) => setField("address", e.target.value)}
-                className={inputClass("address")}
-                rows={2}
-              />
-              {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
+              {errors.area && <p className="text-xs text-red-600 mt-1">{errors.area}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Price <span className="text-red-600">*</span>
+                BHK <span className="text-red-600">*</span>
+              </label>
+              <input
+                value={form.bhk}
+                onChange={(e) => setField("bhk", e.target.value)}
+                className={inputClass("bhk")}
+                placeholder="2 BHK"
+              />
+              {errors.bhk && <p className="text-xs text-red-600 mt-1">{errors.bhk}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Offer Price <span className="text-red-600">*</span>
               </label>
               <input
                 type="number"
-                value={form.price}
-                onChange={(e) => setField("price", e.target.value)}
-                className={inputClass("price")}
+                value={form.offerPrice}
+                onChange={(e) => setField("offerPrice", e.target.value)}
+                className={inputClass("offerPrice")}
                 min={0}
               />
-              {errors.price && <p className="text-xs text-red-600 mt-1">{errors.price}</p>}
+              {errors.offerPrice && <p className="text-xs text-red-600 mt-1">{errors.offerPrice}</p>}
             </div>
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Description <span className="text-red-600">*</span>
+                Estimated Market Value <span className="text-red-600">*</span>
               </label>
-              <div
-                className={`property-description-quill border rounded-md ${
-                  errors.description ? "border-red-500" : "border-slate-300"
-                }`}
+              <input
+                type="number"
+                value={form.estimatedMarketValue}
+                onChange={(e) => setField("estimatedMarketValue", e.target.value)}
+                className={inputClass("estimatedMarketValue")}
+                min={0}
+              />
+              {errors.estimatedMarketValue && <p className="text-xs text-red-600 mt-1">{errors.estimatedMarketValue}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Location <span className="text-red-600">*</span>
+              </label>
+              <input
+                value={form.location}
+                onChange={(e) => setField("location", e.target.value)}
+                className={inputClass("location")}
+              />
+              {errors.location && <p className="text-xs text-red-600 mt-1">{errors.location}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                District <span className="text-red-600">*</span>
+              </label>
+              <input
+                value={form.district}
+                onChange={(e) => setField("district", e.target.value)}
+                className={inputClass("district")}
+              />
+              {errors.district && <p className="text-xs text-red-600 mt-1">{errors.district}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Possession <span className="text-red-600">*</span>
+              </label>
+              <select
+                value={form.possession}
+                onChange={(e) => setField("possession", e.target.value)}
+                className={inputClass("possession")}
               >
-                <ReactQuill
-                  theme="snow"
-                  value={form.description}
-                  onChange={(value) => setField("description", value)}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  placeholder="Write property description..."
+                <option value="">Select Possession</option>
+                {possessionOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+              {errors.possession && <p className="text-xs text-red-600 mt-1">{errors.possession}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Status <span className="text-red-600">*</span>
+              </label>
+              <select
+                value={form.status}
+                onChange={(e) => setField("status", e.target.value)}
+                className={inputClass("status")}
+              >
+                <option value="">Select Status</option>
+                {statusOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+              {errors.status && <p className="text-xs text-red-600 mt-1">{errors.status}</p>}
+            </div>
+
+            {form.type === "Auction" ? (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  EMD Date <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={form.emdDate}
+                  onChange={(e) => setField("emdDate", e.target.value)}
+                  className={inputClass("emdDate")}
                 />
+                {errors.emdDate && <p className="text-xs text-red-600 mt-1">{errors.emdDate}</p>}
               </div>
-              <style>{`
-                .property-description-quill .ql-container { height: 180px; overflow-y: auto; }
-              `}</style>
-              {errors.description && <p className="text-xs text-red-600 mt-1">{errors.description}</p>}
+            ) : null}
+
+            {form.type === "Distress" ? (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  EOI Date <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={form.eoiDate}
+                  onChange={(e) => setField("eoiDate", e.target.value)}
+                  className={inputClass("eoiDate")}
+                />
+                {errors.eoiDate && <p className="text-xs text-red-600 mt-1">{errors.eoiDate}</p>}
+              </div>
+            ) : null}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Flat No</label>
+              <input
+                value={form.flatNo}
+                onChange={(e) => setField("flatNo", e.target.value)}
+                className={inputClass("flatNo")}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Floor</label>
+              <input
+                value={form.floor}
+                onChange={(e) => setField("floor", e.target.value)}
+                className={inputClass("floor")}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Full Address <span className="text-red-600">*</span>
+              </label>
+              <textarea
+                value={form.fullAddress}
+                onChange={(e) => setField("fullAddress", e.target.value)}
+                className={inputClass("fullAddress")}
+                rows={2}
+              />
+              {errors.fullAddress && <p className="text-xs text-red-600 mt-1">{errors.fullAddress}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Bank Name</label>
+              <input
+                value={form.bankName}
+                onChange={(e) => setField("bankName", e.target.value)}
+                className={inputClass("bankName")}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Contact Person <span className="text-red-600">*</span>
+              </label>
+              <input
+                value={form.contactPerson}
+                onChange={(e) => setField("contactPerson", e.target.value)}
+                className={inputClass("contactPerson")}
+              />
+              {errors.contactPerson && <p className="text-xs text-red-600 mt-1">{errors.contactPerson}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Contact Number <span className="text-red-600">*</span>
+              </label>
+              <input
+                value={form.contactNumber}
+                onChange={(e) => setField("contactNumber", e.target.value.replace(/\D/g, ""))}
+                className={inputClass("contactNumber")}
+                maxLength={15}
+              />
+              {errors.contactNumber && <p className="text-xs text-red-600 mt-1">{errors.contactNumber}</p>}
             </div>
 
             <div className="md:col-span-2">
@@ -466,6 +664,20 @@ const PostPropertyModal = ({
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Property PDF Document</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setPdfDocument(e.target.files?.[0] || null)}
+                className={inputClass("pdfDocument")}
+              />
+              {pdfDocument ? (
+                <p className="text-xs text-slate-500 mt-1">Selected: {pdfDocument.name}</p>
+              ) : null}
+              <p className="text-xs text-slate-500 mt-1">Optional. Upload PDF for property document.</p>
             </div>
           </div>
 

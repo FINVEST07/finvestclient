@@ -3,23 +3,16 @@ import axios from "axios";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
-
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-
-const formatBlogDate = (value: unknown) => {
-  if (!value) return "";
-  const d = new Date(value as any);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
+import { toast } from "react-toastify";
+import BlogCard from "@/components/BlogCard";
+import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [favouriteIds, setFavouriteIds] = useState<Set<string>>(new Set());
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadBlogs = async () => {
     try {
@@ -36,6 +29,61 @@ const Blogs = () => {
   useEffect(() => {
     loadBlogs();
   }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const loadFavourites = async () => {
+      try {
+        const payload = await fetchFavourites();
+        const ids = new Set(
+          (payload.favourites || [])
+            .filter((fav) => fav.type === "blog")
+            .map((fav) => String(fav.id))
+        );
+        setFavouriteIds(ids);
+      } catch (error) {
+        setFavouriteIds(new Set());
+      }
+    };
+
+    loadFavourites();
+  }, [isLoggedIn]);
+
+  const handleBlogFavouriteToggle = async (blogId: string) => {
+    if (!isLoggedIn) return;
+
+    const wasFavourite = favouriteIds.has(blogId);
+    const nextIds = new Set(favouriteIds);
+    if (wasFavourite) {
+      nextIds.delete(blogId);
+    } else {
+      nextIds.add(blogId);
+    }
+    setFavouriteIds(nextIds);
+    setTogglingIds((prev) => new Set(prev).add(blogId));
+
+    try {
+      await toggleFavourite(blogId, "blog");
+    } catch (error: any) {
+      setFavouriteIds((prev) => {
+        const rollback = new Set(prev);
+        if (wasFavourite) {
+          rollback.add(blogId);
+        } else {
+          rollback.delete(blogId);
+        }
+        return rollback;
+      });
+      toast.error(error?.response?.data?.message || "Unable to update favourite");
+    } finally {
+      setTogglingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(blogId);
+        return next;
+      });
+    }
+  };
 
   return (
     <section className="pt-6 pb-16 mx-auto bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
@@ -65,39 +113,14 @@ const Blogs = () => {
         ) : (
           <div className="space-y-6 md:mx-12">
             {blogs.map((b) => (
-              <a
+              <BlogCard
                 key={b._id}
-                className="grid md:grid-cols-3 gap-0 md:gap-4 items-stretch bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden hover:-translate-y-0.5 transition-all"
-                href={`/blogs/${b.slug || b._id}`}
-              >
-                <div className="p-6 md:col-span-2 flex flex-col justify-center">
-                  <h2 className="text-2xl font-bold text-blue-900 mb-2">{b.title}</h2>
-                  <p className="text-gray-700 leading-relaxed line-clamp-4 whitespace-pre-line">
-                    {typeof b.content === "string" ? stripHtml(b.content) : ""}
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-2 text-blue-900 font-semibold">
-                    Read full article
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                  </span>
-                  {b?.createdAt ? (
-                    <span className="mt-3 text-xs text-gray-500 font-medium">
-                      {formatBlogDate(b.createdAt)}
-                    </span>
-                  ) : null}
-                </div>
-                <div className="bg-blue-50">
-                  {b.thumbnailUrl ? (
-                    <img
-                      src={b.thumbnailUrl}
-                      alt={b.title}
-                      className="w-full h-auto block"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full grid place-items-center text-blue-700 p-6">No Image</div>
-                  )}
-                </div>
-              </a>
+                blog={b}
+                showFavourite={isLoggedIn}
+                isFavourite={favouriteIds.has(String(b._id))}
+                isToggling={togglingIds.has(String(b._id))}
+                onToggleFavourite={handleBlogFavouriteToggle}
+              />
             ))}
           </div>
         )}

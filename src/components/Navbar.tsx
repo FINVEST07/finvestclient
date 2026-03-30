@@ -15,14 +15,20 @@ const Navbar = ({ setLoginOpen }) => {
   const [mobileCalculatorOpen, setMobileCalculatorOpen] = useState(false);
   const [investorZoneOpen, setInvestorZoneOpen] = useState(false);
   const [mobileInvestorZoneOpen, setMobileInvestorZoneOpen] = useState(false);
+  const [careerOpen, setCareerOpen] = useState(false);
+  const [mobileCareerOpen, setMobileCareerOpen] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const investorCloseTimeoutRef = useRef<number | null>(null);
+  const careerCloseTimeoutRef = useRef<number | null>(null);
   const calculatorWrapperRef = useRef<HTMLDivElement | null>(null);
   const calculatorButtonRef = useRef<HTMLButtonElement | null>(null);
   const calculatorItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const investorZoneWrapperRef = useRef<HTMLDivElement | null>(null);
   const investorZoneButtonRef = useRef<HTMLButtonElement | null>(null);
   const investorZoneItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const careerWrapperRef = useRef<HTMLDivElement | null>(null);
+  const careerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const careerItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,8 +39,15 @@ const Navbar = ({ setLoginOpen }) => {
 
   const isInvestorZoneActive =
     location.pathname === "/investor-zone/auction-properties" ||
+    location.pathname === "/investor-zone/alternate-properties" ||
     location.pathname === "/investor-zone/distress-properties" ||
     location.pathname.startsWith("/investor-zone/");
+
+  const isCareerActive =
+    location.pathname === "/refer" ||
+    location.pathname === "/become-partner" ||
+    location.pathname === "/careers/jobs" ||
+    location.pathname.startsWith("/careers/jobs/");
 
   const RupeeIcon = ({ width }) => {
     return (
@@ -108,6 +121,20 @@ const Navbar = ({ setLoginOpen }) => {
     }, 150);
   };
 
+  const clearCareerCloseTimeout = () => {
+    if (careerCloseTimeoutRef.current) {
+      window.clearTimeout(careerCloseTimeoutRef.current);
+      careerCloseTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleCareerClose = () => {
+    clearCareerCloseTimeout();
+    careerCloseTimeoutRef.current = window.setTimeout(() => {
+      setCareerOpen(false);
+    }, 150);
+  };
+
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       if (!calculatorOpen) return;
@@ -139,6 +166,22 @@ const Navbar = ({ setLoginOpen }) => {
       document.removeEventListener("mousedown", onMouseDown);
     };
   }, [investorZoneOpen]);
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (!careerOpen) return;
+      const wrapper = careerWrapperRef.current;
+      if (!wrapper) return;
+      if (!wrapper.contains(e.target as Node)) {
+        setCareerOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onMouseDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [careerOpen]);
 
   const focusCalculatorItem = (index: number) => {
     const el = calculatorItemRefs.current[index];
@@ -246,6 +289,57 @@ const Navbar = ({ setLoginOpen }) => {
     }
   };
 
+  const focusCareerItem = (index: number) => {
+    const el = careerItemRefs.current[index];
+    if (el) el.focus();
+  };
+
+  const onCareerButtonKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setCareerOpen(true);
+      window.setTimeout(() => focusCareerItem(0), 0);
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setCareerOpen(false);
+    }
+  };
+
+  const onCareerMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setCareerOpen(false);
+      careerButtonRef.current?.focus();
+      return;
+    }
+
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") {
+      return;
+    }
+
+    e.preventDefault();
+    const items = careerItemRefs.current;
+    const activeIndex = items.findIndex((n) => n === document.activeElement);
+
+    const lastIndex = items.length - 1;
+    if (e.key === "Home") return focusCareerItem(0);
+    if (e.key === "End") return focusCareerItem(lastIndex);
+
+    if (activeIndex === -1) {
+      return focusCareerItem(0);
+    }
+
+    if (e.key === "ArrowDown") {
+      return focusCareerItem(activeIndex === lastIndex ? 0 : activeIndex + 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      return focusCareerItem(activeIndex === 0 ? lastIndex : activeIndex - 1);
+    }
+  };
+
   return (
     <nav
       className={`fixed top-0  w-full z-50 transition-all duration-300 ${
@@ -270,13 +364,6 @@ const Navbar = ({ setLoginOpen }) => {
           <div className="hidden md:flex items-center space-x-1">
             <Link to="/services" className={`nav-link ${location.pathname === "/services" ? "text-blue-900" : ""}`}>
               Services
-            </Link>
-
-            <Link
-              to="/become-partner"
-              className={`nav-link ${location.pathname === "/become-partner" ? "text-blue-900" : ""}`}
-            >
-              Become a Partner
             </Link>
 
             <div
@@ -327,14 +414,14 @@ const Navbar = ({ setLoginOpen }) => {
                     </Link>
                     <Link
                       role="menuitem"
-                      to="/investor-zone/distress-properties"
+                      to="/investor-zone/alternate-properties"
                       className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
                       onClick={() => setInvestorZoneOpen(false)}
                       ref={(el) => {
                         investorZoneItemRefs.current[1] = el;
                       }}
                     >
-                      Distress Properties
+                      Alternate Properties
                     </Link>
                   </div>
                 </div>
@@ -425,12 +512,82 @@ const Navbar = ({ setLoginOpen }) => {
               )}
             </div>
 
-            <Link to="/refer" className={`nav-link flex items-center gap-2 ${location.pathname === "/refer" ? "text-blue-900" : ""}`}>
-              Refer & Earn
-              <div className="bg-blue-100 flex items-center p-2 rounded-xl">
-                <RupeeIcon width={10} />
-              </div>
-            </Link>
+            <div
+              ref={careerWrapperRef}
+              className="relative"
+              onMouseEnter={() => {
+                clearCareerCloseTimeout();
+                setCareerOpen(true);
+              }}
+              onMouseLeave={() => {
+                scheduleCareerClose();
+              }}
+            >
+              <button
+                ref={careerButtonRef}
+                type="button"
+                className={`nav-link ${isCareerActive ? "text-blue-900" : ""}`}
+                aria-haspopup="menu"
+                aria-expanded={careerOpen}
+                onClick={() => setCareerOpen((v) => !v)}
+                onKeyDown={onCareerButtonKeyDown}
+              >
+                Career
+              </button>
+              {careerOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-0 top-full pt-2"
+                  onMouseEnter={() => {
+                    clearCareerCloseTimeout();
+                  }}
+                  onMouseLeave={() => {
+                    scheduleCareerClose();
+                  }}
+                  onKeyDown={onCareerMenuKeyDown}
+                >
+                  <div className="w-56 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden">
+                    <Link
+                      role="menuitem"
+                      to="/refer"
+                      className="flex items-center justify-between px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      onClick={() => setCareerOpen(false)}
+                      ref={(el) => {
+                        careerItemRefs.current[0] = el;
+                      }}
+                    >
+                      <span>Refer & Earn</span>
+                      <span className="bg-blue-100 flex items-center p-1 rounded-lg">
+                        <RupeeIcon width={10} />
+                      </span>
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/careers/jobs"
+                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      onClick={() => setCareerOpen(false)}
+                      ref={(el) => {
+                        careerItemRefs.current[1] = el;
+                      }}
+                    >
+                      Apply for Job
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/become-partner"
+                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      onClick={() => setCareerOpen(false)}
+                      ref={(el) => {
+                        careerItemRefs.current[2] = el;
+                      }}
+                    >
+                      Become a Partner
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Link to="/blogs" className={`nav-link ${location.pathname === "/blogs" ? "text-blue-900" : ""}`}>Blogs</Link>
             <Link to="/gallery" className={`nav-link ${location.pathname === "/gallery" ? "text-blue-900" : ""}`}>Gallery</Link>
           </div>
@@ -458,13 +615,21 @@ const Navbar = ({ setLoginOpen }) => {
 
             {profiledropopen && (
               <div className="bg-[#fff] flex flex-col gap-2 rounded-md z-[999] py-2 px-3 absolute top-[12vh] right-6 text-sm border-2 border-[#F2EAD0] shadow-md shadow-[#F2EAD0]">
-                <a
-                  href="/customerdashboard"
+                <Link
+                  to="/customerdashboard"
                   className="cursor-pointer"
-                  target="_blank"
+                  onClick={() => setProfiledropopen(false)}
                 >
                   Dashboard
-                </a>
+                </Link>
+
+                <Link
+                  to="/favourites"
+                  className="cursor-pointer"
+                  onClick={() => setProfiledropopen(false)}
+                >
+                  Favourites
+                </Link>
 
                 <span
                   onClick={() => {
@@ -515,15 +680,30 @@ const Navbar = ({ setLoginOpen }) => {
               )}
             </div>
             {emailcookie && (
-              <a
+              <Link
                 className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
-                href="/customerdashboard"
+                to="/customerdashboard"
                 onClick={() => {
                   setIsOpen(false);
                 }}
               >
                 Dashboard
-              </a>
+              </Link>
+            )}
+
+            {emailcookie && (
+              <Link
+                className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
+                to="/favourites"
+                onClick={() => {
+                  setIsOpen(false);
+                  setMobileCalculatorOpen(false);
+                  setMobileInvestorZoneOpen(false);
+                  setMobileCareerOpen(false);
+                }}
+              >
+                Favourites
+              </Link>
             )}
             
             <a
@@ -533,21 +713,10 @@ const Navbar = ({ setLoginOpen }) => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
                 setMobileInvestorZoneOpen(false);
+                setMobileCareerOpen(false);
               }}
             >
               Services
-            </a>
-
-            <a
-              href="/become-partner"
-              className="px-4"
-              onClick={() => {
-                setIsOpen(false);
-                setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
-              }}
-            >
-              Become a Partner
             </a>
 
             <button
@@ -577,6 +746,7 @@ const Navbar = ({ setLoginOpen }) => {
                     e.stopPropagation();
                     setMobileInvestorZoneOpen(false);
                     setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -584,16 +754,17 @@ const Navbar = ({ setLoginOpen }) => {
                 </Link>
                 <Link
                   role="menuitem"
-                  to="/investor-zone/distress-properties"
+                  to="/investor-zone/alternate-properties"
                   className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileInvestorZoneOpen(false);
                     setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
                     setIsOpen(false);
                   }}
                 >
-                  Distress Properties
+                  Alternate Properties
                 </Link>
               </div>
             )}
@@ -624,6 +795,7 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -636,6 +808,7 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -648,6 +821,7 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -660,6 +834,7 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
                     setIsOpen(false);
                   }}
                 >
@@ -668,20 +843,72 @@ const Navbar = ({ setLoginOpen }) => {
               </div>
             )}
 
-            <Link
-              to="/refer"
-              onClick={() => {
-                setIsOpen(false);
-                setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
+            <button
+              type="button"
+              className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+              aria-haspopup="menu"
+              aria-expanded={mobileCareerOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileCareerOpen((prev) => !prev);
               }}
-              className="px-4 flex items-center gap-2"
             >
-              Refer & Earn
-              <div className="bg-blue-100 flex items-center p-1.5 rounded-xl">
-                <RupeeIcon width={10} />
+              <span className="flex-1 py-1">Career</span>
+
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${mobileCareerOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+            {mobileCareerOpen && (
+              <div role="menu" className="pl-6 flex flex-col space-y-2">
+                <Link
+                  role="menuitem"
+                  to="/refer"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md flex items-center gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCareerOpen(false);
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  Refer & Earn
+                  <span className="bg-blue-100 flex items-center p-1 rounded-lg">
+                    <RupeeIcon width={10} />
+                  </span>
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/careers/jobs"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCareerOpen(false);
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  Apply for Job
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/become-partner"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileCareerOpen(false);
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  Become a Partner
+                </Link>
               </div>
-            </Link>
+            )}
 
             <Link
               to="/blogs"
@@ -690,6 +917,7 @@ const Navbar = ({ setLoginOpen }) => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
                 setMobileInvestorZoneOpen(false);
+                setMobileCareerOpen(false);
               }}
             >
               Blogs
@@ -701,6 +929,7 @@ const Navbar = ({ setLoginOpen }) => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
                 setMobileInvestorZoneOpen(false);
+                setMobileCareerOpen(false);
               }}
             >
               Gallery
@@ -714,6 +943,7 @@ const Navbar = ({ setLoginOpen }) => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
                 setMobileInvestorZoneOpen(false);
+                setMobileCareerOpen(false);
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
             >
@@ -726,6 +956,7 @@ const Navbar = ({ setLoginOpen }) => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
                 setMobileInvestorZoneOpen(false);
+                setMobileCareerOpen(false);
                 window.location.reload();
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
