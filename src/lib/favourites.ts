@@ -51,3 +51,9 @@ export const toggleFavourite = async (itemId: string, itemType: FavouriteItemTyp
   );
   return res.data;
 };
+
+// Centralized unlike confirmation prompt used across listings/details/favourites.
+export const confirmFavouriteRemoval = () => {
+  if (typeof window === "undefined") return false;
+  return window.confirm("Remove from favourites?");
+};
