@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 
 interface PropertyPhoto {
@@ -8,6 +8,7 @@ interface PropertyPhoto {
 interface PropertyItem {
   _id: string;
   headline: string;
+  createdAt?: string;
   area: string;
   type: "Auction" | "Distress";
   propertyType: string;
@@ -42,6 +43,18 @@ const formatDate = (iso?: string) => {
   });
 };
 
+const getPostedDate = (property: PropertyItem) => {
+  if (property.createdAt) return formatDate(property.createdAt);
+  // Fallback for legacy rows where createdAt may be missing.
+  if (property._id?.length >= 8) {
+    const seconds = parseInt(property._id.slice(0, 8), 16);
+    if (Number.isFinite(seconds)) {
+      return formatDate(new Date(seconds * 1000).toISOString());
+    }
+  }
+  return "-";
+};
+
 const PropertyCard = ({
   property,
   showFavourite,
@@ -58,11 +71,43 @@ const PropertyCard = ({
   const thumbnail = property.photos?.[0]?.url || "";
   const conditionalDateLabel = property.type === "Auction" ? "EMD Date" : "EOI Date";
   const conditionalDateValue = property.type === "Auction" ? formatDate(property.emdDate) : formatDate(property.eoiDate);
+  const postedDate = getPostedDate(property);
+  const navigate = useNavigate();
+  const detailPath = `/investor-zone/${property.type.toLowerCase()}/${property._id}`;
+
+  const handleCardNavigation = () => {
+    navigate(detailPath);
+  };
+
+  const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("a, button, input, select, textarea, [data-no-card-nav='true']")) {
+      return;
+    }
+
+    handleCardNavigation();
+  };
+
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    handleCardNavigation();
+  };
 
   return (
-    <article className="group relative isolate bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-slate-300">
+    <article
+      className="group relative isolate bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-slate-300 cursor-pointer"
+      role="link"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      aria-label={`Open details for ${property.headline || "property"}`}
+    >
       {showFavourite ? (
-        <div className="absolute top-3 right-3 z-20">
+        <div
+          className="absolute top-3 right-4 md:top-auto md:bottom-5 md:right-[calc(250px+0.25rem)] z-20"
+          data-no-card-nav="true"
+        >
           <FavouriteHeartButton
             isFavourite={Boolean(isFavourite)}
             disabled={Boolean(isToggling)}
@@ -129,12 +174,13 @@ const PropertyCard = ({
 
           <div className="mt-2.5 pt-2.5 border-t border-slate-100">
             <Link
-              to={`/investor-zone/${property.type.toLowerCase()}/${property._id}`}
+              to={detailPath}
               className="inline-flex items-center gap-2 text-[13px] font-semibold text-slate-900 hover:text-blue-800"
             >
               View Details
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
             </Link>
+            <p className="mt-2 text-xs text-slate-500 font-medium">Posted on: {postedDate}</p>
           </div>
         </div>
 

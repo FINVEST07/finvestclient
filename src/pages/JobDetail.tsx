@@ -4,6 +4,10 @@ import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
+import FavouriteHeartButton from "@/components/FavouriteHeartButton";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
+import { toast } from "react-toastify";
+import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 interface JobItem {
   _id: string;
@@ -55,6 +59,11 @@ const JobDetail = () => {
   const { id } = useParams();
   const [job, setJob] = useState<JobItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isFavourite, setIsFavourite] = useState<boolean>(false);
+  const [togglingFavourite, setTogglingFavourite] = useState<boolean>(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+  const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
+  const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadJob = async () => {
     if (!id) return;
@@ -73,6 +82,64 @@ const JobDetail = () => {
   useEffect(() => {
     loadJob();
   }, [id]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !job?._id) return;
+
+    const loadFavourites = async () => {
+      try {
+        const payload = await fetchFavourites();
+        const isFav = (payload.favourites || []).some(
+          (fav) => fav.type === "job" && String(fav.id) === String(job._id)
+        );
+        setIsFavourite(isFav);
+      } catch (error) {
+        setIsFavourite(false);
+      }
+    };
+
+    loadFavourites();
+  }, [isLoggedIn, job?._id]);
+
+  const executeFavouriteToggle = async () => {
+    if (!isLoggedIn || !job?._id || togglingFavourite) return;
+
+    const wasFavourite = isFavourite;
+    setIsFavourite(!wasFavourite);
+    setTogglingFavourite(true);
+
+    try {
+      await toggleFavourite(String(job._id), "job");
+    } catch (error: any) {
+      setIsFavourite(wasFavourite);
+      toast.error(error?.response?.data?.message || "Unable to update favourite");
+    } finally {
+      setTogglingFavourite(false);
+    }
+  };
+
+  const handleFavouriteToggle = async () => {
+    if (!isLoggedIn || !job?._id || togglingFavourite) return;
+
+    if (isFavourite) {
+      setIsConfirmOpen(true);
+      return;
+    }
+
+    await executeFavouriteToggle();
+  };
+
+  const handleConfirmRemoval = async () => {
+    if (confirmingRemoval || togglingFavourite) return;
+
+    try {
+      setConfirmingRemoval(true);
+      await executeFavouriteToggle();
+      setIsConfirmOpen(false);
+    } finally {
+      setConfirmingRemoval(false);
+    }
+  };
 
   const description = useMemo(() => {
     if (!job) return "Explore job opportunities at FINVESTCORP.";
@@ -104,7 +171,16 @@ const JobDetail = () => {
         ) : (
           <article className="bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden">
             <div className="p-6 md:p-10">
-              <h1 className="text-2xl md:text-4xl font-bold text-blue-900 mb-3">{job.title}</h1>
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <h1 className="text-2xl md:text-4xl font-bold text-blue-900">{job.title}</h1>
+                {isLoggedIn ? (
+                  <FavouriteHeartButton
+                    isFavourite={isFavourite}
+                    disabled={togglingFavourite}
+                    onToggle={handleFavouriteToggle}
+                  />
+                ) : null}
+              </div>
 
               <div className="flex flex-wrap items-center gap-2 mb-6 text-xs">
                 <span className="inline-flex px-2.5 py-1 rounded-md font-semibold bg-slate-100 text-slate-700 border border-slate-200">
@@ -135,6 +211,20 @@ const JobDetail = () => {
           </article>
         )}
       </div>
+
+      <ConfirmActionModal
+        open={isConfirmOpen}
+        title="Remove from favourites?"
+        description="This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        isLoading={confirmingRemoval}
+        onCancel={() => {
+          if (confirmingRemoval) return;
+          setIsConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmRemoval}
+      />
     </section>
   );
 };

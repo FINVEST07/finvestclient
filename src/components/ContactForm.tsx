@@ -11,6 +11,12 @@ import { MailIcon, PhoneIcon, MapPin, Clock } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import Cookie from "js-cookie";
+import {
+  ENQUIRY_SERVICE_OPTIONS,
+  ENQUIRY_SERVICE_VALUES,
+  inferEnquiryServiceFromContext,
+  normalizeEnquiryService,
+} from "@/lib/serviceOptions";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -44,9 +50,25 @@ const ContactForm = () => {
     >
   ) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    if (id === "service") {
+      setFormData((prev) => ({ ...prev, service: normalizeEnquiryService(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }));
+    }
     setValidationError("");
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const queryParams = new URLSearchParams(window.location.search);
+    const listing = queryParams.get("listing") || "";
+    const inferred =
+      inferEnquiryServiceFromContext(listing) ||
+      inferEnquiryServiceFromContext(window.location.pathname);
+
+    if (!inferred) return;
+    setFormData((prev) => (prev.service ? prev : { ...prev, service: inferred }));
+  }, []);
 
   const enquirySchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -56,7 +78,7 @@ const ContactForm = () => {
       .transform((v) => v.replace(/\D/g, ""))
       .refine((v) => v.length === 10, "Mobile number must be 10 digits"),
     city: z.string().min(1, "City is required"),
-    service: z.enum(["loan", "insurance", "investment"], {
+    service: z.enum(ENQUIRY_SERVICE_VALUES, {
       errorMap: () => ({ message: "Please select a service" }),
     }),
     amount: z.string().min(1, "Amount is required"),
@@ -199,11 +221,13 @@ const ContactForm = () => {
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                 >
                   <option value="" disabled>
-                    Select a service
+                    Select
                   </option>
-                  <option value="loan">Loan</option>
-                  <option value="insurance">Insurance</option>
-                  <option value="investment">Investment</option>
+                  {ENQUIRY_SERVICE_OPTIONS.map((serviceOption) => (
+                    <option key={serviceOption.value} value={serviceOption.value}>
+                      {serviceOption.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

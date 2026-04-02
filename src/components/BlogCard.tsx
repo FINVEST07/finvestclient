@@ -32,7 +32,7 @@ const BlogCard = ({
   return (
     <article className="relative grid md:grid-cols-3 gap-0 md:gap-4 items-stretch bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden hover:-translate-y-0.5 transition-all">
       {showFavourite ? (
-        <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-3 right-3 md:top-auto md:bottom-5 md:right-[calc(33.333333%+0.25rem)] z-20">
           <FavouriteHeartButton
             isFavourite={Boolean(isFavourite)}
             disabled={Boolean(isToggling)}
@@ -46,13 +46,16 @@ const BlogCard = ({
         <p className="text-gray-700 leading-relaxed line-clamp-4 whitespace-pre-line">
           {typeof blog.content === "string" ? stripHtml(blog.content) : ""}
         </p>
-        <span className="mt-4 inline-flex items-center gap-2 text-blue-900 font-semibold">
-          Read full article
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-        </span>
-        {blog?.createdAt ? (
-          <span className="mt-3 text-xs text-gray-500 font-medium">{formatBlogDate(blog.createdAt)}</span>
-        ) : null}
+
+        <div className="mt-2.5 pt-2.5 border-t border-slate-100">
+          <span className="inline-flex items-center gap-2 text-blue-900 font-semibold">
+            Read full article
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+          </span>
+          {blog?.createdAt ? (
+            <p className="mt-2 text-xs text-slate-500 font-medium">Posted on: {formatBlogDate(blog.createdAt)}</p>
+          ) : null}
+        </div>
       </Link>
 
       <Link to={href} className="bg-blue-50">

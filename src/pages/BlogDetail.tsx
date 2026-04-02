@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -34,6 +35,8 @@ const BlogDetail = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isFavourite, setIsFavourite] = useState<boolean>(false);
   const [togglingFavourite, setTogglingFavourite] = useState<boolean>(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+  const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
   const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadBlog = async () => {
@@ -77,7 +80,7 @@ const BlogDetail = () => {
     loadFavourites();
   }, [isLoggedIn, blog?._id]);
 
-  const handleFavouriteToggle = async () => {
+  const executeFavouriteToggle = async () => {
     if (!isLoggedIn || !blog?._id || togglingFavourite) return;
 
     const wasFavourite = isFavourite;
@@ -91,6 +94,29 @@ const BlogDetail = () => {
       toast.error(error?.response?.data?.message || "Unable to update favourite");
     } finally {
       setTogglingFavourite(false);
+    }
+  };
+
+  const handleFavouriteToggle = async () => {
+    if (!isLoggedIn || !blog?._id || togglingFavourite) return;
+
+    if (isFavourite) {
+      setIsConfirmOpen(true);
+      return;
+    }
+
+    await executeFavouriteToggle();
+  };
+
+  const handleConfirmRemoval = async () => {
+    if (confirmingRemoval || togglingFavourite) return;
+
+    try {
+      setConfirmingRemoval(true);
+      await executeFavouriteToggle();
+      setIsConfirmOpen(false);
+    } finally {
+      setConfirmingRemoval(false);
     }
   };
 
@@ -182,6 +208,20 @@ const BlogDetail = () => {
           </article>
         )}
       </div>
+
+      <ConfirmActionModal
+        open={isConfirmOpen}
+        title="Remove from favourites?"
+        description="This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        isLoading={confirmingRemoval}
+        onCancel={() => {
+          if (confirmingRemoval) return;
+          setIsConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmRemoval}
+      />
     </section>
   );
 };

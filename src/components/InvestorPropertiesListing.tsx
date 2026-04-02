@@ -1,11 +1,54 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronDown, RotateCcw } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import PropertyCard from "@/components/PropertyCard";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { toast } from "react-toastify";
 import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+
+interface FilterSelectOption {
+  value: string;
+  label: string;
+}
+
+const FilterSelect = ({
+  value,
+  options,
+  onChange,
+  isActive,
+  ariaLabel,
+}: {
+  value: string;
+  options: FilterSelectOption[];
+  onChange: (value: string) => void;
+  isActive?: boolean;
+  ariaLabel: string;
+}) => {
+  return (
+    <div className="relative">
+      <select
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors ${
+          isActive ? "border-blue-400 bg-blue-50" : "border-blue-200"
+        }`}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-[18px] top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+        aria-hidden="true"
+      />
+    </div>
+  );
+};
 
 interface PropertyPhoto {
   url: string;
@@ -14,6 +57,7 @@ interface PropertyPhoto {
 interface PropertyItem {
   _id: string;
   headline: string;
+  createdAt?: string;
   area: string;
   type: "Auction" | "Distress";
   propertyType: string;
@@ -36,10 +80,19 @@ const InvestorPropertiesListing = ({
   type: "Auction" | "Distress";
   title: string;
 }) => {
+  type SortValue = "latest" | "price_high" | "price_low";
+  type PossessionValue = "all" | "physical" | "symbolic";
+
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [favouriteIds, setFavouriteIds] = useState<Set<string>>(new Set());
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [pendingRemovalId, setPendingRemovalId] = useState<string | null>(null);
+  const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
+  const [selectedSort, setSelectedSort] = useState<SortValue>("latest");
+  const [selectedPossession, setSelectedPossession] = useState<PossessionValue>("all");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
   const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadProperties = async () => {
@@ -80,8 +133,8 @@ const InvestorPropertiesListing = ({
     loadFavourites();
   }, [isLoggedIn]);
 
-  const handlePropertyFavouriteToggle = async (propertyId: string) => {
-    if (!isLoggedIn) return;
+  const executePropertyToggle = async (propertyId: string) => {
+    if (!isLoggedIn || togglingIds.has(propertyId)) return;
 
     const wasFavourite = favouriteIds.has(propertyId);
     const nextIds = new Set(favouriteIds);
@@ -115,12 +168,123 @@ const InvestorPropertiesListing = ({
     }
   };
 
+  const handlePropertyFavouriteToggle = async (propertyId: string) => {
+    if (!isLoggedIn || togglingIds.has(propertyId)) return;
+
+    const wasFavourite = favouriteIds.has(propertyId);
+    if (wasFavourite) {
+      setPendingRemovalId(propertyId);
+      return;
+    }
+
+    await executePropertyToggle(propertyId);
+  };
+
+  const handleConfirmRemoval = async () => {
+    if (!pendingRemovalId || confirmingRemoval) return;
+
+    try {
+      setConfirmingRemoval(true);
+      await executePropertyToggle(pendingRemovalId);
+      setPendingRemovalId(null);
+    } finally {
+      setConfirmingRemoval(false);
+    }
+  };
+
   const pageDescription = useMemo(
     () => `${title} on FINVESTCORP with location, type, pricing, and complete details.`,
     [title]
   );
 
-  const listingLabel = type === "Distress" ? "alternate" : "auction";
+  const locationOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        properties
+          .map((item) => String(item.location || "").trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [properties]);
+
+  const districtOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        properties
+          .map((item) => String(item.district || "").trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [properties]);
+
+  const visibleProperties = useMemo(() => {
+    const normalize = (value?: string) => String(value || "").trim().toLowerCase();
+
+    let items = [...properties];
+
+    if (selectedPossession !== "all") {
+      items = items.filter((item) => normalize(item.possession) === selectedPossession);
+    }
+
+    if (selectedLocation !== "all") {
+      items = items.filter((item) => normalize(item.location) === normalize(selectedLocation));
+    }
+
+    if (selectedDistrict !== "all") {
+      items = items.filter((item) => normalize(item.district) === normalize(selectedDistrict));
+    }
+
+    if (selectedSort === "price_high") {
+      return items.sort((a, b) => Number(b.offerPrice || 0) - Number(a.offerPrice || 0));
+    }
+
+    if (selectedSort === "price_low") {
+      return items.sort((a, b) => Number(a.offerPrice || 0) - Number(b.offerPrice || 0));
+    }
+
+    // Default latest sort by createdAt (descending), with safe fallback.
+    return items.sort((a, b) => {
+      const aTime = new Date(a.createdAt || 0).getTime() || 0;
+      const bTime = new Date(b.createdAt || 0).getTime() || 0;
+      return bTime - aTime;
+    });
+  }, [properties, selectedPossession, selectedLocation, selectedDistrict, selectedSort]);
+
+  const listingLabel = type === "Distress" ? "alternate investment" : "auction";
+  const isDefaultFilters =
+    selectedSort === "latest" &&
+    selectedPossession === "all" &&
+    selectedLocation === "all" &&
+    selectedDistrict === "all";
+
+  const handleResetFilters = () => {
+    setSelectedSort("latest");
+    setSelectedPossession("all");
+    setSelectedLocation("all");
+    setSelectedDistrict("all");
+  };
+
+  const sortOptions: FilterSelectOption[] = [
+    { value: "latest", label: "Latest" },
+    { value: "price_high", label: "Price: High to Low" },
+    { value: "price_low", label: "Price: Low to High" },
+  ];
+
+  const possessionOptions: FilterSelectOption[] = [
+    { value: "all", label: "All Possession" },
+    { value: "physical", label: "Physical" },
+    { value: "symbolic", label: "Symbolic" },
+  ];
+
+  const locationSelectOptions: FilterSelectOption[] = [
+    { value: "all", label: "All Locations" },
+    ...locationOptions.map((location) => ({ value: location, label: location })),
+  ];
+
+  const districtSelectOptions: FilterSelectOption[] = [
+    { value: "all", label: "All Districts" },
+    ...districtOptions.map((district) => ({ value: district, label: district })),
+  ];
 
   return (
     <section className="pt-6 pb-16 mx-auto bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
@@ -143,15 +307,61 @@ const InvestorPropertiesListing = ({
           <p className="text-gray-600 mt-3">Explore curated property opportunities with transparent details.</p>
         </div>
 
+        <div className="mb-6 md:mx-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <FilterSelect
+              ariaLabel="Sort properties"
+              value={selectedSort}
+              options={sortOptions}
+              onChange={(value) => setSelectedSort(value as SortValue)}
+              isActive={selectedSort !== "latest"}
+            />
+
+            <FilterSelect
+              ariaLabel="Filter by possession"
+              value={selectedPossession}
+              options={possessionOptions}
+              onChange={(value) => setSelectedPossession(value as PossessionValue)}
+              isActive={selectedPossession !== "all"}
+            />
+
+            <FilterSelect
+              ariaLabel="Filter by location"
+              value={selectedLocation}
+              options={locationSelectOptions}
+              onChange={setSelectedLocation}
+              isActive={selectedLocation !== "all"}
+            />
+
+            <FilterSelect
+              ariaLabel="Filter by district"
+              value={selectedDistrict}
+              options={districtSelectOptions}
+              onChange={setSelectedDistrict}
+              isActive={selectedDistrict !== "all"}
+            />
+
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              disabled={isDefaultFilters}
+              className="h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-4 text-sm font-semibold text-blue-900 hover:bg-blue-50 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Reset
+            </button>
+          </div>
+        </div>
+
         {loading ? (
           <div className="text-center py-20">
             <span className="animate-spin inline-block w-8 h-8 border-4 border-t-transparent border-blue-600 rounded-full"></span>
           </div>
-        ) : properties.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">No {listingLabel} properties to show</div>
+        ) : visibleProperties.length === 0 ? (
+          <div className="text-center text-gray-500 py-20">No {listingLabel} properties found for the selected filters</div>
         ) : (
           <div className="space-y-3 md:mx-12">
-            {properties.map((property) => (
+            {visibleProperties.map((property) => (
               <PropertyCard
                 key={property._id}
                 property={property}
@@ -164,6 +374,20 @@ const InvestorPropertiesListing = ({
           </div>
         )}
       </div>
+
+      <ConfirmActionModal
+        open={Boolean(pendingRemovalId)}
+        title="Remove from favourites?"
+        description="This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        isLoading={confirmingRemoval}
+        onCancel={() => {
+          if (confirmingRemoval) return;
+          setPendingRemovalId(null);
+        }}
+        onConfirm={handleConfirmRemoval}
+      />
     </section>
   );
 };

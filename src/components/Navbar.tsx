@@ -39,6 +39,7 @@ const Navbar = ({ setLoginOpen }) => {
 
   const isInvestorZoneActive =
     location.pathname === "/investor-zone/auction-properties" ||
+    location.pathname === "/investor-zone/alternate-investment" ||
     location.pathname === "/investor-zone/alternate-properties" ||
     location.pathname === "/investor-zone/distress-properties" ||
     location.pathname.startsWith("/investor-zone/");
@@ -414,14 +415,14 @@ const Navbar = ({ setLoginOpen }) => {
                     </Link>
                     <Link
                       role="menuitem"
-                      to="/investor-zone/alternate-properties"
+                      to="/investor-zone/alternate-investment"
                       className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
                       onClick={() => setInvestorZoneOpen(false)}
                       ref={(el) => {
                         investorZoneItemRefs.current[1] = el;
                       }}
                     >
-                      Alternate Properties
+                      Alternate Investment
                     </Link>
                   </div>
                 </div>
@@ -754,7 +755,7 @@ const Navbar = ({ setLoginOpen }) => {
                 </Link>
                 <Link
                   role="menuitem"
-                  to="/investor-zone/alternate-properties"
+                  to="/investor-zone/alternate-investment"
                   className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -764,7 +765,7 @@ const Navbar = ({ setLoginOpen }) => {
                     setIsOpen(false);
                   }}
                 >
-                  Alternate Properties
+                  Alternate Investment
                 </Link>
               </div>
             )}

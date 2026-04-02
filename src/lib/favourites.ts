@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookie from "js-cookie";
 
-export type FavouriteItemType = "blog" | "property";
+export type FavouriteItemType = "blog" | "property" | "job";
 
 export interface FavouriteRef {
   type: FavouriteItemType;
@@ -12,6 +12,7 @@ export interface FavouriteResponsePayload {
   favourites: FavouriteRef[];
   blogs: any[];
   properties: any[];
+  jobs: any[];
 }
 
 export const getLoggedInEmail = () => {
@@ -37,6 +38,7 @@ export const fetchFavourites = async () => {
     favourites: [],
     blogs: [],
     properties: [],
+    jobs: [],
   }) as FavouriteResponsePayload;
 };
 
@@ -50,10 +52,4 @@ export const toggleFavourite = async (itemId: string, itemType: FavouriteItemTyp
     getAuthConfig()
   );
   return res.data;
-};
-
-// Centralized unlike confirmation prompt used across listings/details/favourites.
-export const confirmFavouriteRemoval = () => {
-  if (typeof window === "undefined") return false;
-  return window.confirm("Remove from favourites?");
 };

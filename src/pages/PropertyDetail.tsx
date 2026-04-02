@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
 interface PropertyPhoto {
@@ -15,6 +16,7 @@ interface PropertyPhoto {
 interface PropertyItem {
   _id: string;
   propertyId: string;
+  createdAt?: string;
   headline: string;
   propertyOrSocietyName: string;
   area: string;
@@ -38,13 +40,13 @@ interface PropertyItem {
   pdfDocument?: {
     url?: string;
     original_filename?: string;
-  } | null;
+  } | string | null;
   photos?: PropertyPhoto[];
 }
 
 const listingTypeLabel: Record<PropertyItem["type"], string> = {
   Auction: "Auction",
-  Distress: "Alternate Properties",
+  Distress: "Alternate Investment",
 };
 
 const formatCurrency = (value?: number) =>
@@ -65,6 +67,18 @@ const formatPropertyDate = (iso?: string) => {
   });
 };
 
+const derivePostedDate = (property: PropertyItem | null) => {
+  if (!property) return "-";
+  if (property.createdAt) return formatPropertyDate(property.createdAt);
+  if (property._id?.length >= 8) {
+    const seconds = parseInt(property._id.slice(0, 8), 16);
+    if (Number.isFinite(seconds)) {
+      return formatPropertyDate(new Date(seconds * 1000).toISOString());
+    }
+  }
+  return "-";
+};
+
 const LockedRow = ({ label }: { label: string }) => (
   <div className="rounded-xl bg-white px-5 py-4 border border-blue-100 flex items-center justify-between gap-2">
     <span className="font-semibold text-blue-900">{label}</span>
@@ -79,8 +93,11 @@ const PropertyDetail = () => {
   const { propertyId, type } = useParams();
   const [property, setProperty] = useState<PropertyItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadedImageKeys, setLoadedImageKeys] = useState<Set<string>>(new Set());
   const [isFavourite, setIsFavourite] = useState<boolean>(false);
   const [togglingFavourite, setTogglingFavourite] = useState<boolean>(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+  const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
   const isLoggedIn = Boolean(getLoggedInEmail());
 
   const loadProperty = async () => {
@@ -102,6 +119,10 @@ const PropertyDetail = () => {
   }, [propertyId]);
 
   useEffect(() => {
+    setLoadedImageKeys(new Set());
+  }, [property?._id]);
+
+  useEffect(() => {
     if (!isLoggedIn || !property?._id) return;
 
     const loadFavourites = async () => {
@@ -119,7 +140,7 @@ const PropertyDetail = () => {
     loadFavourites();
   }, [isLoggedIn, property?._id]);
 
-  const handleFavouriteToggle = async () => {
+  const executeFavouriteToggle = async () => {
     if (!isLoggedIn || !property?._id || togglingFavourite) return;
 
     const wasFavourite = isFavourite;
@@ -136,12 +157,35 @@ const PropertyDetail = () => {
     }
   };
 
+  const handleFavouriteToggle = async () => {
+    if (!isLoggedIn || !property?._id || togglingFavourite) return;
+
+    if (isFavourite) {
+      setIsConfirmOpen(true);
+      return;
+    }
+
+    await executeFavouriteToggle();
+  };
+
+  const handleConfirmRemoval = async () => {
+    if (confirmingRemoval || togglingFavourite) return;
+
+    try {
+      setConfirmingRemoval(true);
+      await executeFavouriteToggle();
+      setIsConfirmOpen(false);
+    } finally {
+      setConfirmingRemoval(false);
+    }
+  };
+
   const normalizedType = (type || "").toLowerCase();
   const isAuctionPath = normalizedType === "auction";
-  const listingTitle = isAuctionPath ? "Auction Properties" : "Alternate Properties";
+  const listingTitle = isAuctionPath ? "Auction Properties" : "Alternate Investment";
   const listingPath = isAuctionPath
     ? "/investor-zone/auction-properties"
-    : "/investor-zone/alternate-properties";
+    : "/investor-zone/alternate-investment";
 
   const description = useMemo(() => {
     if (!property) return "Investor zone property details on FINVESTCORP.";
@@ -151,6 +195,18 @@ const PropertyDetail = () => {
   const canonicalUrl = typeof window !== "undefined"
     ? `${window.location.origin}/investor-zone/${normalizedType}/${propertyId || ""}`
     : `/investor-zone/${normalizedType}/${propertyId || ""}`;
+
+  const visiblePhotos = (property?.photos || []).slice(0, 4);
+  const hasPropertyDocument = Boolean(
+    property?.pdfDocument &&
+      (typeof property?.pdfDocument === "string" ||
+        (typeof property?.pdfDocument === "object" &&
+          (property?.pdfDocument?.url || property?.pdfDocument?.original_filename)))
+  );
+  const propertyDocumentUrl =
+    property?._id && hasPropertyDocument
+      ? `${import.meta.env.VITE_API_URI}properties/${property._id}/document`
+      : "";
 
   return (
     <section className="pt-6 pb-16 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
@@ -185,29 +241,51 @@ const PropertyDetail = () => {
           <div className="text-center text-gray-500 py-20">Property not found</div>
         ) : (
           <article className="bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden">
-            {property.photos?.length ? (
-              <div className="w-full bg-blue-50 p-3 md:p-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {property.photos.slice(0, 5).map((photo, idx) => (
-                    <div
-                      key={`${property._id}-${idx}`}
-                      className="rounded-xl overflow-hidden border border-blue-100 bg-white h-72 sm:h-80 lg:h-[420px]"
-                    >
-                      <img
-                        src={photo.url}
-                        alt={`${property.headline || "property"}-${idx + 1}`}
-                        className="w-full h-full object-contain block bg-slate-50"
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
-                </div>
+            <div className="w-full bg-blue-50 p-3 md:p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {visiblePhotos.length > 0 ? (
+                  visiblePhotos.map((photo, idx) => {
+                    const imageKey = `${property._id}-${idx}`;
+                    const isLoaded = loadedImageKeys.has(imageKey);
+
+                    return (
+                      <div
+                        key={imageKey}
+                        className="group aspect-square rounded-[10px] overflow-hidden border border-blue-100 bg-slate-100 relative flex items-center justify-center"
+                      >
+                        {!isLoaded ? (
+                          <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100" />
+                        ) : null}
+
+                        <img
+                          src={photo.url}
+                          alt={`${property.headline || "property"}-${idx + 1}`}
+                          className={`w-full h-full object-cover transition-all duration-300 ease-out ${
+                            isLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
+                          }`}
+                          loading="lazy"
+                          onLoad={() => {
+                            setLoadedImageKeys((prev) => {
+                              const next = new Set(prev);
+                              next.add(imageKey);
+                              return next;
+                            });
+                          }}
+                        />
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full aspect-square rounded-[10px] border border-blue-100 bg-slate-100 flex items-center justify-center text-slate-500 text-sm">
+                    No images available
+                  </div>
+                )}
               </div>
-            ) : null}
+            </div>
 
             <div className="p-6 md:p-10">
               <div className="flex items-start justify-between gap-4 mb-4">
-                <h1 className="text-2xl md:text-5xl font-bold text-blue-900 leading-snug">{property.headline || "Property"}</h1>
+                <h1 className="text-2xl md:text-5xl font-bold text-blue-900 leading-snug">{property.headline || property.propertyOrSocietyName || "Property"}</h1>
                 {isLoggedIn ? (
                   <FavouriteHeartButton
                     isFavourite={isFavourite}
@@ -281,8 +359,12 @@ const PropertyDetail = () => {
                     <span className="font-semibold text-blue-900 min-w-[160px]">Listing:</span>
                     <span>{listingTypeLabel[property.type] || property.type || "-"}</span>
                   </div>
-                </div>
 
+                  <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Posted On:</span>
+                    <span>{derivePostedDate(property)}</span>
+                  </div>
+                </div>
                 <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
                   <h3 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
                     <Lock className="w-5 h-5" /> Locked Information
@@ -300,6 +382,21 @@ const PropertyDetail = () => {
                   </div>
                 </div>
 
+                {propertyDocumentUrl ? (
+                  <div className="mt-8 rounded-2xl border border-blue-200 bg-white p-5">
+                    <h3 className="text-xl font-bold text-blue-900 mb-4">Property Document</h3>
+                    <div className="w-full max-w-[250px] h-[250px] relative rounded-xl overflow-hidden bg-[#f5f5f5] border border-blue-200">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500">
+                        <Lock className="w-10 h-10" />
+                        <span className="text-xs font-medium">Document is locked</span>
+                      </div>
+                      <div className="absolute bottom-0 w-full bg-black/60 text-white text-center px-2 py-2 text-sm">
+                        Unlock via enquiry
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
                   <Link
                     to={`/contact?propertyId=${property._id}&listing=${property.type}`}
@@ -307,22 +404,26 @@ const PropertyDetail = () => {
                   >
                     Get Details / Site Inspection Enquiry
                   </Link>
-
-                  {property.pdfDocument?.url ? (
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white text-slate-500 px-6 py-3 font-semibold cursor-not-allowed"
-                      disabled
-                    >
-                      <Lock className="w-4 h-4" /> Download Property Document (Locked)
-                    </button>
-                  ) : null}
                 </div>
               </section>
             </div>
           </article>
         )}
       </div>
+
+      <ConfirmActionModal
+        open={isConfirmOpen}
+        title="Remove from favourites?"
+        description="This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        isLoading={confirmingRemoval}
+        onCancel={() => {
+          if (confirmingRemoval) return;
+          setIsConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmRemoval}
+      />
     </section>
   );
 };

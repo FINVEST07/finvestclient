@@ -108,10 +108,15 @@ const App = () => {
             <Route path="/blogs/:slug" element={<BlogDetail />} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/investor-zone/auction-properties" element={<AuctionProperties />} />
-            <Route path="/investor-zone/alternate-properties" element={<DistressProperties />} />
+            <Route path="/investor-zone/alternate-investment" element={<DistressProperties />} />
+            {/* Backward compatibility redirects */}
+            <Route
+              path="/investor-zone/alternate-properties"
+              element={<Navigate to="/investor-zone/alternate-investment" replace />}
+            />
             <Route
               path="/investor-zone/distress-properties"
-              element={<Navigate to="/investor-zone/alternate-properties" replace />}
+              element={<Navigate to="/investor-zone/alternate-investment" replace />}
             />
             <Route path="/investor-zone/:type/:propertyId" element={<PropertyDetail />} />
             <Route path="/gallery" element={<Gallery />} />

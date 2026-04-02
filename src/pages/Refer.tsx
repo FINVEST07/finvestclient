@@ -11,6 +11,10 @@ import { MailIcon, PhoneIcon, MapPin, Clock, ArrowLeft } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
 import { toast } from "sonner";
 import Cookie from "js-cookie";
+import {
+  ENQUIRY_SERVICE_OPTIONS,
+  normalizeEnquiryService,
+} from "@/lib/serviceOptions";
 
 const Refer = () => {
   const [formData, setFormData] = useState({
@@ -43,7 +47,11 @@ const Refer = () => {
     >
   ) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    if (id === "service") {
+      setFormData((prev) => ({ ...prev, service: normalizeEnquiryService(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -189,11 +197,13 @@ const Refer = () => {
                   className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
                 >
                   <option value="" disabled>
-                    Select a service
+                    Select
                   </option>
-                  <option value="loan">Loan</option>
-                  <option value="insurance">Insurance</option>
-                  <option value="investment">Investment</option>
+                  {ENQUIRY_SERVICE_OPTIONS.map((serviceOption) => (
+                    <option key={serviceOption.value} value={serviceOption.value}>
+                      {serviceOption.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

@@ -104,7 +104,7 @@ type FieldErrors = Partial<Record<keyof Omit<PropertyRecord, "propertyId" | "cre
 const listingTypeOptions: PropertyListingType[] = ["Auction", "Distress"];
 const listingTypeLabel: Record<PropertyListingType, string> = {
   Auction: "Auction",
-  Distress: "Alternate",
+  Distress: "Alternate Investment",
 };
 const propertyTypeOptions: PropertyTypeOption[] = [
   "Flat",
@@ -263,7 +263,7 @@ const PostPropertyModal = ({
       nextErrors.emdDate = "EMD Date is required for Auction properties";
     }
     if (form.type === "Distress" && !form.eoiDate) {
-      nextErrors.eoiDate = "EOI Date is required for Alternate properties";
+      nextErrors.eoiDate = "EOI Date is required for Alternate Investment";
     }
 
     if (!form.propertyType) nextErrors.propertyType = "Property Type is required";

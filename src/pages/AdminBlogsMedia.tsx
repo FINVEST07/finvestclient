@@ -35,6 +35,12 @@ const AdminBlogsMedia = () => {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaSubmitting, setMediaSubmitting] = useState<boolean>(false);
   const [mediaLabel, setMediaLabel] = useState<string>("");
+  const [isMediaEditOpen, setIsMediaEditOpen] = useState<boolean>(false);
+  const [editingMediaId, setEditingMediaId] = useState<string>("");
+  const [editingMediaUrl, setEditingMediaUrl] = useState<string>("");
+  const [editingMediaLabel, setEditingMediaLabel] = useState<string>("");
+  const [editingMediaFile, setEditingMediaFile] = useState<File | null>(null);
+  const [mediaEditSubmitting, setMediaEditSubmitting] = useState<boolean>(false);
 
   const quillModules = {
     toolbar: [
@@ -178,6 +184,75 @@ const AdminBlogsMedia = () => {
       setMedia([]);
     } finally {
       setLoadingMedia(false);
+    }
+  };
+
+  const resetMediaEditForm = () => {
+    setIsMediaEditOpen(false);
+    setEditingMediaId("");
+    setEditingMediaUrl("");
+    setEditingMediaLabel("");
+    setEditingMediaFile(null);
+    setMediaEditSubmitting(false);
+  };
+
+  const openMediaEdit = (item: any) => {
+    setEditingMediaId(String(item?._id || ""));
+    setEditingMediaUrl(String(item?.url || ""));
+    setEditingMediaLabel(String(item?.label || item?.text || ""));
+    setEditingMediaFile(null);
+    setIsMediaEditOpen(true);
+  };
+
+  const handleMediaEditSave = async () => {
+    if (!editingMediaId) {
+      toast.error("No media selected");
+      return;
+    }
+
+    const nextLabel = editingMediaLabel.trim();
+    if (!nextLabel) {
+      toast.error("Label is required");
+      return;
+    }
+
+    try {
+      setMediaEditSubmitting(true);
+      const form = new FormData();
+      form.append("label", nextLabel);
+      if (editingMediaFile) {
+        form.append("file", editingMediaFile);
+      }
+
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URI}media/${editingMediaId}`,
+        form,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (!res.data?.status) {
+        toast.error(res.data?.message || "Failed to update media");
+        return;
+      }
+
+      toast.success(res.data?.message || "Media updated");
+      resetMediaEditForm();
+      loadMedia();
+    } catch (e: any) {
+      console.error(e);
+      const errMsg = e?.response?.data?.message || "Failed to update media";
+      toast.error(errMsg, {
+        action: {
+          label: "Retry",
+          onClick: () => {
+            handleMediaEditSave();
+          },
+        },
+      });
+    } finally {
+      setMediaEditSubmitting(false);
     }
   };
 
@@ -437,6 +512,19 @@ const AdminBlogsMedia = () => {
                       >
                         Delete
                       </button>
+
+                      <button
+                        onClick={() => openMediaEdit(m)}
+                        className="absolute bottom-2 right-2 opacity-95 bg-blue-600 text-white text-xs px-2 py-1 rounded hover:opacity-100"
+                        type="button"
+                      >
+                        Edit
+                      </button>
+
+                      {/* label of the image card */}
+                      <div className="absolute bottom-2 left-1 bg-black/55 text-white text-[11px] px-2 py-1 rounded max-w-[50%] truncate">
+                        {m?.label || m?.text || "Untitled"}
+                      </div> 
                     </div>
                   ))}
                 </div>
@@ -686,6 +774,84 @@ const AdminBlogsMedia = () => {
                 className="px-4 py-2 rounded-md bg-[#D6B549] text-slate-900 font-medium disabled:opacity-70"
               >
                 {mediaSubmitting ? "Posting..." : "Post"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isMediaEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={resetMediaEditForm} />
+          <div className="relative w-[90%] max-w-2xl bg-white rounded-lg shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-slate-800">Edit Media</h3>
+              <button onClick={resetMediaEditForm} className="text-slate-500 hover:text-slate-700" aria-label="Close">✕</button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Label</label>
+                <input
+                  value={editingMediaLabel}
+                  onChange={(e) => setEditingMediaLabel(e.target.value)}
+                  placeholder="Enter media label"
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Current Media</label>
+                <div className="w-full border border-slate-200 rounded-md bg-slate-50 p-3">
+                  {editingMediaFile ? (
+                    <div>
+                      <p className="text-xs text-slate-600 mb-2">New file preview: {editingMediaFile.name}</p>
+                      {isVideoFile(editingMediaFile) ? (
+                        <video
+                          src={URL.createObjectURL(editingMediaFile)}
+                          className="w-full max-h-64 rounded"
+                          controls
+                          preload="metadata"
+                        />
+                      ) : (
+                        <img
+                          src={URL.createObjectURL(editingMediaFile)}
+                          alt="New media preview"
+                          className="w-full max-h-64 object-contain rounded"
+                        />
+                      )}
+                    </div>
+                  ) : editingMediaUrl ? (
+                    isVideoUrl(editingMediaUrl) ? (
+                      <video src={editingMediaUrl} className="w-full max-h-64 rounded" controls preload="metadata" />
+                    ) : (
+                      <img src={editingMediaUrl} alt="Current media" className="w-full max-h-64 object-contain rounded" />
+                    )
+                  ) : (
+                    <p className="text-sm text-slate-500">No preview available</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Replace file (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={(e) => setEditingMediaFile(e.target.files?.[0] || null)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button onClick={resetMediaEditForm} className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button
+                onClick={handleMediaEditSave}
+                disabled={mediaEditSubmitting}
+                className="px-4 py-2 rounded-md bg-[#D6B549] text-slate-900 font-medium disabled:opacity-70"
+              >
+                {mediaEditSubmitting ? "Saving..." : "Save"}
               </button>
             </div>
           </div>

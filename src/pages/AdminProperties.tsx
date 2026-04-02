@@ -47,7 +47,7 @@ interface PropertyRecord {
 
 const listingTypeLabel: Record<PropertyListingType, string> = {
   Auction: "Auction",
-  Distress: "Alternate Properties",
+  Distress: "Alternate Investment",
 };
 
 const formatPropertyDate = (iso: string) => {

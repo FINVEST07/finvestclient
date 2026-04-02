@@ -5,15 +5,18 @@ import { toast } from "react-toastify";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import BlogCard from "@/components/BlogCard";
 import PropertyCard from "@/components/PropertyCard";
+import JobCard from "@/components/JobCard";
+import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
 
-type MainFilter = "all" | "blogs" | "properties";
+type MainFilter = "all" | "blogs" | "properties" | "jobs";
 type SortOption = "newest" | "oldest" | "price_low" | "price_high" | "alternate" | "auction";
 
 const MAIN_FILTERS: Array<{ label: string; value: MainFilter }> = [
   { label: "All", value: "all" },
   { label: "Blogs", value: "blogs" },
   { label: "Properties", value: "properties" },
+  { label: "Jobs", value: "jobs" },
 ];
 
 const BLOG_SORT_OPTIONS: Array<{ label: string; value: SortOption }> = [
@@ -49,7 +52,10 @@ const Favourites = () => {
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState<any[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; type: "blog" | "property" | "job" } | null>(null);
+  const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
   const [selectedMainFilter, setSelectedMainFilter] = useState<MainFilter>("all");
   const [selectedSortOption, setSelectedSortOption] = useState<SortOption>("newest");
 
@@ -59,6 +65,7 @@ const Favourites = () => {
     if (!isLoggedIn) {
       setBlogs([]);
       setProperties([]);
+      setJobs([]);
       setLoading(false);
       return;
     }
@@ -68,9 +75,11 @@ const Favourites = () => {
       const payload = await fetchFavourites();
       setBlogs(payload.blogs || []);
       setProperties(payload.properties || []);
+      setJobs(payload.jobs || []);
     } catch (error: any) {
       setBlogs([]);
       setProperties([]);
+      setJobs([]);
       toast.error(error?.response?.data?.message || "Unable to load favourites");
     } finally {
       setLoading(false);
@@ -82,7 +91,7 @@ const Favourites = () => {
   }, [isLoggedIn]);
 
   useEffect(() => {
-    const validMainFilters: MainFilter[] = ["all", "blogs", "properties"];
+    const validMainFilters: MainFilter[] = ["all", "blogs", "properties", "jobs"];
     if (!validMainFilters.includes(selectedMainFilter)) {
       setSelectedMainFilter("all");
       return;
@@ -100,6 +109,14 @@ const Favourites = () => {
       const validPropertySort: SortOption[] = ["price_low", "price_high", "alternate", "auction"];
       if (!validPropertySort.includes(selectedSortOption)) {
         setSelectedSortOption("price_low");
+      }
+      return;
+    }
+
+    if (selectedMainFilter === "jobs") {
+      const validJobSort: SortOption[] = ["newest", "oldest"];
+      if (!validJobSort.includes(selectedSortOption)) {
+        setSelectedSortOption("newest");
       }
       return;
     }
@@ -122,6 +139,16 @@ const Favourites = () => {
     // Default sort for "All"
     return items.sort((a, b) => safeTimestamp(b?.createdAt) - safeTimestamp(a?.createdAt));
   }, [blogs, selectedMainFilter, selectedSortOption]);
+
+  const visibleJobs = useMemo(() => {
+    const items = [...jobs];
+
+    if (selectedMainFilter === "jobs" && selectedSortOption === "oldest") {
+      return items.sort((a, b) => safeTimestamp(a?.createdAt) - safeTimestamp(b?.createdAt));
+    }
+
+    return items.sort((a, b) => safeTimestamp(b?.createdAt) - safeTimestamp(a?.createdAt));
+  }, [jobs, selectedMainFilter, selectedSortOption]);
 
   const visibleProperties = useMemo(() => {
     let items = [...properties];
@@ -154,14 +181,17 @@ const Favourites = () => {
 
   const showBlogsSection = selectedMainFilter === "all" || selectedMainFilter === "blogs";
   const showPropertiesSection = selectedMainFilter === "all" || selectedMainFilter === "properties";
+  const showJobsSection = selectedMainFilter === "all" || selectedMainFilter === "jobs";
 
-  const activeSortOptions = selectedMainFilter === "blogs"
+  const activeSortOptions = selectedMainFilter === "blogs" || selectedMainFilter === "jobs"
     ? BLOG_SORT_OPTIONS
     : selectedMainFilter === "properties"
       ? PROPERTY_SORT_OPTIONS
       : [];
 
-  const handleRemoveBlog = async (blogId: string) => {
+  const executeRemoveBlog = async (blogId: string) => {
+    if (togglingIds.has(blogId)) return;
+
     setBlogs((prev) => prev.filter((blog) => String(blog._id) !== String(blogId)));
     setTogglingIds((prev) => new Set(prev).add(blogId));
 
@@ -179,7 +209,9 @@ const Favourites = () => {
     }
   };
 
-  const handleRemoveProperty = async (propertyId: string) => {
+  const executeRemoveProperty = async (propertyId: string) => {
+    if (togglingIds.has(propertyId)) return;
+
     setProperties((prev) => prev.filter((property) => String(property._id) !== String(propertyId)));
     setTogglingIds((prev) => new Set(prev).add(propertyId));
 
@@ -194,6 +226,59 @@ const Favourites = () => {
         next.delete(propertyId);
         return next;
       });
+    }
+  };
+
+  const executeRemoveJob = async (jobId: string) => {
+    if (togglingIds.has(jobId)) return;
+
+    setJobs((prev) => prev.filter((job) => String(job._id) !== String(jobId)));
+    setTogglingIds((prev) => new Set(prev).add(jobId));
+
+    try {
+      await toggleFavourite(jobId, "job");
+    } catch (error: any) {
+      await loadFavouritesData();
+      toast.error(error?.response?.data?.message || "Unable to update favourite");
+    } finally {
+      setTogglingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(jobId);
+        return next;
+      });
+    }
+  };
+
+  const handleRemoveBlog = async (blogId: string) => {
+    if (togglingIds.has(blogId)) return;
+    setPendingRemoval({ id: blogId, type: "blog" });
+  };
+
+  const handleRemoveProperty = async (propertyId: string) => {
+    if (togglingIds.has(propertyId)) return;
+    setPendingRemoval({ id: propertyId, type: "property" });
+  };
+
+  const handleRemoveJob = async (jobId: string) => {
+    if (togglingIds.has(jobId)) return;
+    setPendingRemoval({ id: jobId, type: "job" });
+  };
+
+  const handleConfirmRemoval = async () => {
+    if (!pendingRemoval || confirmingRemoval) return;
+
+    try {
+      setConfirmingRemoval(true);
+      if (pendingRemoval.type === "blog") {
+        await executeRemoveBlog(pendingRemoval.id);
+      } else if (pendingRemoval.type === "property") {
+        await executeRemoveProperty(pendingRemoval.id);
+      } else {
+        await executeRemoveJob(pendingRemoval.id);
+      }
+      setPendingRemoval(null);
+    } finally {
+      setConfirmingRemoval(false);
     }
   };
 
@@ -320,9 +405,47 @@ const Favourites = () => {
                 )}
               </section>
             ) : null}
+
+            {showJobsSection ? (
+              <section className="transition-all duration-200">
+                <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-5">Favourite Jobs</h2>
+                {visibleJobs.length === 0 ? (
+                  <div className="bg-white border border-blue-100 rounded-2xl p-8 text-gray-500">
+                    {selectedMainFilter === "jobs" ? "No jobs found for this filter." : "No favourite jobs yet."}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {visibleJobs.map((job) => (
+                      <JobCard
+                        key={job._id}
+                        job={job}
+                        showFavourite
+                        isFavourite
+                        isToggling={togglingIds.has(String(job._id))}
+                        onToggleFavourite={handleRemoveJob}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            ) : null}
           </div>
         )}
       </div>
+
+      <ConfirmActionModal
+        open={Boolean(pendingRemoval)}
+        title="Remove from favourites?"
+        description="This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Cancel"
+        isLoading={confirmingRemoval}
+        onCancel={() => {
+          if (confirmingRemoval) return;
+          setPendingRemoval(null);
+        }}
+        onConfirm={handleConfirmRemoval}
+      />
     </section>
   );
 };
