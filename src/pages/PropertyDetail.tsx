@@ -13,6 +13,17 @@ interface PropertyPhoto {
   url: string;
 }
 
+const getPhotoUrl = (photo: unknown) => {
+  if (typeof photo === "string") return photo.trim();
+  if (photo && typeof photo === "object") {
+    const candidate = (photo as { url?: string; secure_url?: string }).url ||
+      (photo as { url?: string; secure_url?: string }).secure_url ||
+      "";
+    return String(candidate).trim();
+  }
+  return "";
+};
+
 interface PropertyItem {
   _id: string;
   propertyId: string;
@@ -196,7 +207,10 @@ const PropertyDetail = () => {
     ? `${window.location.origin}/investor-zone/${normalizedType}/${propertyId || ""}`
     : `/investor-zone/${normalizedType}/${propertyId || ""}`;
 
-  const visiblePhotos = (property?.photos || []).slice(0, 4);
+  const visiblePhotos = (property?.photos || [])
+    .map((photo) => ({ url: getPhotoUrl(photo) }))
+    .filter((photo) => Boolean(photo.url))
+    .slice(0, 4);
   const hasPropertyDocument = Boolean(
     property?.pdfDocument &&
       (typeof property?.pdfDocument === "string" ||
@@ -264,6 +278,12 @@ const PropertyDetail = () => {
                             isLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
                           }`}
                           loading="lazy"
+                          onError={(event) => {
+                            const target = event.currentTarget;
+                            if (target.dataset.fallbackApplied === "true") return;
+                            target.dataset.fallbackApplied = "true";
+                            target.src = "/placeholder.svg";
+                          }}
                           onLoad={() => {
                             setLoadedImageKeys((prev) => {
                               const next = new Set(prev);

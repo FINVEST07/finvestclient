@@ -5,6 +5,17 @@ interface PropertyPhoto {
   url: string;
 }
 
+const getPhotoUrl = (photo: unknown) => {
+  if (typeof photo === "string") return photo.trim();
+  if (photo && typeof photo === "object") {
+    const candidate = (photo as { url?: string; secure_url?: string }).url ||
+      (photo as { url?: string; secure_url?: string }).secure_url ||
+      "";
+    return String(candidate).trim();
+  }
+  return "";
+};
+
 interface PropertyItem {
   _id: string;
   headline: string;
@@ -68,7 +79,7 @@ const PropertyCard = ({
   isToggling?: boolean;
   onToggleFavourite?: (propertyId: string) => void;
 }) => {
-  const thumbnail = property.photos?.[0]?.url || "";
+  const thumbnail = getPhotoUrl(property.photos?.[0]);
   const conditionalDateLabel = property.type === "Auction" ? "EMD Date" : "EOI Date";
   const conditionalDateValue = property.type === "Auction" ? formatDate(property.emdDate) : formatDate(property.eoiDate);
   const postedDate = getPostedDate(property);
@@ -191,6 +202,12 @@ const PropertyCard = ({
               alt={property.headline || "Property"}
               className="absolute inset-0 w-full h-full object-cover"
               loading="lazy"
+              onError={(event) => {
+                const target = event.currentTarget;
+                if (target.dataset.fallbackApplied === "true") return;
+                target.dataset.fallbackApplied = "true";
+                target.src = "/placeholder.svg";
+              }}
             />
           ) : (
             <div className="h-full w-full grid place-items-center text-slate-500 p-6 text-sm">No Image</div>

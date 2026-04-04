@@ -65,6 +65,19 @@ export interface PropertyFormPayload {
   propertyType: PropertyTypeOption;
   photos: File[];
   pdfDocument: File | null;
+  deletedImages: string[];
+  deletePdf: boolean;
+}
+
+export interface ExistingPropertyPhoto {
+  url: string;
+  public_id?: string;
+}
+
+export interface ExistingPropertyPdf {
+  url?: string;
+  public_id?: string;
+  original_filename?: string;
 }
 
 export interface PropertyFormInitialValues {
@@ -95,7 +108,8 @@ interface PostPropertyModalProps {
   onClose: () => void;
   mode?: "create" | "edit";
   initialValues?: PropertyFormInitialValues | null;
-  existingPhotos?: string[];
+  existingPhotos?: ExistingPropertyPhoto[];
+  existingPdfDocument?: ExistingPropertyPdf | null;
   onSubmit: (payload: PropertyFormPayload) => void | Promise<void>;
 }
 
@@ -142,6 +156,27 @@ const initialState = {
   propertyType: "" as "" | PropertyTypeOption,
 };
 
+const alphaSpacePattern = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
+
+const normalizeSpaces = (value: string) => value.replace(/\s+/g, " ").trim();
+
+const sanitizeAlphaWithSpaces = (value: string) =>
+  value
+    .replace(/[^A-Za-z\s]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/^\s+/, "");
+
+const toTitleCase = (value: string) => {
+  const normalized = normalizeSpaces(value);
+  if (!normalized) return "";
+
+  return normalized
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 const PostPropertyModal = ({
   open,
   onClose,
@@ -149,10 +184,16 @@ const PostPropertyModal = ({
   mode = "create",
   initialValues = null,
   existingPhotos = [],
+  existingPdfDocument = null,
 }: PostPropertyModalProps) => {
   const [form, setForm] = useState(initialState);
   const [photos, setPhotos] = useState<File[]>([]);
   const [pdfDocument, setPdfDocument] = useState<File | null>(null);
+  const [visibleExistingPhotos, setVisibleExistingPhotos] = useState<ExistingPropertyPhoto[]>([]);
+  const [fadingExistingPhotoUrls, setFadingExistingPhotoUrls] = useState<string[]>([]);
+  const [deletedImages, setDeletedImages] = useState<string[]>([]);
+  const [showExistingPdf, setShowExistingPdf] = useState<boolean>(false);
+  const [deletePdf, setDeletePdf] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [photoError, setPhotoError] = useState<string>("");
@@ -162,6 +203,11 @@ const PostPropertyModal = ({
       setForm(initialState);
       setPhotos([]);
       setPdfDocument(null);
+      setVisibleExistingPhotos([]);
+      setFadingExistingPhotoUrls([]);
+      setDeletedImages([]);
+      setShowExistingPdf(false);
+      setDeletePdf(false);
       setIsSubmitting(false);
       setErrors({});
       setPhotoError("");
@@ -193,11 +239,16 @@ const PostPropertyModal = ({
       });
       setPhotos([]);
       setPdfDocument(null);
+      setVisibleExistingPhotos(existingPhotos || []);
+      setFadingExistingPhotoUrls([]);
+      setDeletedImages([]);
+      setShowExistingPdf(Boolean(existingPdfDocument?.url));
+      setDeletePdf(false);
       setIsSubmitting(false);
       setErrors({});
       setPhotoError("");
     }
-  }, [open, mode, initialValues]);
+  }, [open, mode, initialValues, existingPhotos, existingPdfDocument]);
 
   const previewUrls = useMemo(() => photos.map((f) => URL.createObjectURL(f)), [photos]);
 
@@ -214,6 +265,21 @@ const PostPropertyModal = ({
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  const setAlphaField = (name: "location" | "district", value: string) => {
+    const sanitizedValue = sanitizeAlphaWithSpaces(value);
+    const hasInvalidCharacters = value !== sanitizedValue;
+
+    setForm((prev) => ({ ...prev, [name]: sanitizedValue }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: hasInvalidCharacters ? "Only letters are allowed in this field." : "",
+    }));
+  };
+
+  const handleAlphaFieldBlur = (name: "location" | "district") => {
+    setForm((prev) => ({ ...prev, [name]: toTitleCase(prev[name]) }));
+  };
+
   const handlePhotoChange = (files: FileList | null) => {
     if (!files) return;
     const selected = Array.from(files);
@@ -224,7 +290,8 @@ const PostPropertyModal = ({
       return;
     }
 
-    const total = photos.length + valid.length;
+    const existingCount = mode === "edit" ? visibleExistingPhotos.length : 0;
+    const total = photos.length + valid.length + existingCount;
     if (total > 5) {
       setPhotoError("You can upload maximum 5 photos.");
       return;
@@ -239,16 +306,46 @@ const PostPropertyModal = ({
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingPhoto = (photo: ExistingPropertyPhoto) => {
+    if (!confirm("Delete this image?")) return;
+
+    const marker = String(photo.public_id || photo.url || "").trim();
+    if (!marker) return;
+
+    setFadingExistingPhotoUrls((prev) => (prev.includes(photo.url) ? prev : [...prev, photo.url]));
+    setTimeout(() => {
+      setVisibleExistingPhotos((prev) => prev.filter((item) => item.url !== photo.url));
+      setDeletedImages((prev) => (prev.includes(marker) ? prev : [...prev, marker]));
+      setFadingExistingPhotoUrls((prev) => prev.filter((url) => url !== photo.url));
+    }, 180);
+  };
+
+  const removeExistingPdf = () => {
+    if (!confirm("Delete existing PDF document?")) return;
+    setShowExistingPdf(false);
+    setDeletePdf(true);
+    setPdfDocument(null);
+  };
+
   const validate = () => {
     const nextErrors: FieldErrors = {};
+    const normalizedLocation = normalizeSpaces(form.location);
+    const normalizedDistrict = normalizeSpaces(form.district);
 
     if (!form.headline.trim()) nextErrors.headline = "Headline is required";
     if (!form.propertyOrSocietyName.trim()) nextErrors.propertyOrSocietyName = "Property / Society Name is required";
     if (!form.area.trim()) nextErrors.area = "Area is required";
     if (!form.type) nextErrors.type = "Type is required";
     if (!form.bhk.trim()) nextErrors.bhk = "BHK is required";
-    if (!form.location.trim()) nextErrors.location = "Location is required";
-    if (!form.district.trim()) nextErrors.district = "District is required";
+    if (!normalizedLocation) nextErrors.location = "Location is required";
+    else if (!alphaSpacePattern.test(normalizedLocation)) {
+      nextErrors.location = "Only letters are allowed in this field.";
+    }
+
+    if (!normalizedDistrict) nextErrors.district = "District is required";
+    else if (!alphaSpacePattern.test(normalizedDistrict)) {
+      nextErrors.district = "Only letters are allowed in this field.";
+    }
     if (!form.possession) nextErrors.possession = "Possession is required";
     if (!form.status) nextErrors.status = "Status is required";
 
@@ -274,7 +371,10 @@ const PostPropertyModal = ({
       nextErrors.contactNumber = "Contact Number must be numeric (10-15 digits)";
     }
 
+    const existingCount = mode === "edit" ? visibleExistingPhotos.length : 0;
     if (mode === "create" && photos.length === 0) {
+      nextErrors.photos = "At least one photo is required";
+    } else if (mode === "edit" && photos.length + existingCount === 0) {
       nextErrors.photos = "At least one photo is required";
     }
 
@@ -295,8 +395,8 @@ const PostPropertyModal = ({
         bhk: form.bhk.trim(),
         offerPrice: Number(form.offerPrice),
         estimatedMarketValue: Number(form.estimatedMarketValue),
-        location: form.location.trim(),
-        district: form.district.trim(),
+        location: toTitleCase(form.location),
+        district: toTitleCase(form.district),
         possession: form.possession as PossessionType,
         status: form.status as PropertyStatusType,
         emdDate: form.emdDate,
@@ -311,6 +411,8 @@ const PostPropertyModal = ({
         propertyType: form.propertyType as PropertyTypeOption,
         photos,
         pdfDocument,
+        deletedImages,
+        deletePdf,
       });
     } finally {
       setIsSubmitting(false);
@@ -463,7 +565,8 @@ const PostPropertyModal = ({
               </label>
               <input
                 value={form.location}
-                onChange={(e) => setField("location", e.target.value)}
+                onChange={(e) => setAlphaField("location", e.target.value)}
+                onBlur={() => handleAlphaFieldBlur("location")}
                 className={inputClass("location")}
               />
               {errors.location && <p className="text-xs text-red-600 mt-1">{errors.location}</p>}
@@ -475,7 +578,8 @@ const PostPropertyModal = ({
               </label>
               <input
                 value={form.district}
-                onChange={(e) => setField("district", e.target.value)}
+                onChange={(e) => setAlphaField("district", e.target.value)}
+                onBlur={() => handleAlphaFieldBlur("district")}
                 className={inputClass("district")}
               />
               {errors.district && <p className="text-xs text-red-600 mt-1">{errors.district}</p>}
@@ -614,20 +718,30 @@ const PostPropertyModal = ({
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Photos {mode === "create" ? <span className="text-red-600">*</span> : null}
               </label>
-              {mode === "edit" && existingPhotos.length > 0 && (
+              {mode === "edit" && visibleExistingPhotos.length > 0 && (
                 <div className="mb-3">
                   <p className="text-xs text-slate-500 mb-2">Current photos</p>
                   <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                    {existingPhotos.map((url, index) => (
+                    {visibleExistingPhotos.map((photo, index) => (
                       <div
-                        key={`${url}-${index}`}
-                        className="rounded-md overflow-hidden border border-slate-200"
+                        key={`${photo.url}-${index}`}
+                        className={`relative rounded-md overflow-hidden border border-slate-200 transition-opacity duration-200 ${
+                          fadingExistingPhotoUrls.includes(photo.url) ? "opacity-0" : "opacity-100"
+                        }`}
                       >
                         <img
-                          src={url}
+                          src={photo.url}
                           alt={`Current property ${index + 1}`}
                           className="h-20 w-full object-cover"
                         />
+                        <button
+                          type="button"
+                          title="Delete image"
+                          onClick={() => removeExistingPhoto(photo)}
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/70 text-white text-xs grid place-items-center transition-colors hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -642,7 +756,7 @@ const PostPropertyModal = ({
               />
               {mode === "edit" && (
                 <p className="text-xs text-slate-500 mt-1">
-                  Upload photos only if you want to replace current photos.
+                  You can delete old images and upload new images in the same edit.
                 </p>
               )}
               {photoError && <p className="text-xs text-red-600 mt-1">{photoError}</p>}
@@ -668,10 +782,32 @@ const PostPropertyModal = ({
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">Property PDF Document</label>
+              {mode === "edit" && showExistingPdf && existingPdfDocument?.url ? (
+                <div className="mb-2 flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="text-xs text-slate-600 truncate">
+                    {existingPdfDocument.original_filename || existingPdfDocument.url.split("/").pop() || "document.pdf"}
+                  </p>
+                  <button
+                    type="button"
+                    title="Delete PDF"
+                    onClick={removeExistingPdf}
+                    className="h-6 w-6 rounded-full bg-slate-700 text-white text-xs grid place-items-center transition-colors hover:bg-red-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : null}
               <input
                 type="file"
                 accept="application/pdf"
-                onChange={(e) => setPdfDocument(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setPdfDocument(file);
+                  if (file) {
+                    setDeletePdf(false);
+                    setShowExistingPdf(false);
+                  }
+                }}
                 className={inputClass("pdfDocument")}
               />
               {pdfDocument ? (

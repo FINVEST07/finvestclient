@@ -5,6 +5,8 @@ import axios from "axios";
 import AdminSidebar from "@/components/AdminSidebar";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import PostPropertyModal, {
+  ExistingPropertyPdf,
+  ExistingPropertyPhoto,
   PropertyFormInitialValues,
   PropertyFormPayload,
   PropertyListingType,
@@ -40,7 +42,7 @@ interface PropertyRecord {
   bankName?: string;
   contactPerson?: string;
   contactNumber?: string;
-  pdfDocument?: { url?: string } | null;
+  pdfDocument?: { url?: string; public_id?: string; original_filename?: string } | null;
   photos: PropertyPhoto[];
   createdAt: string;
 }
@@ -69,7 +71,8 @@ const AdminProperties = () => {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [initialValues, setInitialValues] = useState<PropertyFormInitialValues | null>(null);
-  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<ExistingPropertyPhoto[]>([]);
+  const [existingPdfDocument, setExistingPdfDocument] = useState<ExistingPropertyPdf | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [posting, setPosting] = useState<boolean>(false);
 
@@ -132,7 +135,15 @@ const AdminProperties = () => {
       contactNumber: property.contactNumber || "",
       propertyType: property.propertyType || "",
     });
-    setExistingPhotos((property.photos || []).map((photo) => photo.url).filter(Boolean));
+    setExistingPhotos(
+      (property.photos || [])
+        .filter((photo) => photo?.url)
+        .map((photo) => ({
+          url: photo.url,
+          public_id: photo.public_id || "",
+        }))
+    );
+    setExistingPdfDocument(property.pdfDocument || null);
     setIsPostOpen(true);
   };
 
@@ -141,6 +152,7 @@ const AdminProperties = () => {
     setEditingPropertyId(null);
     setInitialValues(null);
     setExistingPhotos([]);
+    setExistingPdfDocument(null);
     setIsPostOpen(true);
   };
 
@@ -326,6 +338,11 @@ const AdminProperties = () => {
         formData.append("pdfDocument", payload.pdfDocument);
       }
 
+      if (modalMode === "edit") {
+        formData.append("deletedImages", JSON.stringify(payload.deletedImages || []));
+        formData.append("deletePdf", String(Boolean(payload.deletePdf)));
+      }
+
       const request =
         modalMode === "edit" && editingPropertyId
           ? axios.put(`${import.meta.env.VITE_API_URI}properties/${editingPropertyId}`, formData, {
@@ -346,6 +363,7 @@ const AdminProperties = () => {
       setEditingPropertyId(null);
       setInitialValues(null);
       setExistingPhotos([]);
+      setExistingPdfDocument(null);
       setModalMode("create");
       toast.success(
         res.data?.message ||
@@ -405,11 +423,13 @@ const AdminProperties = () => {
           setEditingPropertyId(null);
           setInitialValues(null);
           setExistingPhotos([]);
+          setExistingPdfDocument(null);
           setModalMode("create");
         }}
         mode={modalMode}
         initialValues={initialValues}
         existingPhotos={existingPhotos}
+        existingPdfDocument={existingPdfDocument}
         onSubmit={onCreateProperty}
       />
     </div>
