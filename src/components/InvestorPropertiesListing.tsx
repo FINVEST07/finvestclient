@@ -6,7 +6,13 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 import PropertyCard from "@/components/PropertyCard";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { toast } from "react-toastify";
-import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+import {
+  FAVOURITE_COMPLETED_EVENT,
+  ensureAuthenticatedForFavourite,
+  fetchFavourites,
+  getLoggedInEmail,
+  toggleFavourite,
+} from "@/lib/favourites";
 
 interface FilterSelectOption {
   value: string;
@@ -81,7 +87,7 @@ const InvestorPropertiesListing = ({
   title: string;
 }) => {
   type SortValue = "latest" | "price_high" | "price_low";
-  type PossessionValue = "all" | "physical" | "symbolic";
+  type PossessionValue = "all" | "physical" | "symbolic" | "free hold";
 
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -114,7 +120,28 @@ const InvestorPropertiesListing = ({
   }, [type]);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
+    const onFavouriteCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ itemId?: string; itemType?: string }>).detail;
+      if (detail?.itemType !== "property" || !detail.itemId) return;
+
+      setFavouriteIds((prev) => {
+        const next = new Set(prev);
+        next.add(String(detail.itemId));
+        return next;
+      });
+    };
+
+    window.addEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    return () => {
+      window.removeEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setFavouriteIds(new Set());
+      return;
+    }
 
     const loadFavourites = async () => {
       try {
@@ -169,7 +196,7 @@ const InvestorPropertiesListing = ({
   };
 
   const handlePropertyFavouriteToggle = async (propertyId: string) => {
-    if (!isLoggedIn || togglingIds.has(propertyId)) return;
+    if (!ensureAuthenticatedForFavourite({ itemId: propertyId, itemType: "property" }) || togglingIds.has(propertyId)) return;
 
     const wasFavourite = favouriteIds.has(propertyId);
     if (wasFavourite) {
@@ -274,6 +301,7 @@ const InvestorPropertiesListing = ({
     { value: "all", label: "All Possession" },
     { value: "physical", label: "Physical" },
     { value: "symbolic", label: "Symbolic" },
+    { value: "free hold", label: "Free Hold" },
   ];
 
   const locationSelectOptions: FilterSelectOption[] = [
@@ -365,7 +393,7 @@ const InvestorPropertiesListing = ({
               <PropertyCard
                 key={property._id}
                 property={property}
-                showFavourite={isLoggedIn}
+                showFavourite
                 isFavourite={favouriteIds.has(String(property._id))}
                 isToggling={togglingIds.has(String(property._id))}
                 onToggleFavourite={handlePropertyFavouriteToggle}

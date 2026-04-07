@@ -66,6 +66,29 @@ const getPostedDate = (property: PropertyItem) => {
   return "-";
 };
 
+const getStatusLabel = (property: PropertyItem) => {
+  const rawStatus = String(property.status || "").trim();
+  const normalizedStatus = rawStatus.toLowerCase();
+
+  if (
+    property.type === "Distress" &&
+    (normalizedStatus === "sold out" || normalizedStatus === "soldout")
+  ) {
+    return "Full Field";
+  }
+
+  return rawStatus || "-";
+};
+
+const isEmphasizedAvailability = (property: PropertyItem, statusLabel: string) => {
+  const normalizedStatus = String(statusLabel || "").trim().toLowerCase();
+
+  return (
+    (property.type === "Auction" && normalizedStatus === "sold out") ||
+    (property.type === "Distress" && normalizedStatus === "full field")
+  );
+};
+
 const PropertyCard = ({
   property,
   showFavourite,
@@ -83,6 +106,8 @@ const PropertyCard = ({
   const conditionalDateLabel = property.type === "Auction" ? "EMD Date" : "EOI Date";
   const conditionalDateValue = property.type === "Auction" ? formatDate(property.emdDate) : formatDate(property.eoiDate);
   const postedDate = getPostedDate(property);
+  const statusLabel = getStatusLabel(property);
+  const shouldEmphasizeStatus = isEmphasizedAvailability(property, statusLabel);
   const navigate = useNavigate();
   const detailPath = `/investor-zone/${property.type.toLowerCase()}/${property._id}`;
 
@@ -114,7 +139,7 @@ const PropertyCard = ({
       onKeyDown={handleCardKeyDown}
       aria-label={`Open details for ${property.headline || "property"}`}
     >
-      {showFavourite ? (
+      {showFavourite !== false ? (
         <div
           className="absolute top-3 right-4 md:top-auto md:bottom-5 md:right-[calc(250px+0.25rem)] z-20"
           data-no-card-nav="true"
@@ -145,7 +170,15 @@ const PropertyCard = ({
         <div className="relative z-10 p-3.5 md:p-4 flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
             <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">{property.type === "Distress" ? "Alternate" : property.type}</span>
-            <span className="inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">{property.status || "-"}</span>
+            <span
+              className={`inline-flex px-2.5 py-1 rounded-md text-[11px] font-semibold ${
+                shouldEmphasizeStatus
+                  ? "bg-red-50 text-red-700 border border-red-200 font-bold italic"
+                  : "bg-blue-50 text-blue-700 border border-blue-100"
+              }`}
+            >
+              {statusLabel}
+            </span>
           </div>
 
           <h2 className="text-base md:text-lg font-bold text-slate-900 mb-3 line-clamp-2">{property.headline || "Property"}</h2>
@@ -158,16 +191,16 @@ const PropertyCard = ({
               <span className="font-semibold text-slate-800">Area:</span> {property.area || "-"}
             </p>
             <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">BHK:</span> {property.bhk || "-"}
+              <span className="font-semibold text-slate-800">Configuration:</span> {property.bhk || "-"}
             </p>
             <p className="font-bold text-slate-900 line-clamp-1">
               <span className="font-semibold text-slate-800">Offer Price:</span> {formatCurrency(property.offerPrice)}
             </p>
             <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Est. Market Value:</span> {formatCurrency(property.estimatedMarketValue)}
-            </p>
-            <p className="text-slate-600 line-clamp-1">
               <span className="font-semibold text-slate-800">Location:</span> {property.location || "-"}
+            </p>
+            <p className="font-bold text-slate-900 line-clamp-1">
+              <span className="font-semibold text-slate-800">Est. Market Value:</span> {formatCurrency(property.estimatedMarketValue)}
             </p>
             <p className="text-slate-600 line-clamp-1">
               <span className="font-semibold text-slate-800">District:</span> {property.district || "-"}
@@ -176,7 +209,12 @@ const PropertyCard = ({
               <span className="font-semibold text-slate-800">Possession:</span> {property.possession || "-"}
             </p>
             <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Status:</span> {property.status || "-"}
+              <span className="font-semibold text-slate-800">Status:</span>{" "}
+              <span
+                className={shouldEmphasizeStatus ? "text-red-700 font-bold italic" : ""}
+              >
+                {statusLabel}
+              </span>
             </p>
             <p className="text-slate-600 line-clamp-1">
               <span className="font-semibold text-slate-800">{conditionalDateLabel}:</span> {conditionalDateValue}

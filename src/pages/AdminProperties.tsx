@@ -190,7 +190,7 @@ const AdminProperties = () => {
         width: "140px",
       },
       {
-        name: "BHK",
+        name: "Configuration",
         selector: (row: PropertyRecord) => row.bhk,
         width: "100px",
       },

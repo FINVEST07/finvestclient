@@ -6,6 +6,8 @@ import Cookie from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import { OPEN_LOGIN_MODAL_EVENT } from "@/lib/loginModal";
+import { completePendingFavouriteAction } from "@/lib/favourites";
 
 const Login = ({ setLoginOpen, loginopen }) => {
   const [step, setStep] = useState("form"); // 'form', 'verify', or 'forgot-password'
@@ -94,6 +96,22 @@ const Login = ({ setLoginOpen, loginopen }) => {
 
     return () => clearInterval(countdown);
   }, [forgotPasswordTimer]);
+
+  useEffect(() => {
+    const onOpenLoginModal = () => {
+      if (Cookie.get("finvest")) return;
+      if (loginopen) return;
+
+      setStep("form");
+      setSectionOpen("login");
+      setLoginOpen(true);
+    };
+
+    window.addEventListener(OPEN_LOGIN_MODAL_EVENT, onOpenLoginModal);
+    return () => {
+      window.removeEventListener(OPEN_LOGIN_MODAL_EVENT, onOpenLoginModal);
+    };
+  }, [loginopen, setLoginOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -228,6 +246,8 @@ const Login = ({ setLoginOpen, loginopen }) => {
           { expires: 365 }
         );
 
+        const pendingResult = await completePendingFavouriteAction();
+
         toast.success(loginresponse.data.message);
         setLoginOpen(false);
         setLoginFormData({
@@ -235,6 +255,9 @@ const Login = ({ setLoginOpen, loginopen }) => {
           password: "",
           otp: "",
         });
+        if (pendingResult.completed) {
+          return;
+        }
         navigate("/customerdashboard");
       } else {
         const loginresponse = await axios.post(
@@ -251,6 +274,8 @@ const Login = ({ setLoginOpen, loginopen }) => {
           { expires: 365 }
         );
 
+        const pendingResult = await completePendingFavouriteAction();
+
         setLoginTimer(0);
         toast.success(loginresponse.data.message);
         setLoginOpen(false);
@@ -259,6 +284,9 @@ const Login = ({ setLoginOpen, loginopen }) => {
           password: "",
           otp: "",
         });
+        if (pendingResult.completed) {
+          return;
+        }
         navigate("/customerdashboard");
       }
     } catch (error) {
@@ -336,6 +364,8 @@ const Login = ({ setLoginOpen, loginopen }) => {
         expires: 365,
       });
 
+      const pendingResult = await completePendingFavouriteAction();
+
       toast.success(response.data.message);
 
       setFormData({
@@ -346,6 +376,9 @@ const Login = ({ setLoginOpen, loginopen }) => {
       });
       setLoginOpen(false);
       setTimer(0);
+      if (pendingResult.completed) {
+        return;
+      }
       navigate("/customerdashboard");
     } catch (error) {
       setStep("form");

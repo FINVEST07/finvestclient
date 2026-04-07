@@ -31,7 +31,7 @@ const BlogCard = ({
 
   return (
     <article className="relative grid md:grid-cols-3 gap-0 md:gap-4 items-stretch bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden hover:-translate-y-0.5 transition-all">
-      {showFavourite ? (
+      {showFavourite !== false ? (
         <div className="absolute top-3 right-3 md:top-auto md:bottom-5 md:right-[calc(33.333333%+0.25rem)] z-20">
           <FavouriteHeartButton
             isFavourite={Boolean(isFavourite)}

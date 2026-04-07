@@ -6,7 +6,13 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import JobCard from "@/components/JobCard";
-import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+import {
+  FAVOURITE_COMPLETED_EVENT,
+  ensureAuthenticatedForFavourite,
+  fetchFavourites,
+  getLoggedInEmail,
+  toggleFavourite,
+} from "@/lib/favourites";
 
 interface JobItem {
   _id: string;
@@ -46,7 +52,28 @@ const Jobs = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
+    const onFavouriteCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ itemId?: string; itemType?: string }>).detail;
+      if (detail?.itemType !== "job" || !detail.itemId) return;
+
+      setFavouriteIds((prev) => {
+        const next = new Set(prev);
+        next.add(String(detail.itemId));
+        return next;
+      });
+    };
+
+    window.addEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    return () => {
+      window.removeEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setFavouriteIds(new Set());
+      return;
+    }
 
     const loadFavourites = async () => {
       try {
@@ -101,7 +128,7 @@ const Jobs = () => {
   };
 
   const handleJobFavouriteToggle = async (jobId: string) => {
-    if (!isLoggedIn || togglingIds.has(jobId)) return;
+    if (!ensureAuthenticatedForFavourite({ itemId: jobId, itemType: "job" }) || togglingIds.has(jobId)) return;
 
     const wasFavourite = favouriteIds.has(jobId);
     if (wasFavourite) {
@@ -161,7 +188,7 @@ const Jobs = () => {
               <JobCard
                 key={job._id}
                 job={job}
-                showFavourite={isLoggedIn}
+                showFavourite
                 isFavourite={favouriteIds.has(String(job._id))}
                 isToggling={togglingIds.has(String(job._id))}
                 onToggleFavourite={handleJobFavouriteToggle}

@@ -7,7 +7,13 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
-import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+import {
+  FAVOURITE_COMPLETED_EVENT,
+  ensureAuthenticatedForFavourite,
+  fetchFavourites,
+  getLoggedInEmail,
+  toggleFavourite,
+} from "@/lib/favourites";
 
 const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
@@ -63,7 +69,25 @@ const BlogDetail = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (!isLoggedIn || !blog?._id) return;
+    const onFavouriteCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ itemId?: string; itemType?: string }>).detail;
+      if (detail?.itemType !== "blog" || !detail.itemId) return;
+      if (!blog?._id || String(blog._id) !== String(detail.itemId)) return;
+
+      setIsFavourite(true);
+    };
+
+    window.addEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    return () => {
+      window.removeEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    };
+  }, [blog?._id]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !blog?._id) {
+      setIsFavourite(false);
+      return;
+    }
 
     const loadFavourites = async () => {
       try {
@@ -98,7 +122,8 @@ const BlogDetail = () => {
   };
 
   const handleFavouriteToggle = async () => {
-    if (!isLoggedIn || !blog?._id || togglingFavourite) return;
+    if (!blog?._id || togglingFavourite) return;
+    if (!ensureAuthenticatedForFavourite({ itemId: String(blog._id), itemType: "blog" })) return;
 
     if (isFavourite) {
       setIsConfirmOpen(true);
@@ -192,13 +217,11 @@ const BlogDetail = () => {
             <div className="p-6 md:p-10">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <h1 className="text-2xl md:text-4xl font-bold text-blue-900 leading-snug">{blog.title}</h1>
-                {isLoggedIn ? (
-                  <FavouriteHeartButton
-                    isFavourite={isFavourite}
-                    disabled={togglingFavourite}
-                    onToggle={handleFavouriteToggle}
-                  />
-                ) : null}
+                <FavouriteHeartButton
+                  isFavourite={isFavourite}
+                  disabled={togglingFavourite}
+                  onToggle={handleFavouriteToggle}
+                />
               </div>
               <div
                 className="prose prose-blue max-w-none text-gray-800 break-words prose-a:text-blue-700 prose-a:underline hover:prose-a:text-blue-900 prose-ol:list-decimal prose-ul:list-disc prose-li:my-0 prose-p:my-1"

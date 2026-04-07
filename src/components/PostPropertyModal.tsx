@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export type PropertyTypeOption =
   | "Flat"
+  | "Apartment"
   | "Bungalow"
   | "Villa"
   | "Penthouse"
@@ -11,7 +12,7 @@ export type PropertyTypeOption =
   | "Commercial";
 
 export type PropertyListingType = "Auction" | "Distress";
-export type PossessionType = "Physical" | "Symbolic";
+export type PossessionType = "Physical" | "Symbolic" | "Free Hold";
 export type PropertyStatusType = "Available" | "Sold Out";
 
 export interface PropertyRecord {
@@ -122,6 +123,7 @@ const listingTypeLabel: Record<PropertyListingType, string> = {
 };
 const propertyTypeOptions: PropertyTypeOption[] = [
   "Flat",
+  "Apartment",
   "Bungalow",
   "Villa",
   "Penthouse",
@@ -130,7 +132,7 @@ const propertyTypeOptions: PropertyTypeOption[] = [
   "Plot",
   "Commercial",
 ];
-const possessionOptions: PossessionType[] = ["Physical", "Symbolic"];
+const possessionOptions: PossessionType[] = ["Physical", "Symbolic", "Free Hold"];
 const statusOptions: PropertyStatusType[] = ["Available", "Sold Out"];
 
 const initialState = {
@@ -336,7 +338,7 @@ const PostPropertyModal = ({
     if (!form.propertyOrSocietyName.trim()) nextErrors.propertyOrSocietyName = "Property / Society Name is required";
     if (!form.area.trim()) nextErrors.area = "Area is required";
     if (!form.type) nextErrors.type = "Type is required";
-    if (!form.bhk.trim()) nextErrors.bhk = "BHK is required";
+    if (!form.bhk.trim()) nextErrors.bhk = "Configuration is required";
     if (!normalizedLocation) nextErrors.location = "Location is required";
     else if (!alphaSpacePattern.test(normalizedLocation)) {
       nextErrors.location = "Only letters are allowed in this field.";
@@ -520,7 +522,7 @@ const PostPropertyModal = ({
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                BHK <span className="text-red-600">*</span>
+                Configuration <span className="text-red-600">*</span>
               </label>
               <input
                 value={form.bhk}
@@ -613,7 +615,9 @@ const PostPropertyModal = ({
               >
                 <option value="">Select Status</option>
                 {statusOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
+                  <option key={opt} value={opt}>
+                    {form.type === "Distress" && opt === "Sold Out" ? "Full Field" : opt}
+                  </option>
                 ))}
               </select>
               {errors.status && <p className="text-xs text-red-600 mt-1">{errors.status}</p>}
@@ -681,7 +685,9 @@ const PostPropertyModal = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Bank Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                {form.type === "Distress" ? "Builder Name" : "Bank Name"}
+              </label>
               <input
                 value={form.bankName}
                 onChange={(e) => setField("bankName", e.target.value)}

@@ -6,7 +6,13 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
 import BlogCard from "@/components/BlogCard";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
-import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+import {
+  FAVOURITE_COMPLETED_EVENT,
+  ensureAuthenticatedForFavourite,
+  fetchFavourites,
+  getLoggedInEmail,
+  toggleFavourite,
+} from "@/lib/favourites";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -34,7 +40,28 @@ const Blogs = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
+    const onFavouriteCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ itemId?: string; itemType?: string }>).detail;
+      if (detail?.itemType !== "blog" || !detail.itemId) return;
+
+      setFavouriteIds((prev) => {
+        const next = new Set(prev);
+        next.add(String(detail.itemId));
+        return next;
+      });
+    };
+
+    window.addEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    return () => {
+      window.removeEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setFavouriteIds(new Set());
+      return;
+    }
 
     const loadFavourites = async () => {
       try {
@@ -89,7 +116,7 @@ const Blogs = () => {
   };
 
   const handleBlogFavouriteToggle = async (blogId: string) => {
-    if (!isLoggedIn || togglingIds.has(blogId)) return;
+    if (!ensureAuthenticatedForFavourite({ itemId: blogId, itemType: "blog" }) || togglingIds.has(blogId)) return;
 
     const wasFavourite = favouriteIds.has(blogId);
     if (wasFavourite) {
@@ -143,7 +170,7 @@ const Blogs = () => {
               <BlogCard
                 key={b._id}
                 blog={b}
-                showFavourite={isLoggedIn}
+                showFavourite
                 isFavourite={favouriteIds.has(String(b._id))}
                 isToggling={togglingIds.has(String(b._id))}
                 onToggleFavourite={handleBlogFavouriteToggle}

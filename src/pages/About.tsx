@@ -95,7 +95,7 @@ const About = () => (
             </div>
             <div className="flex flex-col">
               <span className="text-3xl font-bold text-blue-900">1,500+</span>
-              <span className="text-finance-slate">Clients Served</span>
+              <span className="text-finance-slate">Client Satisfaction</span>
             </div>
             <div className="flex flex-col">
               <span className="text-3xl font-bold text-blue-900">98%</span>

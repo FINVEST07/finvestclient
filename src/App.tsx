@@ -40,10 +40,13 @@ import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import AdminJobs from "./pages/AdminJobs";
 import Favourites from "./pages/Favourites";
+import Login from "./components/Login";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const [globalLoginOpen, setGlobalLoginOpen] = useState(false);
+
   const RequireSuperAdmin = ({ children }: { children: any }) => {
     const storedRank = localStorage.getItem("rank");
     if (storedRank === "1" || storedRank === 1 || Number(storedRank) === 1) {
@@ -84,6 +87,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <Login setLoginOpen={setGlobalLoginOpen} loginopen={globalLoginOpen} />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/customerdashboard" element={<Customerdashboard />} />

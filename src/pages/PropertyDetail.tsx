@@ -7,7 +7,13 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
-import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+import {
+  FAVOURITE_COMPLETED_EVENT,
+  ensureAuthenticatedForFavourite,
+  fetchFavourites,
+  getLoggedInEmail,
+  toggleFavourite,
+} from "@/lib/favourites";
 
 interface PropertyPhoto {
   url: string;
@@ -90,6 +96,29 @@ const derivePostedDate = (property: PropertyItem | null) => {
   return "-";
 };
 
+const getStatusLabel = (property: PropertyItem | null) => {
+  const rawStatus = String(property?.status || "").trim();
+  const normalizedStatus = rawStatus.toLowerCase();
+
+  if (
+    property?.type === "Distress" &&
+    (normalizedStatus === "sold out" || normalizedStatus === "soldout")
+  ) {
+    return "Full Field";
+  }
+
+  return rawStatus || "-";
+};
+
+const isEmphasizedAvailability = (property: PropertyItem | null, statusLabel: string) => {
+  const normalizedStatus = String(statusLabel || "").trim().toLowerCase();
+
+  return (
+    (property?.type === "Auction" && normalizedStatus === "sold out") ||
+    (property?.type === "Distress" && normalizedStatus === "full field")
+  );
+};
+
 const LockedRow = ({ label }: { label: string }) => (
   <div className="rounded-xl bg-white px-5 py-4 border border-blue-100 flex items-center justify-between gap-2">
     <span className="font-semibold text-blue-900">{label}</span>
@@ -134,7 +163,25 @@ const PropertyDetail = () => {
   }, [property?._id]);
 
   useEffect(() => {
-    if (!isLoggedIn || !property?._id) return;
+    const onFavouriteCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ itemId?: string; itemType?: string }>).detail;
+      if (detail?.itemType !== "property" || !detail.itemId) return;
+      if (!property?._id || String(property._id) !== String(detail.itemId)) return;
+
+      setIsFavourite(true);
+    };
+
+    window.addEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    return () => {
+      window.removeEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    };
+  }, [property?._id]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !property?._id) {
+      setIsFavourite(false);
+      return;
+    }
 
     const loadFavourites = async () => {
       try {
@@ -169,7 +216,8 @@ const PropertyDetail = () => {
   };
 
   const handleFavouriteToggle = async () => {
-    if (!isLoggedIn || !property?._id || togglingFavourite) return;
+    if (!property?._id || togglingFavourite) return;
+    if (!ensureAuthenticatedForFavourite({ itemId: String(property._id), itemType: "property" })) return;
 
     if (isFavourite) {
       setIsConfirmOpen(true);
@@ -221,6 +269,8 @@ const PropertyDetail = () => {
     property?._id && hasPropertyDocument
       ? `${import.meta.env.VITE_API_URI}properties/${property._id}/document`
       : "";
+  const statusLabel = getStatusLabel(property);
+  const shouldEmphasizeStatus = isEmphasizedAvailability(property, statusLabel);
 
   return (
     <section className="pt-6 pb-16 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 min-h-screen">
@@ -306,13 +356,11 @@ const PropertyDetail = () => {
             <div className="p-6 md:p-10">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <h1 className="text-2xl md:text-5xl font-bold text-blue-900 leading-snug">{property.headline || property.propertyOrSocietyName || "Property"}</h1>
-                {isLoggedIn ? (
-                  <FavouriteHeartButton
-                    isFavourite={isFavourite}
-                    disabled={togglingFavourite}
-                    onToggle={handleFavouriteToggle}
-                  />
-                ) : null}
+                <FavouriteHeartButton
+                  isFavourite={isFavourite}
+                  disabled={togglingFavourite}
+                  onToggle={handleFavouriteToggle}
+                />
               </div>
 
               <section className="mb-8">
@@ -336,7 +384,7 @@ const PropertyDetail = () => {
                   </div>
 
                   <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">BHK:</span>
+                    <span className="font-semibold text-blue-900 min-w-[160px]">Configuration:</span>
                     <span>{property.bhk || "-"}</span>
                   </div>
 
@@ -367,7 +415,11 @@ const PropertyDetail = () => {
 
                   <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
                     <span className="font-semibold text-blue-900 min-w-[160px]">Status:</span>
-                    <span>{property.status || "-"}</span>
+                    <span
+                      className={shouldEmphasizeStatus ? "text-red-700 font-bold italic" : ""}
+                    >
+                      {statusLabel}
+                    </span>
                   </div>
 
                   <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
@@ -396,7 +448,7 @@ const PropertyDetail = () => {
                     <LockedRow label="Property / Society Name" />
                     <LockedRow label="Floor" />
                     <LockedRow label="Full Address" />
-                    <LockedRow label="Bank Name" />
+                    <LockedRow label={property.type === "Distress" ? "Builder Name" : "Bank Name"} />
                     <LockedRow label="Contact Person" />
                     <LockedRow label="Contact No" />
                   </div>

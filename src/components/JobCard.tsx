@@ -54,7 +54,7 @@ const JobCard = ({
 
   return (
     <article className="relative grid md:grid-cols-1 gap-0 md:gap-4 items-stretch bg-white rounded-2xl shadow-lg border border-blue-100/50 overflow-hidden hover:-translate-y-0.5 transition-all">
-      {showFavourite ? (
+      {showFavourite !== false ? (
         <div className="absolute top-3 right-3 z-20">
           <FavouriteHeartButton
             isFavourite={Boolean(isFavourite)}

@@ -7,7 +7,13 @@ import ToastContainerComponent from "@/components/ToastContainerComponent";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { toast } from "react-toastify";
-import { fetchFavourites, getLoggedInEmail, toggleFavourite } from "@/lib/favourites";
+import {
+  FAVOURITE_COMPLETED_EVENT,
+  ensureAuthenticatedForFavourite,
+  fetchFavourites,
+  getLoggedInEmail,
+  toggleFavourite,
+} from "@/lib/favourites";
 
 interface JobItem {
   _id: string;
@@ -84,7 +90,25 @@ const JobDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!isLoggedIn || !job?._id) return;
+    const onFavouriteCompleted = (event: Event) => {
+      const detail = (event as CustomEvent<{ itemId?: string; itemType?: string }>).detail;
+      if (detail?.itemType !== "job" || !detail.itemId) return;
+      if (!job?._id || String(job._id) !== String(detail.itemId)) return;
+
+      setIsFavourite(true);
+    };
+
+    window.addEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    return () => {
+      window.removeEventListener(FAVOURITE_COMPLETED_EVENT, onFavouriteCompleted);
+    };
+  }, [job?._id]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !job?._id) {
+      setIsFavourite(false);
+      return;
+    }
 
     const loadFavourites = async () => {
       try {
@@ -119,7 +143,8 @@ const JobDetail = () => {
   };
 
   const handleFavouriteToggle = async () => {
-    if (!isLoggedIn || !job?._id || togglingFavourite) return;
+    if (!job?._id || togglingFavourite) return;
+    if (!ensureAuthenticatedForFavourite({ itemId: String(job._id), itemType: "job" })) return;
 
     if (isFavourite) {
       setIsConfirmOpen(true);
@@ -173,13 +198,11 @@ const JobDetail = () => {
             <div className="p-6 md:p-10">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <h1 className="text-2xl md:text-4xl font-bold text-blue-900">{job.title}</h1>
-                {isLoggedIn ? (
-                  <FavouriteHeartButton
-                    isFavourite={isFavourite}
-                    disabled={togglingFavourite}
-                    onToggle={handleFavouriteToggle}
-                  />
-                ) : null}
+                <FavouriteHeartButton
+                  isFavourite={isFavourite}
+                  disabled={togglingFavourite}
+                  onToggle={handleFavouriteToggle}
+                />
               </div>
 
               <div className="flex flex-wrap items-center gap-2 mb-6 text-xs">
