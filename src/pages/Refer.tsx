@@ -303,6 +303,52 @@ const Refer = () => {
             </Card>
           </div>
         </div>
+
+        {/* Refer & Earn Content */}
+        <Card className="p-6 md:p-8 mb-10 border-blue-100 bg-blue-50/40 animate-fade-in mt-10">
+          <h2 className="text-2xl md:text-3xl font-playfair font-bold text-blue-900 mb-4">
+            Refer & Earn with FinvestCorp
+          </h2>
+          <p className="text-finance-slate leading-relaxed mb-6">
+            Join FinvestCorp&apos;s Refer & Earn program and unlock exciting rewards by simply sharing opportunities with your network. We believe in growing together, and your referrals help expand a trusted financial ecosystem.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-xl font-semibold text-blue-900 mb-3">
+                Benefits of Becoming Our Partner
+              </h3>
+              <ul className="list-disc list-inside space-y-2 text-finance-slate">
+                <li>Earn attractive rewards for every successful referral</li>
+                <li>Build a passive income stream effortlessly</li>
+                <li>Strengthen your network with valuable financial solutions</li>
+                <li>Get exclusive access to partner-only offers and insights</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold text-blue-900 mb-3">How It Works</h3>
+              <ul className="list-disc list-inside space-y-2 text-finance-slate">
+                <li>Refer friends, family, or colleagues to FinvestCorp</li>
+                <li>
+                  Once they successfully register or complete eligible actions,
+                  you earn rewards
+                </li>
+                <li>The more you refer, the more you earn</li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="text-finance-slate leading-relaxed mt-6">
+            Every time you refer someone to FinvestCorp and they engage with our
+            services, you receive exclusive benefits and rewards as a token of
+            appreciation.
+          </p>
+
+          <p className="mt-4 font-semibold text-blue-900 text-lg">
+            Start referring today and grow with FinvestCorp!
+          </p>
+        </Card>
       </div>
     </section>
   );
