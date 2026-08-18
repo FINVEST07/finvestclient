@@ -170,7 +170,7 @@ const AdminBlogsMedia = () => {
       form.append("title", editTitle);
       form.append("content", normalizeQuillHtmlForStorage(editContent));
       if (editThumbnail) form.append("thumbnail", editThumbnail);
-      form.append("postingDateTime", editBlogPostingDateTime);
+      form.append("postingDateTime", editBlogPostingDateTime ? new Date(editBlogPostingDateTime).toISOString() : "");
 
       const res = await axios.put(
         `${import.meta.env.VITE_API_URI}blogs/${editingBlogId}`,
@@ -256,7 +256,7 @@ const AdminBlogsMedia = () => {
       if (editingMediaFile) {
         form.append("file", editingMediaFile);
       }
-      form.append("postingDateTime", editingMediaPostingDateTime);
+      form.append("postingDateTime", editingMediaPostingDateTime ? new Date(editingMediaPostingDateTime).toISOString() : "");
 
       const res = await axios.put(
         `${import.meta.env.VITE_API_URI}media/${editingMediaId}`,
@@ -301,7 +301,7 @@ const AdminBlogsMedia = () => {
       form.append("title", title);
       form.append("content", normalizeQuillHtmlForStorage(content));
       if (thumbnail) form.append("thumbnail", thumbnail);
-      form.append("postingDateTime", blogPostingDateTime);
+      form.append("postingDateTime", blogPostingDateTime ? new Date(blogPostingDateTime).toISOString() : "");
 
       const res = await axios.post(`${import.meta.env.VITE_API_URI}blogs`, form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -842,7 +842,7 @@ const AdminBlogsMedia = () => {
                     const form = new FormData();
                     form.append("file", mediaFile);
                     if (mediaLabel.trim()) form.append("label", mediaLabel.trim());
-                    form.append("postingDateTime", mediaPostingDateTime);
+                    form.append("postingDateTime", mediaPostingDateTime ? new Date(mediaPostingDateTime).toISOString() : "");
                     const res = await axios.post(`${import.meta.env.VITE_API_URI}media`, form, { headers: { "Content-Type": "multipart/form-data" } });
                     if (res.data?.status) {
                       toast.success(res.data?.message || "Media posted");

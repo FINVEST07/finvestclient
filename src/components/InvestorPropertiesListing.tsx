@@ -136,7 +136,7 @@ const InvestorPropertiesListing = ({
   type: "Auction" | "Distress" | "New" | "Resale";
   title: string;
 }) => {
-  type SortValue = "latest" | "price_high" | "price_low" | "inspection_date";
+  type SortValue = "latest" | "price_high" | "price_low" | "inspection_date" | "emd_date";
   type PossessionValue = "all" | "physical" | "symbolic" | "free hold";
 
   const [properties, setProperties] = useState<PropertyItem[]>([]);
@@ -385,6 +385,29 @@ const InvestorPropertiesListing = ({
       });
     }
 
+    if (selectedSort === "emd_date") {
+      const now = Date.now();
+      return items.sort((a, b) => {
+        const aTime = a.emdDate ? new Date(a.emdDate).getTime() : null;
+        const bTime = b.emdDate ? new Date(b.emdDate).getTime() : null;
+
+        if (aTime === null && bTime === null) return 0;
+        if (aTime === null) return 1;
+        if (bTime === null) return -1;
+
+        const aFuture = aTime >= now;
+        const bFuture = bTime >= now;
+
+        if (aFuture && bFuture) {
+          return aTime - bTime;
+        }
+        if (aFuture && !bFuture) return -1;
+        if (!aFuture && bFuture) return 1;
+
+        return bTime - aTime;
+      });
+    }
+
     // Default latest sort by createdAt (descending), with safe fallback.
     return items.sort((a, b) => {
       const aTime = new Date(a.createdAt || 0).getTime() || 0;
@@ -408,18 +431,21 @@ const InvestorPropertiesListing = ({
     setSelectedDistrict("all");
   };
 
+  const premiumSortValues = ["inspection_date", "emd_date"];
+
   const sortOptions = useMemo(() => {
     const options: FilterSelectOption[] = [
       { value: "latest", label: "Latest Posted" },
-      { value: "inspection_date", label: "Inspection Date", disabled: !hasProductAccess, premium: true },
+      { value: "inspection_date", label: "Inspection Date", premium: true },
+      { value: "emd_date", label: "EMD Date", premium: true },
       { value: "price_high", label: "Price: High to Low" },
       { value: "price_low", label: "Price: Low to High" },
     ];
     if (type !== "Auction") {
-      return options.filter((opt) => opt.value !== "inspection_date");
+      return options.filter((opt) => opt.value !== "inspection_date" && opt.value !== "emd_date");
     }
     return options;
-  }, [type, hasProductAccess]);
+  }, [type]);
 
   const possessionOptions: FilterSelectOption[] = [
     { value: "all", label: "All Possession" },
@@ -466,11 +492,12 @@ const InvestorPropertiesListing = ({
               value={selectedSort}
               options={sortOptions}
               onChange={(value) => {
-                if (value === "inspection_date" && !hasProductAccess) {
+                if (premiumSortValues.includes(value) && !hasProductAccess) {
                   if (!isLoggedIn) {
                     openLoginModal();
                   } else {
-                    toast.info("Inspection Date filter is only for Premium users");
+                    const label = value === "inspection_date" ? "Inspection Date" : "EMD Date";
+                    toast.info(`${label} filter is only for Premium users`);
                     navigate("/premium-plans");
                   }
                   return;

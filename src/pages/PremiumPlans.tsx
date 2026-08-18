@@ -26,9 +26,9 @@ interface ProductOption {
 const GST_RATE = 0.18;
 
 const plans: PlanVariant[] = [
-  { id: "1m", label: "1 Month", savings: "" },
-  { id: "3m", label: "3 Months", savings: "Save 20%" },
-  { id: "1y", label: "1 Year", savings: "Save 40%", popular: true },
+  { id: "1m", label: "Monthly", savings: "" },
+  { id: "3m", label: "Quarterly", savings: "" },
+  { id: "1y", label: "Yearly", savings: "", popular: true },
 ];
 
 const products: ProductOption[] = [
@@ -36,29 +36,29 @@ const products: ProductOption[] = [
     id: "auction",
     label: "Auction Property",
     description: "Access bank-seized & auction property details",
-    prices: { "1m": 2499, "3m": 4999, "1y": 14999 },
-    perMonth: { "1m": 2499, "3m": 1666, "1y": 1250 },
+    prices: { "1m": 4999, "3m": 9999, "1y": 29999 },
+    perMonth: { "1m": 4999, "3m": 3333, "1y": 2500 },
   },
   {
     id: "alternate-investment",
     label: "Alternate Investment",
     description: "Access distressed & alternate investment properties",
-    prices: { "1m": 2499, "3m": 4999, "1y": 14999 },
-    perMonth: { "1m": 2499, "3m": 1666, "1y": 1250 },
+    prices: { "1m": 4999, "3m": 9999, "1y": 29999 },
+    perMonth: { "1m": 4999, "3m": 3333, "1y": 2500 },
   },
   {
     id: "new-resale",
     label: "New / Resale Property",
     description: "Access new & resale property details",
-    prices: { "1m": 2499, "3m": 4999, "1y": 14999 },
-    perMonth: { "1m": 2499, "3m": 1666, "1y": 1250 },
+    prices: { "1m": 4999, "3m": 9999, "1y": 29999 },
+    perMonth: { "1m": 4999, "3m": 3333, "1y": 2500 },
   },
   {
     id: "all",
     label: "All Products",
     description: "Club all features — access everything",
-    prices: { "1m": 4999, "3m": 8999, "1y": 24999 },
-    perMonth: { "1m": 4999, "3m": 3000, "1y": 2083 },
+    prices: { "1m": 4999, "3m": 9999, "1y": 29999 },
+    perMonth: { "1m": 4999, "3m": 3333, "1y": 2500 },
   },
 ];
 
@@ -89,6 +89,21 @@ const PremiumPlans = () => {
   const perMonthPrice = selectedProductData?.perMonth[selectedPlan] || 0;
   const gstAmount = basePrice * GST_RATE;
   const totalPayable = basePrice - discountAmount + gstAmount;
+
+  const monthlyPrice = selectedProductData?.prices["1m"] || 0;
+  const planSavings: Record<string, string> = {};
+  for (const plan of plans) {
+    if (plan.id === "1m") { planSavings[plan.id] = ""; continue; }
+    const planPrice = selectedProductData?.prices[plan.id] || 0;
+    const months = plan.id === "3m" ? 3 : plan.id === "1y" ? 12 : 1;
+    const equivalentMonthly = monthlyPrice * months;
+    if (equivalentMonthly > 0 && planPrice < equivalentMonthly) {
+      const pct = Math.round(((equivalentMonthly - planPrice) / equivalentMonthly) * 100);
+      planSavings[plan.id] = `Save ${pct}%`;
+    } else {
+      planSavings[plan.id] = "";
+    }
+  }
 
   const loadPromoCodes = useCallback(async () => {
     try {
@@ -385,9 +400,9 @@ const PremiumPlans = () => {
                     >
                       <div className="flex flex-col items-center justify-between">
                         <span className="text-sm">{plan.label}</span>
-                        {plan.savings && (
+                        {planSavings[plan.id] && (
                           <span className={`block text-[10px] font-medium mt-0.5 ${selectedPlan === plan.id ? "text-finance-gold" : "text-emerald-600"}`}>
-                            {plan.savings}
+                            {planSavings[plan.id]}
                           </span>
                         )}
                       </div>
