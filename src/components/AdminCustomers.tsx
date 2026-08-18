@@ -2,6 +2,7 @@ import AdminSidebar from "./AdminSidebar";
 import { useState, useCallback, useEffect, useRef } from "react";
 import DataTable from "react-data-table-component";
 import axios from "axios";
+import { Crown, X, Search } from "lucide-react";
 
 // Error Boundary Component
 const ErrorBoundary = ({ children, fallback }) => {
@@ -12,13 +13,37 @@ const ErrorBoundary = ({ children, fallback }) => {
 };
 
 // Type definition for customer data
+interface Subscription {
+  planId: string;
+  planLabel: string;
+  amount: number;
+  status: string;
+  orderId: string;
+  paymentId: string;
+  activatedAt: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
 interface Customer {
   customer_id: string;
   fullName: string;
   mobile: string;
   email: string;
   createdAt: string;
+  premium?: boolean;
+  premiumPlan?: string | null;
+  premiumActivatedAt?: string | null;
+  premiumExpiresAt?: string | null;
+  subscription?: Subscription | null;
 }
+
+const PLAN_LABELS: Record<string, string> = {
+  "1m": "1 Month",
+  "3m": "3 Months",
+  "6m": "6 Months",
+  "1y": "1 Year",
+};
 
 const AdminCustomers = () => {
   const [customerList, setCustomerList] = useState<Customer[]>([]);
@@ -27,6 +52,8 @@ const AdminCustomers = () => {
   const [retryCount, setRetryCount] = useState<number>(0);
   const maxRetries = 3;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [searchText, setSearchText] = useState<string>("");
 
   const formatDate = (isoDate: string): string => {
     try {
@@ -92,6 +119,22 @@ const AdminCustomers = () => {
       name: "Email ID",
       selector: (row: Customer) => row.email || "N/A",
       width: "250px",
+    },
+    {
+      name: "Premium",
+      cell: (row: Customer) =>
+        row.premium ? (
+          <button
+            onClick={() => setSelectedCustomer(row)}
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-900 to-blue-800 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:from-blue-800 hover:to-blue-700 transition-all"
+          >
+            <Crown className="w-3.5 h-3.5 text-finance-gold" />
+            {PLAN_LABELS[row.premiumPlan || ""] || row.premiumPlan || "Active"}
+          </button>
+        ) : (
+          <span className="text-slate-400 text-xs font-medium">Free</span>
+        ),
+      width: "140px",
     },
   ];
 
@@ -210,6 +253,17 @@ const AdminCustomers = () => {
     };
   }, [loadData]);
 
+  const filteredCustomerList = customerList.filter((c) => {
+    if (!searchText.trim()) return true;
+    const q = searchText.toLowerCase().trim();
+    return (
+      (c.fullName || "").toLowerCase().includes(q) ||
+      (c.email || "").toLowerCase().includes(q) ||
+      (c.mobile || "").toLowerCase().includes(q) ||
+      String(c.customer_id || "").toLowerCase().includes(q)
+    );
+  });
+
   // Fallback UI
   const renderContent = () => {
     if (error) {
@@ -255,18 +309,30 @@ const AdminCustomers = () => {
     }
 
     return (
-      <DataTable
-        columns={columns}
-        data={customerList}
-        pagination
-        //@ts-expect-error err
-        customStyles={customStyles}
-        noDataComponent={
-          <div className="p-4 text-center text-gray-500">
-            No customers available
-          </div>
-        }
-      />
+      <div>
+        <div className="mb-4 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, email, mobile, or customer ID..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+          />
+        </div>
+        <DataTable
+          columns={columns}
+          data={filteredCustomerList}
+          pagination
+          //@ts-expect-error err
+          customStyles={customStyles}
+          noDataComponent={
+            <div className="p-4 text-center text-gray-500">
+              {searchText ? "No matching customers found" : "No customers available"}
+            </div>
+          }
+        />
+      </div>
     );
   };
 
@@ -283,6 +349,80 @@ const AdminCustomers = () => {
         <AdminSidebar />
         <div className="ml-[22%] pt-[10vh] px-[5%]">{renderContent()}</div>
       </div>
+
+      {selectedCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-900 to-blue-800 px-6 py-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Crown className="w-6 h-6 text-finance-gold" />
+                <div>
+                  <h3 className="text-lg font-bold">Premium Subscription</h3>
+                  <p className="text-blue-100 text-sm">{selectedCustomer.fullName || selectedCustomer.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Plan</p>
+                  <p className="text-sm font-semibold text-blue-900">
+                    {PLAN_LABELS[selectedCustomer.premiumPlan || ""] || selectedCustomer.premiumPlan || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Status</p>
+                  <p className="text-sm font-semibold">
+                    <span className="inline-flex items-center gap-1.5 text-emerald-600">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      {selectedCustomer.subscription?.status || "Active"}
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Activated On</p>
+                  <p className="text-sm text-slate-800">{formatDate(selectedCustomer.premiumActivatedAt || selectedCustomer.subscription?.activatedAt || "")}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Expires On</p>
+                  <p className="text-sm text-slate-800">{formatDate(selectedCustomer.premiumExpiresAt || selectedCustomer.subscription?.expiresAt || "")}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Amount Paid</p>
+                  <p className="text-sm font-semibold text-blue-900">
+                    ₹{(selectedCustomer.subscription?.amount || 0).toLocaleString("en-IN")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Payment ID</p>
+                  <p className="text-sm text-slate-800 break-all">{selectedCustomer.subscription?.paymentId || "N/A"}</p>
+                </div>
+              </div>
+
+              {selectedCustomer.subscription?.orderId && (
+                <div>
+                  <p className="text-xs text-slate-500 font-medium">Order ID</p>
+                  <p className="text-sm text-slate-800 break-all">{selectedCustomer.subscription.orderId}</p>
+                </div>
+              )}
+
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="w-full mt-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ErrorBoundary>
   );
 };

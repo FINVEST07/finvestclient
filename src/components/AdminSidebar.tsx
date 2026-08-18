@@ -165,6 +165,18 @@ const AdminSidebar = () => {
           <JobsIcon width={26} fill={"#D6B549"} />
           <span className="text-lg self-center text-[#D6B549]">Jobs</span>
         </div>
+
+        <div
+          className={`flex gap-3 cursor-pointer items-center ${
+            activeTab === "promocodes" ? "bg-slate-600 p-3 rounded-md" : ""
+          }`}
+          onClick={() => handleNavigation("/admin/promocodes", "promocodes")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width={26} className="self-center" fill="#D6B549">
+            <path d="M192 0C86 0 0 86 0 192S86 384 192 384s192-86 192-192S298 0 192 0zm0 352c-88.2 0-160-71.8-160-160S103.8 32 192 32s160 71.8 160 160-71.8 160-160 160zm-56-160c-13.3 0-24 10.7-24 24s10.7 24 24 24 24-10.7 24-24-10.7-24-24-24zm112-48c13.3 0 24-10.7 24-24s-10.7-24-24-24-24 10.7-24 24 10.7 24 24 24zM44 256L256 44l-22-22L22 234z"/>
+          </svg>
+          <span className="text-lg self-center text-[#D6B549]">Promo Codes</span>
+        </div>
         
         <div
           className={`flex gap-3 cursor-pointer items-center ${

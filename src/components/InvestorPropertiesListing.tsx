@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { ArrowLeft, ChevronDown, RotateCcw } from "lucide-react";
+import { ArrowLeft, ChevronDown, RotateCcw, Crown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import PropertyCard from "@/components/PropertyCard";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { toast } from "react-toastify";
+import { openLoginModal } from "@/lib/loginModal";
 import {
   FAVOURITE_COMPLETED_EVENT,
   ensureAuthenticatedForFavourite,
@@ -17,6 +19,8 @@ import {
 interface FilterSelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
+  premium?: boolean;
 }
 
 const FilterSelect = ({
@@ -32,26 +36,70 @@ const FilterSelect = ({
   isActive?: boolean;
   ariaLabel: string;
 }) => {
+  const [open, setOpen] = useState(false);
+  const selectedLabel =
+    options.find((o) => o.value === value)?.label || options[0]?.label || "";
+  const selectedOption = options.find((o) => o.value === value);
+
   return (
     <div className="relative">
-      <select
+      <button
+        type="button"
         aria-label={ariaLabel}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors ${
+        onClick={() => setOpen((prev) => !prev)}
+        className={`h-11 w-full flex items-center justify-between rounded-lg border bg-white pl-3 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors ${
           isActive ? "border-blue-400 bg-blue-50" : "border-blue-200"
         }`}
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-[18px] top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
-        aria-hidden="true"
-      />
+        <span className="flex items-center gap-1.5 truncate">
+          {selectedOption?.premium && (
+            <Crown className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+          )}
+          {selectedLabel}
+        </span>
+        <ChevronDown
+          className="pointer-events-none absolute right-[18px] top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+          aria-hidden="true"
+        />
+      </button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg max-h-60 overflow-auto">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                disabled={option.disabled}
+                onClick={() => {
+                  if (option.disabled) return;
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center gap-1.5 px-3 py-2 text-sm text-left transition-colors ${
+                  option.disabled
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : option.value === value
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {option.premium && (
+                  <Crown
+                    className={`h-3.5 w-3.5 flex-shrink-0 ${
+                      option.disabled ? "text-gray-400" : "text-amber-500"
+                    }`}
+                  />
+                )}
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -65,7 +113,7 @@ interface PropertyItem {
   headline: string;
   createdAt?: string;
   area: string;
-  type: "Auction" | "Distress";
+  type: "Auction" | "Distress" | "New" | "Resale";
   propertyType: string;
   bhk?: string;
   offerPrice?: number;
@@ -76,6 +124,8 @@ interface PropertyItem {
   status?: string;
   emdDate?: string;
   eoiDate?: string;
+  inspectionDateTime?: string;
+  postingDateTime?: string;
   photos?: PropertyPhoto[];
 }
 
@@ -83,10 +133,10 @@ const InvestorPropertiesListing = ({
   type,
   title,
 }: {
-  type: "Auction" | "Distress";
+  type: "Auction" | "Distress" | "New" | "Resale";
   title: string;
 }) => {
-  type SortValue = "latest" | "price_high" | "price_low";
+  type SortValue = "latest" | "price_high" | "price_low" | "inspection_date";
   type PossessionValue = "all" | "physical" | "symbolic" | "free hold";
 
   const [properties, setProperties] = useState<PropertyItem[]>([]);
@@ -95,11 +145,36 @@ const InvestorPropertiesListing = ({
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const [pendingRemovalId, setPendingRemovalId] = useState<string | null>(null);
   const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
+  const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [premiumProducts, setPremiumProducts] = useState<string[]>([]);
   const [selectedSort, setSelectedSort] = useState<SortValue>("latest");
+  const navigate = useNavigate();
   const [selectedPossession, setSelectedPossession] = useState<PossessionValue>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
   const isLoggedIn = Boolean(getLoggedInEmail());
+
+  useEffect(() => {
+    const email = getLoggedInEmail();
+    if (!email) {
+      setIsPremium(false);
+      return;
+    }
+    axios
+      .get(`${import.meta.env.VITE_API_URI}payments/premium-status`, {
+        headers: { "x-user-email": email },
+        withCredentials: true,
+      })
+      .then((res) => {
+        const products = res.data?.premiumProducts || [];
+        setPremiumProducts(products);
+        setIsPremium(Boolean(res.data?.premium));
+      })
+      .catch(() => {
+        setPremiumProducts([]);
+        setIsPremium(false);
+      });
+  }, [isLoggedIn]);
 
   const loadProperties = async () => {
     try {
@@ -219,6 +294,18 @@ const InvestorPropertiesListing = ({
     }
   };
 
+  const listingProduct = useMemo(() => {
+    if (type === "Auction") return "auction";
+    if (type === "Distress") return "alternate-investment";
+    if (type === "New" || type === "Resale") return "new-resale";
+    return "";
+  }, [type]);
+
+  const hasProductAccess = useMemo(() => {
+    if (!listingProduct) return isPremium;
+    return premiumProducts.some((p) => p === listingProduct || p === "all");
+  }, [premiumProducts, listingProduct, isPremium]);
+
   const pageDescription = useMemo(
     () => `${title} on FINVESTCORP with location, type, pricing, and complete details.`,
     [title]
@@ -244,10 +331,16 @@ const InvestorPropertiesListing = ({
     ).sort((a, b) => a.localeCompare(b));
   }, [properties]);
 
+  const isVisibleNow = (postingDateTime?: string) => {
+    if (!postingDateTime) return true;
+    const scheduled = new Date(postingDateTime).getTime();
+    return Number.isNaN(scheduled) || scheduled <= Date.now();
+  };
+
   const visibleProperties = useMemo(() => {
     const normalize = (value?: string) => String(value || "").trim().toLowerCase();
 
-    let items = [...properties];
+    let items = properties.filter((item) => isVisibleNow(item.postingDateTime));
 
     if (selectedPossession !== "all") {
       items = items.filter((item) => normalize(item.possession) === selectedPossession);
@@ -269,6 +362,29 @@ const InvestorPropertiesListing = ({
       return items.sort((a, b) => Number(a.offerPrice || 0) - Number(b.offerPrice || 0));
     }
 
+    if (selectedSort === "inspection_date") {
+      const now = Date.now();
+      return items.sort((a, b) => {
+        const aTime = a.inspectionDateTime ? new Date(a.inspectionDateTime).getTime() : null;
+        const bTime = b.inspectionDateTime ? new Date(b.inspectionDateTime).getTime() : null;
+
+        if (aTime === null && bTime === null) return 0;
+        if (aTime === null) return 1;
+        if (bTime === null) return -1;
+
+        const aFuture = aTime >= now;
+        const bFuture = bTime >= now;
+
+        if (aFuture && bFuture) {
+          return aTime - bTime;
+        }
+        if (aFuture && !bFuture) return -1;
+        if (!aFuture && bFuture) return 1;
+
+        return bTime - aTime;
+      });
+    }
+
     // Default latest sort by createdAt (descending), with safe fallback.
     return items.sort((a, b) => {
       const aTime = new Date(a.createdAt || 0).getTime() || 0;
@@ -277,6 +393,7 @@ const InvestorPropertiesListing = ({
     });
   }, [properties, selectedPossession, selectedLocation, selectedDistrict, selectedSort]);
 
+  const isSimpleType = type === "New" || type === "Resale";
   const listingLabel = type === "Distress" ? "alternate investment" : "auction";
   const isDefaultFilters =
     selectedSort === "latest" &&
@@ -291,11 +408,18 @@ const InvestorPropertiesListing = ({
     setSelectedDistrict("all");
   };
 
-  const sortOptions: FilterSelectOption[] = [
-    { value: "latest", label: "Latest" },
-    { value: "price_high", label: "Price: High to Low" },
-    { value: "price_low", label: "Price: Low to High" },
-  ];
+  const sortOptions = useMemo(() => {
+    const options: FilterSelectOption[] = [
+      { value: "latest", label: "Latest Posted" },
+      { value: "inspection_date", label: "Inspection Date", disabled: !hasProductAccess, premium: true },
+      { value: "price_high", label: "Price: High to Low" },
+      { value: "price_low", label: "Price: Low to High" },
+    ];
+    if (type !== "Auction") {
+      return options.filter((opt) => opt.value !== "inspection_date");
+    }
+    return options;
+  }, [type, hasProductAccess]);
 
   const possessionOptions: FilterSelectOption[] = [
     { value: "all", label: "All Possession" },
@@ -336,22 +460,35 @@ const InvestorPropertiesListing = ({
         </div>
 
         <div className="mb-6 md:mx-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${isSimpleType ? 4 : 5} gap-3`}>
             <FilterSelect
               ariaLabel="Sort properties"
               value={selectedSort}
               options={sortOptions}
-              onChange={(value) => setSelectedSort(value as SortValue)}
+              onChange={(value) => {
+                if (value === "inspection_date" && !hasProductAccess) {
+                  if (!isLoggedIn) {
+                    openLoginModal();
+                  } else {
+                    toast.info("Inspection Date filter is only for Premium users");
+                    navigate("/premium-plans");
+                  }
+                  return;
+                }
+                setSelectedSort(value as SortValue);
+              }}
               isActive={selectedSort !== "latest"}
             />
 
-            <FilterSelect
-              ariaLabel="Filter by possession"
-              value={selectedPossession}
-              options={possessionOptions}
-              onChange={(value) => setSelectedPossession(value as PossessionValue)}
-              isActive={selectedPossession !== "all"}
-            />
+            {!isSimpleType && (
+              <FilterSelect
+                ariaLabel="Filter by possession"
+                value={selectedPossession}
+                options={possessionOptions}
+                onChange={(value) => setSelectedPossession(value as PossessionValue)}
+                isActive={selectedPossession !== "all"}
+              />
+            )}
 
             <FilterSelect
               ariaLabel="Filter by location"

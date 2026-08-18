@@ -39,7 +39,13 @@ const Jobs = () => {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_URI}jobs`);
-      setJobs(res.data?.payload || []);
+      const all = res.data?.payload || [];
+      const now = Date.now();
+      setJobs(all.filter((j: any) => {
+        if (!j.postingDateTime) return true;
+        const scheduled = new Date(j.postingDateTime).getTime();
+        return Number.isNaN(scheduled) || scheduled <= now;
+      }));
     } catch (error) {
       setJobs([]);
     } finally {

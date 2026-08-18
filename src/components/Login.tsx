@@ -3,10 +3,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import ToastContainerComponent from "./ToastContainerComponent";
 import Cookie from "js-cookie";
-import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
-import { OPEN_LOGIN_MODAL_EVENT } from "@/lib/loginModal";
+import { OPEN_LOGIN_MODAL_EVENT, wasModalOpenedViaEvent, resetModalOpenedViaEvent } from "@/lib/loginModal";
 import { completePendingFavouriteAction } from "@/lib/favourites";
 
 const Login = ({ setLoginOpen, loginopen }) => {
@@ -48,8 +47,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
 
   const cookie = Cookie.get("finvest");
   const cookieemail = cookie ? cookie.split("$")[0] : "";
-
-  const navigate = useNavigate();
 
   const CloseIcon = () => {
     return (
@@ -157,8 +154,21 @@ const Login = ({ setLoginOpen, loginopen }) => {
       setLoginTimer(120);
 
       toast.success(sendOtpResponse.data.message);
-    } catch (error) {
-      toast.error("Something Went Wrong");
+    } catch (error: any) {
+      const apiMessage = String(error?.response?.data?.message || "").trim();
+      const lower = apiMessage.toLowerCase();
+
+      if (lower.includes("no user") || lower.includes("no account")) {
+        toast.error("No account found with this email. Please register");
+        return;
+      }
+
+      if (apiMessage) {
+        toast.error(apiMessage);
+        return;
+      }
+
+      toast.error("Something went wrong");
     }
   };
 
@@ -258,7 +268,10 @@ const Login = ({ setLoginOpen, loginopen }) => {
         if (pendingResult.completed) {
           return;
         }
-        navigate("/customerdashboard");
+        if (wasModalOpenedViaEvent()) {
+          resetModalOpenedViaEvent();
+          return;
+        }
       } else {
         const loginresponse = await axios.post(
           `${import.meta.env.VITE_API_URI}loginwithpassword`,
@@ -287,7 +300,10 @@ const Login = ({ setLoginOpen, loginopen }) => {
         if (pendingResult.completed) {
           return;
         }
-        navigate("/customerdashboard");
+        if (wasModalOpenedViaEvent()) {
+          resetModalOpenedViaEvent();
+          return;
+        }
       }
     } catch (error) {
       if (error.response?.data?.status === false) {
@@ -379,7 +395,10 @@ const Login = ({ setLoginOpen, loginopen }) => {
       if (pendingResult.completed) {
         return;
       }
-      navigate("/customerdashboard");
+      if (wasModalOpenedViaEvent()) {
+        resetModalOpenedViaEvent();
+        return;
+      }
     } catch (error) {
       setStep("form");
 
@@ -397,7 +416,7 @@ const Login = ({ setLoginOpen, loginopen }) => {
     <>
       <ToastContainerComponent />
       {!cookieemail && loginopen && (
-        <div className="fixed z-50 inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed z-[10000] inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             {step === "form" ? (
               <>

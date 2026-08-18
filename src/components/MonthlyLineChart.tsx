@@ -15,7 +15,7 @@ import { useState, useCallback, useEffect } from "react";
 const MonthlyLineChart = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
-  const [monthsFilter, setMonthsFilter] = useState(12);
+  const monthsFilter = 24;
 
   const loadData = useCallback(async () => {
     try {
@@ -36,7 +36,7 @@ const MonthlyLineChart = () => {
     } finally {
       setLoading(false);
     }
-  }, [monthsFilter]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -44,17 +44,6 @@ const MonthlyLineChart = () => {
 
   return (
     <div style={{ width: "100%", height: 400 }}>
-      <div className="flex justify-end mb-4 px-4">
-        <select
-          value={monthsFilter}
-          onChange={(e) => setMonthsFilter(Number(e.target.value))}
-          className="bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value={12}>This Year</option>
-          <option value={24}>Previous Year</option>
-         
-        </select>
-      </div>
       {loading && (
         <div className="text-white text-center py-8">Loading...</div>
       )}
@@ -64,7 +53,15 @@ const MonthlyLineChart = () => {
           margin={{ top: 30, right: 30, left: 0, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
+          <XAxis
+            dataKey="month"
+            interval={0}
+            minTickGap={0}
+            tick={{ fontSize: 10 }}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+          />
           <YAxis />
           <Tooltip />
           <Legend />

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, Crown, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
@@ -14,6 +14,7 @@ import {
   getLoggedInEmail,
   toggleFavourite,
 } from "@/lib/favourites";
+import { openLoginModal } from "@/lib/loginModal";
 
 interface PropertyPhoto {
   url: string;
@@ -37,7 +38,7 @@ interface PropertyItem {
   headline: string;
   propertyOrSocietyName: string;
   area: string;
-  type: "Auction" | "Distress";
+  type: "Auction" | "Distress" | "New" | "Resale";
   bhk: string;
   floor: string;
   propertyType: string;
@@ -54,6 +55,8 @@ interface PropertyItem {
   bankName?: string;
   contactPerson?: string;
   contactNumber?: string;
+  inspectionDateTime?: string;
+  highlights?: string;
   pdfDocument?: {
     url?: string;
     original_filename?: string;
@@ -64,6 +67,8 @@ interface PropertyItem {
 const listingTypeLabel: Record<PropertyItem["type"], string> = {
   Auction: "Auction",
   Distress: "Alternate Investment",
+  New: "New / Resale",
+  Resale: "New / Resale",
 };
 
 const formatCurrency = (value?: number) =>
@@ -104,7 +109,7 @@ const getStatusLabel = (property: PropertyItem | null) => {
     property?.type === "Distress" &&
     (normalizedStatus === "sold out" || normalizedStatus === "soldout")
   ) {
-    return "Full Field";
+    return "Fulfilled";
   }
 
   return rawStatus || "-";
@@ -115,7 +120,7 @@ const isEmphasizedAvailability = (property: PropertyItem | null, statusLabel: st
 
   return (
     (property?.type === "Auction" && normalizedStatus === "sold out") ||
-    (property?.type === "Distress" && normalizedStatus === "full field")
+    (property?.type === "Distress" && normalizedStatus === "fulfilled")
   );
 };
 
@@ -129,8 +134,33 @@ const LockedRow = ({ label }: { label: string }) => (
   </div>
 );
 
+const formatDisplayValue = (label: string, value: string) => {
+  if (!value) return "-";
+  if (label.toLowerCase().includes("date") || label.toLowerCase().includes("time")) {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  }
+  return value;
+};
+
+const UnlockedRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="rounded-xl bg-white px-5 py-4 border border-blue-100 flex items-center justify-between gap-2">
+    <span className="font-semibold text-blue-900">{label}</span>
+    <span className="text-slate-800 text-sm text-right">{formatDisplayValue(label, value)}</span>
+  </div>
+);
+
 const PropertyDetail = () => {
   const { propertyId, type } = useParams();
+  const navigate = useNavigate();
   const [property, setProperty] = useState<PropertyItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadedImageKeys, setLoadedImageKeys] = useState<Set<string>>(new Set());
@@ -138,7 +168,46 @@ const PropertyDetail = () => {
   const [togglingFavourite, setTogglingFavourite] = useState<boolean>(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
   const [confirmingRemoval, setConfirmingRemoval] = useState<boolean>(false);
+  const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [premiumProducts, setPremiumProducts] = useState<string[]>([]);
+  const [docLoading, setDocLoading] = useState<boolean>(false);
+  const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const isLoggedIn = Boolean(getLoggedInEmail());
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (!property?.photos) return;
+    setCurrentIndex((i) => (i + 1) % property.photos!.length);
+  };
+
+  const handlePrev = () => {
+    if (!property?.photos) return;
+    setCurrentIndex((i) => (i - 1 + property.photos!.length) % property.photos!.length);
+  };
 
   const loadProperty = async () => {
     if (!propertyId) return;
@@ -157,6 +226,28 @@ const PropertyDetail = () => {
   useEffect(() => {
     loadProperty();
   }, [propertyId]);
+
+  useEffect(() => {
+    const email = getLoggedInEmail();
+    if (!email) {
+      setIsPremium(false);
+      return;
+    }
+    axios
+      .get(`${import.meta.env.VITE_API_URI}payments/premium-status`, {
+        headers: { "x-user-email": email },
+        withCredentials: true,
+      })
+      .then((res) => {
+        const products = res.data?.premiumProducts || [];
+        setPremiumProducts(products);
+        setIsPremium(Boolean(res.data?.premium));
+      })
+      .catch(() => {
+        setPremiumProducts([]);
+        setIsPremium(false);
+      });
+  }, [isLoggedIn]);
 
   useEffect(() => {
     setLoadedImageKeys(new Set());
@@ -239,6 +330,17 @@ const PropertyDetail = () => {
     }
   };
 
+  useEffect(() => {
+    if (!lightboxOpen || !property?.photos?.length) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowRight") handleNext();
+      if (e.key === "ArrowLeft") handlePrev();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxOpen, property?.photos?.length]);
+
   const normalizedType = (type || "").toLowerCase();
   const isAuctionPath = normalizedType === "auction";
   const listingTitle = isAuctionPath ? "Auction Properties" : "Alternate Investment";
@@ -269,6 +371,26 @@ const PropertyDetail = () => {
     property?._id && hasPropertyDocument
       ? `${import.meta.env.VITE_API_URI}properties/${property._id}/document`
       : "";
+
+  const propertyProduct = useMemo(() => {
+    if (!property) return "";
+    if (property.type === "Auction") return "auction";
+    if (property.type === "Distress") return "alternate-investment";
+    if (property.type === "New" || property.type === "Resale") return "new-resale";
+    return "";
+  }, [property]);
+
+  const hasProductAccess = useMemo(() => {
+    if (!propertyProduct) return isPremium;
+    return premiumProducts.some((p) => p === propertyProduct || p === "all");
+  }, [premiumProducts, propertyProduct, isPremium]);
+
+  useEffect(() => {
+    if (hasProductAccess && propertyDocumentUrl) {
+      setDocLoading(true);
+    }
+  }, [hasProductAccess, propertyDocumentUrl]);
+
   const statusLabel = getStatusLabel(property);
   const shouldEmphasizeStatus = isEmphasizedAvailability(property, statusLabel);
 
@@ -313,9 +435,13 @@ const PropertyDetail = () => {
                     const isLoaded = loadedImageKeys.has(imageKey);
 
                     return (
-                      <div
+                      <button
                         key={imageKey}
-                        className="group aspect-square rounded-[10px] overflow-hidden border border-blue-100 bg-slate-100 relative flex items-center justify-center"
+                        onClick={() => {
+                          setCurrentIndex(idx);
+                          setLightboxOpen(true);
+                        }}
+                        className="group aspect-square rounded-[10px] overflow-hidden border border-blue-100 bg-slate-100 relative flex items-center justify-center cursor-zoom-in"
                       >
                         {!isLoaded ? (
                           <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100" />
@@ -342,7 +468,7 @@ const PropertyDetail = () => {
                             });
                           }}
                         />
-                      </div>
+                      </button>
                     );
                   })
                 ) : (
@@ -389,12 +515,12 @@ const PropertyDetail = () => {
                   </div>
 
                   <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Offer Price:</span>
+                    <span className="font-semibold text-blue-900 min-w-[160px]">{property.type === "Distress" ? "Fund Required:" : "Offer Price:"}</span>
                     <span>{formatCurrency(property.offerPrice)}</span>
                   </div>
 
                   <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Est. Market Value:</span>
+                    <span className="font-semibold text-blue-900 min-w-[160px]">{property.type === "Distress" ? "Collateral Value:" : "Est. Market Value:"}</span>
                     <span>{formatCurrency(property.estimatedMarketValue)}</span>
                   </div>
 
@@ -408,10 +534,12 @@ const PropertyDetail = () => {
                     <span>{property.district || "-"}</span>
                   </div>
 
-                  <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
-                    <span className="font-semibold text-blue-900 min-w-[160px]">Possession:</span>
-                    <span>{property.possession || "-"}</span>
-                  </div>
+                  {!(property.type === "New" || property.type === "Resale") && (
+                    <div className="rounded-xl bg-gradient-to-r from-blue-100/70 to-blue-50 px-5 py-4 flex items-center gap-3 border border-blue-200">
+                      <span className="font-semibold text-blue-900 min-w-[160px]">Possession:</span>
+                      <span>{property.possession || "-"}</span>
+                    </div>
+                  )}
 
                   <div className="rounded-xl bg-white px-5 py-4 flex items-center gap-3 border border-blue-100">
                     <span className="font-semibold text-blue-900 min-w-[160px]">Status:</span>
@@ -437,35 +565,116 @@ const PropertyDetail = () => {
                     <span>{derivePostedDate(property)}</span>
                   </div>
                 </div>
+
+                {property.highlights && property.highlights.trim() ? (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-bold text-blue-900 mb-3">Highlights</h3>
+                    <ul className="space-y-2">
+                      {property.highlights
+                        .split("\n")
+                        .map((line) => line.trim())
+                        .filter(Boolean)
+                        .map((line, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-slate-800">
+                            <span className="text-blue-600 font-bold mt-0.5">•</span>
+                            <span>{line}</span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ) : null}
+
                 <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
-                  <h3 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
-                    <Lock className="w-5 h-5" /> Locked Information
-                  </h3>
-                  <p className="text-sm text-slate-600 mb-4">Unlock full property details after enquiry</p>
+                  <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+                    <h3 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+                      {hasProductAccess ? <Crown className="w-5 h-5 text-finance-gold" /> : <Lock className="w-5 h-5" />}
+                      {hasProductAccess ? "Premium Information" : "Locked Information"}
+                    </h3>
+                    {!hasProductAccess && (
+                      <button
+                        onClick={() => {
+                          if (getLoggedInEmail()) {
+                            navigate("/premium-plans");
+                          } else {
+                            openLoginModal();
+                          }
+                        }}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-900 to-blue-800 text-white px-5 py-2.5 rounded-lg font-semibold hover:from-blue-800 hover:to-blue-700 transition-all shadow-md hover:shadow-lg"
+                      >
+                        <Crown className="w-5 h-5" />
+                        Get Premium to Unlock
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-600 mb-4">
+                    {hasProductAccess ? "Full property details unlocked with your premium subscription" : "Unlock full property details after enquiry"}
+                  </p>
 
                   <div className="grid md:grid-cols-2 gap-4">
-                    <LockedRow label="Flat No" />
-                    <LockedRow label="Property / Society Name" />
-                    <LockedRow label="Floor" />
-                    <LockedRow label="Full Address" />
-                    <LockedRow label={property.type === "Distress" ? "Builder Name" : "Bank Name"} />
-                    <LockedRow label="Contact Person" />
-                    <LockedRow label="Contact No" />
+                    {hasProductAccess ? (
+                      <>
+                        <UnlockedRow label="Flat / Shop / Unit / Gala / Plot No" value={property.flatNo || "-"} />
+                        <UnlockedRow label="Property / Society Name" value={property.propertyOrSocietyName || "-"} />
+                        <UnlockedRow label="Floor" value={property.floor || "-"} />
+                        <UnlockedRow label="Full Address" value={property.fullAddress || "-"} />
+                        <UnlockedRow label={property.type === "Distress" ? "Builder Name" : "Bank Name"} value={property.bankName || "-"} />
+                        <UnlockedRow label={property.type === "New" || property.type === "Resale" ? "Contact Type" : "Contact Person"} value={property.contactPerson || "-"} />
+                        <UnlockedRow label="Contact No" value={property.contactNumber || "-"} />
+                        <UnlockedRow label="Inspection Date & Time" value={property.inspectionDateTime || "-"} />
+                      </>
+                    ) : (
+                      <>
+                        <LockedRow label="Flat / Shop / Unit / Gala / Plot No" />
+                        <LockedRow label="Property / Society Name" />
+                        <LockedRow label="Floor" />
+                        <LockedRow label="Full Address" />
+                        <LockedRow label={property.type === "Distress" ? "Builder Name" : "Bank Name"} />
+                        <LockedRow label={property.type === "New" || property.type === "Resale" ? "Contact Type" : "Contact Person"} />
+                        <LockedRow label="Contact No" />
+                        <LockedRow label="Inspection Date & Time" />
+                      </>
+                    )}
                   </div>
                 </div>
 
                 {propertyDocumentUrl ? (
                   <div className="mt-8 rounded-2xl border border-blue-200 bg-white p-5">
                     <h3 className="text-xl font-bold text-blue-900 mb-4">Property Document</h3>
-                    <div className="w-full max-w-[250px] h-[250px] relative rounded-xl overflow-hidden bg-[#f5f5f5] border border-blue-200">
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500">
-                        <Lock className="w-10 h-10" />
-                        <span className="text-xs font-medium">Document is locked</span>
+                    {hasProductAccess ? (
+                      <div className="w-full">
+                        <div className="relative w-full h-[500px] rounded-xl border border-blue-200 overflow-hidden">
+                          {docLoading && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-50 z-10">
+                              <Loader2 className="w-8 h-8 animate-spin text-blue-900" />
+                              <span className="text-sm text-slate-600">Loading document...</span>
+                            </div>
+                          )}
+                          <iframe
+                            src={propertyDocumentUrl}
+                            title="Property Document"
+                            className="w-full h-full"
+                            onLoad={() => setDocLoading(false)}
+                          />
+                        </div>
+                        <a
+                          href={propertyDocumentUrl}
+                          download
+                          className="inline-flex items-center gap-2 mt-3 text-blue-900 font-medium hover:underline"
+                        >
+                          Download Document
+                        </a>
                       </div>
-                      <div className="absolute bottom-0 w-full bg-black/60 text-white text-center px-2 py-2 text-sm">
-                        Unlock via enquiry
+                    ) : (
+                      <div className="w-full max-w-[250px] h-[250px] relative rounded-xl overflow-hidden bg-[#f5f5f5] border border-blue-200">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-500">
+                          <Lock className="w-10 h-10" />
+                          <span className="text-xs font-medium">Document is locked</span>
+                        </div>
+                        <div className="absolute bottom-0 w-full bg-black/60 text-white text-center px-2 py-2 text-sm">
+                          Unlock via enquiry
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ) : null}
 
@@ -496,6 +705,61 @@ const PropertyDetail = () => {
         }}
         onConfirm={handleConfirmRemoval}
       />
+
+      {lightboxOpen && property?.photos && property.photos.length > 0 && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 touch-none"
+          onClick={() => setLightboxOpen(false)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          <button
+            aria-label="Close"
+            className="absolute top-6 right-6 text-white/70 hover:text-white text-3xl z-[110]"
+            onClick={() => setLightboxOpen(false)}
+          >
+            ✕
+          </button>
+
+          <button
+            aria-label="Previous"
+            className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-4 transition-colors z-[110]"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
+          >
+            <span className="text-5xl font-light">‹</span>
+          </button>
+
+          <div
+            className="relative max-w-full max-h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getPhotoUrl(property.photos[currentIndex])}
+              alt="property full view"
+              className="max-w-[95vw] max-h-[90vh] object-contain rounded shadow-2xl transition-all duration-300"
+            />
+          </div>
+
+          <button
+            aria-label="Next"
+            className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-4 transition-colors z-[110]"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
+          >
+            <span className="text-5xl font-light">›</span>
+          </button>
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium">
+            {currentIndex + 1} / {property.photos.length}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

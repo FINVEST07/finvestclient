@@ -8,11 +8,26 @@ import { Share2 } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
+const formatDateTimeForInput = (iso: string | undefined) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const AdminBlogsMedia = () => {
   const [adminRank, setAdminRank] = useState<number | null>(null);
   const [email, setEmail] = useState<string | null>(null);
 
   const [blogs, setBlogs] = useState<any[]>([]);
+  const [blogSearch, setBlogSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [isPostOpen, setIsPostOpen] = useState<boolean>(false);
   const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
@@ -27,6 +42,8 @@ const AdminBlogsMedia = () => {
   const [editContent, setEditContent] = useState<string>("");
   const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
   const [editSubmitting, setEditSubmitting] = useState<boolean>(false);
+  const [blogPostingDateTime, setBlogPostingDateTime] = useState<string>("");
+  const [editBlogPostingDateTime, setEditBlogPostingDateTime] = useState<string>("");
 
   // media state
   const [media, setMedia] = useState<any[]>([]);
@@ -41,6 +58,18 @@ const AdminBlogsMedia = () => {
   const [editingMediaLabel, setEditingMediaLabel] = useState<string>("");
   const [editingMediaFile, setEditingMediaFile] = useState<File | null>(null);
   const [mediaEditSubmitting, setMediaEditSubmitting] = useState<boolean>(false);
+  const [mediaPostingDateTime, setMediaPostingDateTime] = useState<string>("");
+  const [editingMediaPostingDateTime, setEditingMediaPostingDateTime] = useState<string>("");
+
+  const nowStr = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }, []);
 
   const quillModules = {
     toolbar: [
@@ -141,6 +170,7 @@ const AdminBlogsMedia = () => {
       form.append("title", editTitle);
       form.append("content", normalizeQuillHtmlForStorage(editContent));
       if (editThumbnail) form.append("thumbnail", editThumbnail);
+      form.append("postingDateTime", editBlogPostingDateTime);
 
       const res = await axios.put(
         `${import.meta.env.VITE_API_URI}blogs/${editingBlogId}`,
@@ -155,6 +185,7 @@ const AdminBlogsMedia = () => {
         setEditTitle("");
         setEditContent("");
         setEditThumbnail(null);
+        setEditBlogPostingDateTime("");
         loadBlogs();
       } else {
         toast.error(res.data?.message || "Failed to update blog");
@@ -194,6 +225,7 @@ const AdminBlogsMedia = () => {
     setEditingMediaLabel("");
     setEditingMediaFile(null);
     setMediaEditSubmitting(false);
+    setEditingMediaPostingDateTime("");
   };
 
   const openMediaEdit = (item: any) => {
@@ -201,6 +233,7 @@ const AdminBlogsMedia = () => {
     setEditingMediaUrl(String(item?.url || ""));
     setEditingMediaLabel(String(item?.label || item?.text || ""));
     setEditingMediaFile(null);
+    setEditingMediaPostingDateTime(formatDateTimeForInput(item?.postingDateTime));
     setIsMediaEditOpen(true);
   };
 
@@ -223,6 +256,7 @@ const AdminBlogsMedia = () => {
       if (editingMediaFile) {
         form.append("file", editingMediaFile);
       }
+      form.append("postingDateTime", editingMediaPostingDateTime);
 
       const res = await axios.put(
         `${import.meta.env.VITE_API_URI}media/${editingMediaId}`,
@@ -267,6 +301,7 @@ const AdminBlogsMedia = () => {
       form.append("title", title);
       form.append("content", normalizeQuillHtmlForStorage(content));
       if (thumbnail) form.append("thumbnail", thumbnail);
+      form.append("postingDateTime", blogPostingDateTime);
 
       const res = await axios.post(`${import.meta.env.VITE_API_URI}blogs`, form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -278,6 +313,7 @@ const AdminBlogsMedia = () => {
         setTitle("");
         setContent("");
         setThumbnail(null);
+        setBlogPostingDateTime("");
         loadBlogs();
       } else {
         toast.error(res.data?.message || "Failed to post blog");
@@ -346,6 +382,7 @@ const AdminBlogsMedia = () => {
                 setEditTitle(row?.title || "");
                 setEditContent(row?.content || "");
                 setEditThumbnail(null);
+                setEditBlogPostingDateTime(formatDateTimeForInput(row?.postingDateTime));
                 setIsEditOpen(true);
               }}
               className="px-3 py-1 bg-blue-600 text-white rounded"
@@ -426,12 +463,21 @@ const AdminBlogsMedia = () => {
           <section className="bg-slate-900/50 rounded-lg border border-slate-700 p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <h2 className="text-white text-2xl font-semibold">Blogs</h2>
-              <button
-                onClick={() => setIsPostOpen(true)}
-                className="px-4 py-2 bg-[#D6B549] text-slate-900 font-medium rounded-md hover:brightness-95"
-              >
-                Post Blog
-              </button>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Search blogs..."
+                  value={blogSearch}
+                  onChange={(e) => setBlogSearch(e.target.value)}
+                  className="w-96 bg-slate-800 border border-slate-700 text-white rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#D6B549] placeholder:text-slate-500"
+                />
+                <button
+                  onClick={() => setIsPostOpen(true)}
+                  className="px-4 py-2 bg-[#D6B549] text-slate-900 font-medium rounded-md hover:brightness-95"
+                >
+                  Post Blog
+                </button>
+              </div>
             </div>
 
             <div className="mt-5">
@@ -442,7 +488,13 @@ const AdminBlogsMedia = () => {
               ) : (
                 <DataTable
                   columns={columns as any}
-                  data={blogs}
+                  data={blogs.filter((blog) => {
+                    const q = blogSearch.toLowerCase();
+                    return (
+                      blog?.title?.toLowerCase().includes(q) ||
+                      blog?.content?.toLowerCase().includes(q)
+                    );
+                  })}
                   pagination
                   customStyles={customStyles}
                   noDataComponent={
@@ -579,14 +631,27 @@ const AdminBlogsMedia = () => {
                   .admin-blog-quill-post .ql-tooltip input { width: 220px; max-width: 60vw; }
                 `}</style>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Thumbnail</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setThumbnail(e.target.files?.[0] || null)}
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Thumbnail</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setThumbnail(e.target.files?.[0] || null)}
+                    className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Posting Date &amp; Time</label>
+                  <input
+                    type="datetime-local"
+                    value={blogPostingDateTime}
+                    onChange={(e) => setBlogPostingDateTime(e.target.value)}
+                    className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                    min={nowStr}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Leave empty to post immediately. If set, the blog will be visible only after this date &amp; time.</p>
+                </div>
               </div>
             </div>
 
@@ -654,14 +719,27 @@ const AdminBlogsMedia = () => {
                   .admin-blog-quill-edit .ql-tooltip input { width: 220px; max-width: 60vw; }
                 `}</style>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Replace Thumbnail (optional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEditThumbnail(e.target.files?.[0] || null)}
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Replace Thumbnail (optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditThumbnail(e.target.files?.[0] || null)}
+                    className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Posting Date &amp; Time</label>
+                  <input
+                    type="datetime-local"
+                    value={editBlogPostingDateTime}
+                    onChange={(e) => setEditBlogPostingDateTime(e.target.value)}
+                    className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                    min={nowStr}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Leave empty to post immediately. If set, the blog will be visible only after this date &amp; time.</p>
+                </div>
               </div>
             </div>
 
@@ -742,6 +820,17 @@ const AdminBlogsMedia = () => {
                   )}
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Posting Date &amp; Time</label>
+                <input
+                  type="datetime-local"
+                  value={mediaPostingDateTime}
+                  onChange={(e) => setMediaPostingDateTime(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                  min={nowStr}
+                />
+                <p className="text-xs text-slate-500 mt-1">Leave empty to post immediately. If set, the media will be visible only after this date &amp; time.</p>
+              </div>
             </div>
             <div className="mt-6 flex items-center justify-end gap-3">
               <button onClick={() => setIsMediaOpen(false)} className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">Cancel</button>
@@ -753,12 +842,14 @@ const AdminBlogsMedia = () => {
                     const form = new FormData();
                     form.append("file", mediaFile);
                     if (mediaLabel.trim()) form.append("label", mediaLabel.trim());
+                    form.append("postingDateTime", mediaPostingDateTime);
                     const res = await axios.post(`${import.meta.env.VITE_API_URI}media`, form, { headers: { "Content-Type": "multipart/form-data" } });
                     if (res.data?.status) {
                       toast.success(res.data?.message || "Media posted");
                       setIsMediaOpen(false);
                       setMediaFile(null);
                       setMediaLabel("");
+                      setMediaPostingDateTime("");
                       loadMedia();
                     } else {
                       toast.error(res.data?.message || "Failed to upload media");
@@ -841,6 +932,17 @@ const AdminBlogsMedia = () => {
                   onChange={(e) => setEditingMediaFile(e.target.files?.[0] || null)}
                   className="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Posting Date &amp; Time</label>
+                <input
+                  type="datetime-local"
+                  value={editingMediaPostingDateTime}
+                  onChange={(e) => setEditingMediaPostingDateTime(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                  min={nowStr}
+                />
+                <p className="text-xs text-slate-500 mt-1">Leave empty to post immediately. If set, the media will be visible only after this date &amp; time.</p>
               </div>
             </div>
 

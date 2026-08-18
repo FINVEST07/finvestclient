@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 
 export type PropertyTypeOption =
   | "Flat"
@@ -9,9 +10,12 @@ export type PropertyTypeOption =
   | "Studio"
   | "Duplex"
   | "Plot"
-  | "Commercial";
+  | "Commercial"
+  | "Shop"
+  | "Unit"
+  | "Gala";
 
-export type PropertyListingType = "Auction" | "Distress";
+export type PropertyListingType = "Auction" | "Distress" | "New" | "Resale";
 export type PossessionType = "Physical" | "Symbolic" | "Free Hold";
 export type PropertyStatusType = "Available" | "Sold Out";
 
@@ -26,17 +30,21 @@ export interface PropertyRecord {
   propertyType: PropertyTypeOption;
   offerPrice: number;
   estimatedMarketValue: number;
+  price: number;
   location: string;
   district: string;
   possession: PossessionType;
   status: PropertyStatusType;
   emdDate?: string;
   eoiDate?: string;
+  inspectionDateTime?: string;
+  postingDateTime?: string;
   flatNo: string;
   fullAddress: string;
   bankName: string;
   contactPerson: string;
   contactNumber: string;
+  highlights: string;
   photos: string[];
   createdAt: string;
 }
@@ -48,12 +56,15 @@ export interface PropertyFormPayload {
   bhk: string;
   offerPrice: number;
   estimatedMarketValue: number;
+  price: number;
   location: string;
   district: string;
   possession: PossessionType;
   status: PropertyStatusType;
   emdDate: string;
   eoiDate: string;
+  inspectionDateTime: string;
+  postingDateTime: string;
 
   flatNo: string;
   propertyOrSocietyName: string;
@@ -64,6 +75,7 @@ export interface PropertyFormPayload {
   contactNumber: string;
 
   propertyType: PropertyTypeOption;
+  highlights: string;
   photos: File[];
   pdfDocument: File | null;
   deletedImages: string[];
@@ -89,18 +101,22 @@ export interface PropertyFormInitialValues {
   bhk: string;
   offerPrice: string;
   estimatedMarketValue: string;
+  price: string;
   location: string;
   district: string;
   possession: PossessionType | "";
   status: PropertyStatusType | "";
   emdDate: string;
   eoiDate: string;
+  inspectionDateTime: string;
+  postingDateTime: string;
   flatNo: string;
   floor: string;
   fullAddress: string;
   bankName: string;
   contactPerson: string;
   contactNumber: string;
+  highlights: string;
   propertyType: PropertyTypeOption | "";
 }
 
@@ -116,10 +132,12 @@ interface PostPropertyModalProps {
 
 type FieldErrors = Partial<Record<keyof Omit<PropertyRecord, "propertyId" | "createdAt" | "photos"> | "photos" | "pdfDocument", string>>;
 
-const listingTypeOptions: PropertyListingType[] = ["Auction", "Distress"];
+const listingTypeOptions: PropertyListingType[] = ["Auction", "Distress", "New", "Resale"];
 const listingTypeLabel: Record<PropertyListingType, string> = {
   Auction: "Auction",
   Distress: "Alternate Investment",
+  New: "New Property",
+  Resale: "Resale Property",
 };
 const propertyTypeOptions: PropertyTypeOption[] = [
   "Flat",
@@ -131,6 +149,9 @@ const propertyTypeOptions: PropertyTypeOption[] = [
   "Duplex",
   "Plot",
   "Commercial",
+  "Shop",
+  "Unit",
+  "Gala",
 ];
 const possessionOptions: PossessionType[] = ["Physical", "Symbolic", "Free Hold"];
 const statusOptions: PropertyStatusType[] = ["Available", "Sold Out"];
@@ -143,18 +164,22 @@ const initialState = {
   bhk: "",
   offerPrice: "",
   estimatedMarketValue: "",
+  price: "",
   location: "",
   district: "",
   possession: "" as "" | PossessionType,
   status: "" as "" | PropertyStatusType,
   emdDate: "",
   eoiDate: "",
+  inspectionDateTime: "",
+  postingDateTime: "",
   flatNo: "",
   floor: "",
   fullAddress: "",
   bankName: "",
   contactPerson: "",
   contactNumber: "",
+  highlights: "",
   propertyType: "" as "" | PropertyTypeOption,
 };
 
@@ -199,6 +224,22 @@ const PostPropertyModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [photoError, setPhotoError] = useState<string>("");
+  const [highlightItems, setHighlightItems] = useState<string[]>([""]);
+
+  const minDate = useMemo(() => {
+    const now = new Date();
+    return now.toISOString().split("T")[0];
+  }, []);
+
+  const minDateTime = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -213,6 +254,7 @@ const PostPropertyModal = ({
       setIsSubmitting(false);
       setErrors({});
       setPhotoError("");
+      setHighlightItems([""]);
       return;
     }
 
@@ -225,18 +267,22 @@ const PostPropertyModal = ({
         bhk: initialValues.bhk || "",
         offerPrice: initialValues.offerPrice || "",
         estimatedMarketValue: initialValues.estimatedMarketValue || "",
+        price: initialValues.price || initialValues.offerPrice || "",
         location: initialValues.location || "",
         district: initialValues.district || "",
         possession: (initialValues.possession as "" | PossessionType) || "",
         status: (initialValues.status as "" | PropertyStatusType) || "",
         emdDate: initialValues.emdDate || "",
         eoiDate: initialValues.eoiDate || "",
+        inspectionDateTime: initialValues.inspectionDateTime || "",
+        postingDateTime: initialValues.postingDateTime || "",
         flatNo: initialValues.flatNo || "",
         floor: initialValues.floor || "",
         fullAddress: initialValues.fullAddress || "",
         bankName: initialValues.bankName || "",
         contactPerson: initialValues.contactPerson || "",
         contactNumber: initialValues.contactNumber || "",
+        highlights: initialValues.highlights || "",
         propertyType: (initialValues.propertyType as "" | PropertyTypeOption) || "",
       });
       setPhotos([]);
@@ -249,6 +295,11 @@ const PostPropertyModal = ({
       setIsSubmitting(false);
       setErrors({});
       setPhotoError("");
+      const parsedHighlights = (initialValues.highlights || "")
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      setHighlightItems(parsedHighlights.length > 0 ? parsedHighlights : [""]);
     }
   }, [open, mode, initialValues, existingPhotos, existingPdfDocument]);
 
@@ -333,6 +384,7 @@ const PostPropertyModal = ({
     const nextErrors: FieldErrors = {};
     const normalizedLocation = normalizeSpaces(form.location);
     const normalizedDistrict = normalizeSpaces(form.district);
+    const isSimpleType = form.type === "New" || form.type === "Resale";
 
     if (!form.headline.trim()) nextErrors.headline = "Headline is required";
     if (!form.propertyOrSocietyName.trim()) nextErrors.propertyOrSocietyName = "Property / Society Name is required";
@@ -348,14 +400,20 @@ const PostPropertyModal = ({
     else if (!alphaSpacePattern.test(normalizedDistrict)) {
       nextErrors.district = "Only letters are allowed in this field.";
     }
-    if (!form.possession) nextErrors.possession = "Possession is required";
+    if (!isSimpleType && !form.possession) nextErrors.possession = "Possession is required";
     if (!form.status) nextErrors.status = "Status is required";
 
-    if (!form.offerPrice.trim() || Number(form.offerPrice) <= 0) {
-      nextErrors.offerPrice = "Offer Price must be greater than 0";
-    }
-    if (!form.estimatedMarketValue.trim() || Number(form.estimatedMarketValue) <= 0) {
-      nextErrors.estimatedMarketValue = "Estimated Market Value must be greater than 0";
+    if (isSimpleType) {
+      if (!form.price.trim() || Number(form.price) <= 0) {
+        nextErrors.price = "Price must be greater than 0";
+      }
+    } else {
+      if (!form.offerPrice.trim() || Number(form.offerPrice) <= 0) {
+        nextErrors.offerPrice = "Offer Price must be greater than 0";
+      }
+      if (!form.estimatedMarketValue.trim() || Number(form.estimatedMarketValue) <= 0) {
+        nextErrors.estimatedMarketValue = "Estimated Market Value must be greater than 0";
+      }
     }
 
     if (form.type === "Auction" && !form.emdDate) {
@@ -365,12 +423,19 @@ const PostPropertyModal = ({
       nextErrors.eoiDate = "EOI Date is required for Alternate Investment";
     }
 
+    if (!isSimpleType && form.type !== "Distress" && !form.inspectionDateTime) {
+      nextErrors.inspectionDateTime = "Inspection Date & Time is required";
+    }
+    if (!form.postingDateTime) {
+      nextErrors.postingDateTime = "Posting Date & Time is required";
+    }
+
     if (!form.propertyType) nextErrors.propertyType = "Property Type is required";
     if (!form.fullAddress.trim()) nextErrors.fullAddress = "Full Address is required";
     if (!form.contactPerson.trim()) nextErrors.contactPerson = "Contact Person is required";
     if (!form.contactNumber.trim()) nextErrors.contactNumber = "Contact Number is required";
-    if (form.contactNumber && !/^\d{10,15}$/.test(form.contactNumber.trim())) {
-      nextErrors.contactNumber = "Contact Number must be numeric (10-15 digits)";
+    if (form.contactNumber && !/^\d{10}$/.test(form.contactNumber.trim())) {
+      nextErrors.contactNumber = "Contact Number must be exactly 10 digits";
     }
 
     const existingCount = mode === "edit" ? visibleExistingPhotos.length : 0;
@@ -388,6 +453,8 @@ const PostPropertyModal = ({
     e.preventDefault();
     if (!validate()) return;
 
+    const isSimpleType = form.type === "New" || form.type === "Resale";
+
     try {
       setIsSubmitting(true);
       await onSubmit({
@@ -395,14 +462,17 @@ const PostPropertyModal = ({
         area: form.area.trim(),
         type: form.type as PropertyListingType,
         bhk: form.bhk.trim(),
-        offerPrice: Number(form.offerPrice),
-        estimatedMarketValue: Number(form.estimatedMarketValue),
+        offerPrice: isSimpleType ? Number(form.price) : Number(form.offerPrice),
+        estimatedMarketValue: isSimpleType ? Number(form.price) : Number(form.estimatedMarketValue),
+        price: Number(form.price) || 0,
         location: toTitleCase(form.location),
         district: toTitleCase(form.district),
         possession: form.possession as PossessionType,
         status: form.status as PropertyStatusType,
-        emdDate: form.emdDate,
-        eoiDate: form.eoiDate,
+        emdDate: form.emdDate ? new Date(form.emdDate).toISOString() : "",
+        eoiDate: form.eoiDate ? new Date(form.eoiDate).toISOString() : "",
+        inspectionDateTime: form.inspectionDateTime ? new Date(form.inspectionDateTime).toISOString() : "",
+        postingDateTime: form.postingDateTime ? new Date(form.postingDateTime).toISOString() : "",
         flatNo: form.flatNo.trim(),
         propertyOrSocietyName: form.propertyOrSocietyName.trim(),
         floor: form.floor.trim(),
@@ -411,6 +481,7 @@ const PostPropertyModal = ({
         contactPerson: form.contactPerson.trim(),
         contactNumber: form.contactNumber.trim(),
         propertyType: form.propertyType as PropertyTypeOption,
+        highlights: highlightItems.map((h) => h.trim()).filter(Boolean).join("\n"),
         photos,
         pdfDocument,
         deletedImages,
@@ -533,33 +604,51 @@ const PostPropertyModal = ({
               {errors.bhk && <p className="text-xs text-red-600 mt-1">{errors.bhk}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Offer Price <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="number"
-                value={form.offerPrice}
-                onChange={(e) => setField("offerPrice", e.target.value)}
-                className={inputClass("offerPrice")}
-                min={0}
-              />
-              {errors.offerPrice && <p className="text-xs text-red-600 mt-1">{errors.offerPrice}</p>}
-            </div>
+            {(form.type === "New" || form.type === "Resale") ? (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Price <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={(e) => setField("price", e.target.value)}
+                  className={inputClass("price")}
+                  min={0}
+                />
+                {errors.price && <p className="text-xs text-red-600 mt-1">{errors.price}</p>}
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {form.type === "Distress" ? "Fund Required" : "Offer Price"} <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={form.offerPrice}
+                    onChange={(e) => setField("offerPrice", e.target.value)}
+                    className={inputClass("offerPrice")}
+                    min={0}
+                  />
+                  {errors.offerPrice && <p className="text-xs text-red-600 mt-1">{errors.offerPrice}</p>}
+                </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Estimated Market Value <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="number"
-                value={form.estimatedMarketValue}
-                onChange={(e) => setField("estimatedMarketValue", e.target.value)}
-                className={inputClass("estimatedMarketValue")}
-                min={0}
-              />
-              {errors.estimatedMarketValue && <p className="text-xs text-red-600 mt-1">{errors.estimatedMarketValue}</p>}
-            </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {form.type === "Distress" ? "Collateral Value" : "Estimated Market Value"} <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={form.estimatedMarketValue}
+                    onChange={(e) => setField("estimatedMarketValue", e.target.value)}
+                    className={inputClass("estimatedMarketValue")}
+                    min={0}
+                  />
+                  {errors.estimatedMarketValue && <p className="text-xs text-red-600 mt-1">{errors.estimatedMarketValue}</p>}
+                </div>
+              </>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -587,22 +676,24 @@ const PostPropertyModal = ({
               {errors.district && <p className="text-xs text-red-600 mt-1">{errors.district}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Possession <span className="text-red-600">*</span>
-              </label>
-              <select
-                value={form.possession}
-                onChange={(e) => setField("possession", e.target.value)}
-                className={inputClass("possession")}
-              >
-                <option value="">Select Possession</option>
-                {possessionOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-              {errors.possession && <p className="text-xs text-red-600 mt-1">{errors.possession}</p>}
-            </div>
+            {!(form.type === "New" || form.type === "Resale") && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Possession <span className="text-red-600">*</span>
+                </label>
+                <select
+                  value={form.possession}
+                  onChange={(e) => setField("possession", e.target.value)}
+                  className={inputClass("possession")}
+                >
+                  <option value="">Select Possession</option>
+                  {possessionOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+                {errors.possession && <p className="text-xs text-red-600 mt-1">{errors.possession}</p>}
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -616,7 +707,7 @@ const PostPropertyModal = ({
                 <option value="">Select Status</option>
                 {statusOptions.map((opt) => (
                   <option key={opt} value={opt}>
-                    {form.type === "Distress" && opt === "Sold Out" ? "Full Field" : opt}
+                    {form.type === "Distress" && opt === "Sold Out" ? "Fulfilled" : opt}
                   </option>
                 ))}
               </select>
@@ -633,6 +724,7 @@ const PostPropertyModal = ({
                   value={form.emdDate}
                   onChange={(e) => setField("emdDate", e.target.value)}
                   className={inputClass("emdDate")}
+                  min={minDate}
                 />
                 {errors.emdDate && <p className="text-xs text-red-600 mt-1">{errors.emdDate}</p>}
               </div>
@@ -648,13 +740,14 @@ const PostPropertyModal = ({
                   value={form.eoiDate}
                   onChange={(e) => setField("eoiDate", e.target.value)}
                   className={inputClass("eoiDate")}
+                  min={minDate}
                 />
                 {errors.eoiDate && <p className="text-xs text-red-600 mt-1">{errors.eoiDate}</p>}
               </div>
             ) : null}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Flat No</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Flat / Shop / Unit / Gala / Plot No</label>
               <input
                 value={form.flatNo}
                 onChange={(e) => setField("flatNo", e.target.value)}
@@ -684,26 +777,41 @@ const PostPropertyModal = ({
               {errors.fullAddress && <p className="text-xs text-red-600 mt-1">{errors.fullAddress}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                {form.type === "Distress" ? "Builder Name" : "Bank Name"}
-              </label>
-              <input
-                value={form.bankName}
-                onChange={(e) => setField("bankName", e.target.value)}
-                className={inputClass("bankName")}
-              />
-            </div>
+            {form.type !== "New" && form.type !== "Resale" && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  {form.type === "Distress" ? "Builder Name" : "Bank Name"}
+                </label>
+                <input
+                  value={form.bankName}
+                  onChange={(e) => setField("bankName", e.target.value)}
+                  className={inputClass("bankName")}
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Contact Person <span className="text-red-600">*</span>
               </label>
-              <input
-                value={form.contactPerson}
-                onChange={(e) => setField("contactPerson", e.target.value)}
-                className={inputClass("contactPerson")}
-              />
+              {(form.type === "New" || form.type === "Resale") ? (
+                <select
+                  value={form.contactPerson}
+                  onChange={(e) => setField("contactPerson", e.target.value)}
+                  className={inputClass("contactPerson")}
+                >
+                  <option value="">Select Contact Person Type</option>
+                  <option value="Owner">Owner</option>
+                  <option value="Broker">Broker</option>
+                  <option value="Builder">Builder</option>
+                </select>
+              ) : (
+                <input
+                  value={form.contactPerson}
+                  onChange={(e) => setField("contactPerson", e.target.value)}
+                  className={inputClass("contactPerson")}
+                />
+              )}
               {errors.contactPerson && <p className="text-xs text-red-600 mt-1">{errors.contactPerson}</p>}
             </div>
 
@@ -715,9 +823,82 @@ const PostPropertyModal = ({
                 value={form.contactNumber}
                 onChange={(e) => setField("contactNumber", e.target.value.replace(/\D/g, ""))}
                 className={inputClass("contactNumber")}
-                maxLength={15}
+                maxLength={10}
               />
               {errors.contactNumber && <p className="text-xs text-red-600 mt-1">{errors.contactNumber}</p>}
+            </div>
+
+            {form.type !== "New" && form.type !== "Resale" && form.type !== "Distress" && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Inspection Date & Time <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.inspectionDateTime}
+                  onChange={(e) => setField("inspectionDateTime", e.target.value)}
+                  className={inputClass("inspectionDateTime")}
+                  min={minDateTime}
+                />
+                {errors.inspectionDateTime && <p className="text-xs text-red-600 mt-1">{errors.inspectionDateTime}</p>}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Posting Date & Time <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={form.postingDateTime}
+                onChange={(e) => setField("postingDateTime", e.target.value)}
+                className={inputClass("postingDateTime")}
+                min={minDateTime}
+              />
+              {errors.postingDateTime && <p className="text-xs text-red-600 mt-1">{errors.postingDateTime}</p>}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Highlights
+              </label>
+              <div className="space-y-2">
+                {highlightItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-blue-600 font-bold flex-shrink-0">•</span>
+                    <input
+                      value={item}
+                      onChange={(e) => {
+                        const next = [...highlightItems];
+                        next[idx] = e.target.value;
+                        setHighlightItems(next);
+                      }}
+                      className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                      placeholder="Enter a highlight"
+                    />
+                    {highlightItems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHighlightItems((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                        className="flex-shrink-0 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                        title="Remove highlight"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setHighlightItems((prev) => [...prev, ""])}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors mt-1"
+                >
+                  <Plus size={16} />
+                  Add Highlight
+                </button>
+              </div>
             </div>
 
             <div className="md:col-span-2">

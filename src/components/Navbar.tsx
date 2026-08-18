@@ -11,6 +11,14 @@ const Navbar = ({ setLoginOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profiledropopen, setProfiledropopen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [loanSubmenuOpen, setLoanSubmenuOpen] = useState(false);
+  const [mobileLoanSubmenuOpen, setMobileLoanSubmenuOpen] = useState(false);
+  const [insuranceSubmenuOpen, setInsuranceSubmenuOpen] = useState(false);
+  const [mobileInsuranceSubmenuOpen, setMobileInsuranceSubmenuOpen] = useState(false);
+  const [investmentSubmenuOpen, setInvestmentSubmenuOpen] = useState(false);
+  const [mobileInvestmentSubmenuOpen, setMobileInvestmentSubmenuOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [mobileCalculatorOpen, setMobileCalculatorOpen] = useState(false);
   const [investorZoneOpen, setInvestorZoneOpen] = useState(false);
@@ -18,8 +26,12 @@ const Navbar = ({ setLoginOpen }) => {
   const [careerOpen, setCareerOpen] = useState(false);
   const [mobileCareerOpen, setMobileCareerOpen] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
+  const servicesCloseTimeoutRef = useRef<number | null>(null);
   const investorCloseTimeoutRef = useRef<number | null>(null);
   const careerCloseTimeoutRef = useRef<number | null>(null);
+  const servicesWrapperRef = useRef<HTMLDivElement | null>(null);
+  const servicesButtonRef = useRef<HTMLButtonElement | null>(null);
+  const servicesItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const calculatorWrapperRef = useRef<HTMLDivElement | null>(null);
   const calculatorButtonRef = useRef<HTMLButtonElement | null>(null);
   const calculatorItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
@@ -37,9 +49,12 @@ const Navbar = ({ setLoginOpen }) => {
     location.pathname === "/loancalculator" ||
     location.pathname === "/loan-eligibility-calculator";
 
+  const isServicesActive = location.pathname === "/services";
+
   const isInvestorZoneActive =
     location.pathname === "/investor-zone/auction-properties" ||
     location.pathname === "/investor-zone/alternate-investment" ||
+    location.pathname === "/investor-zone/new-resale-properties" ||
     location.pathname === "/investor-zone/alternate-properties" ||
     location.pathname === "/investor-zone/distress-properties" ||
     location.pathname.startsWith("/investor-zone/");
@@ -108,6 +123,20 @@ const Navbar = ({ setLoginOpen }) => {
     }, 150);
   };
 
+  const clearServicesCloseTimeout = () => {
+    if (servicesCloseTimeoutRef.current) {
+      window.clearTimeout(servicesCloseTimeoutRef.current);
+      servicesCloseTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleServicesClose = () => {
+    clearServicesCloseTimeout();
+    servicesCloseTimeoutRef.current = window.setTimeout(() => {
+      setServicesOpen(false);
+    }, 150);
+  };
+
   const clearInvestorCloseTimeout = () => {
     if (investorCloseTimeoutRef.current) {
       window.clearTimeout(investorCloseTimeoutRef.current);
@@ -119,7 +148,7 @@ const Navbar = ({ setLoginOpen }) => {
     clearInvestorCloseTimeout();
     investorCloseTimeoutRef.current = window.setTimeout(() => {
       setInvestorZoneOpen(false);
-    }, 150);
+    }, 300);
   };
 
   const clearCareerCloseTimeout = () => {
@@ -151,6 +180,22 @@ const Navbar = ({ setLoginOpen }) => {
       document.removeEventListener("mousedown", onMouseDown);
     };
   }, [calculatorOpen]);
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (!servicesOpen) return;
+      const wrapper = servicesWrapperRef.current;
+      if (!wrapper) return;
+      if (!wrapper.contains(e.target as Node)) {
+        setServicesOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onMouseDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [servicesOpen]);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -187,6 +232,57 @@ const Navbar = ({ setLoginOpen }) => {
   const focusCalculatorItem = (index: number) => {
     const el = calculatorItemRefs.current[index];
     if (el) el.focus();
+  };
+
+  const focusServicesItem = (index: number) => {
+    const el = servicesItemRefs.current[index];
+    if (el) el.focus();
+  };
+
+  const onServicesButtonKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setServicesOpen(true);
+      window.setTimeout(() => focusServicesItem(0), 0);
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setServicesOpen(false);
+    }
+  };
+
+  const onServicesMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setServicesOpen(false);
+      servicesButtonRef.current?.focus();
+      return;
+    }
+
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") {
+      return;
+    }
+
+    e.preventDefault();
+    const items = servicesItemRefs.current;
+    const activeIndex = items.findIndex((n) => n === document.activeElement);
+    const lastIndex = items.length - 1;
+
+    if (e.key === "Home") return focusServicesItem(0);
+    if (e.key === "End") return focusServicesItem(lastIndex);
+
+    if (activeIndex === -1) {
+      return focusServicesItem(0);
+    }
+
+    if (e.key === "ArrowDown") {
+      return focusServicesItem(activeIndex === lastIndex ? 0 : activeIndex + 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      return focusServicesItem(activeIndex === 0 ? lastIndex : activeIndex - 1);
+    }
   };
 
   const onCalculatorButtonKeyDown = (
@@ -363,9 +459,189 @@ const Navbar = ({ setLoginOpen }) => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-1">
-            <Link to="/services" className={`nav-link ${location.pathname === "/services" ? "text-blue-900" : ""}`}>
-              Services
-            </Link>
+            <div
+              ref={servicesWrapperRef}
+              className="relative"
+              onMouseEnter={() => {
+                clearServicesCloseTimeout();
+                setServicesOpen(true);
+              }}
+              onMouseLeave={() => {
+                scheduleServicesClose();
+              }}
+            >
+              <button
+                ref={servicesButtonRef}
+                type="button"
+                className={`nav-link ${isServicesActive ? "text-blue-900" : ""}`}
+                aria-haspopup="menu"
+                aria-expanded={servicesOpen}
+                onClick={() => setServicesOpen((v) => !v)}
+                onKeyDown={onServicesButtonKeyDown}
+              >
+                <span className="inline-flex items-center gap-1">
+                  Services
+                  <ChevronDown className={`h-4 w-4 transition-transform ${servicesOpen ? "rotate-180" : ""}`} />
+                </span>
+              </button>
+
+              {servicesOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-0 top-full pt-2 z-[60]"
+                  onMouseEnter={() => {
+                    clearServicesCloseTimeout();
+                  }}
+                  onMouseLeave={() => {
+                    scheduleServicesClose();
+                  }}
+                  onKeyDown={onServicesMenuKeyDown}
+                >
+                  <div className="w-56 rounded-xl border border-blue-100 bg-white shadow-lg">
+                    {/* Loans Submenu */}
+                    <div
+                      className="relative"
+                      onMouseEnter={() => setLoanSubmenuOpen(true)}
+                      onMouseLeave={() => setLoanSubmenuOpen(false)}
+                    >
+                      <button
+                        type="button"
+                        className="block w-full text-left px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      >
+                        <span className="inline-flex items-center justify-between w-full">
+                          Loans
+                          <ChevronRight className="h-4 w-4" />
+                        </span>
+                      </button>
+                      {loanSubmenuOpen && (
+                        <div className="absolute left-full top-0 w-64 ml-0.5 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden z-[70]">
+                          <Link
+                            role="menuitem"
+                            to="/info/home-loan"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Home Loan
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/info/loan-against-property"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Loan Against Property
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/info/msme-loan"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            MSME Loan
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/construction-finance"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Construction Finance
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                    {/* Insurances Submenu */}
+                    <div
+                      className="relative"
+                      onMouseEnter={() => setInsuranceSubmenuOpen(true)}
+                      onMouseLeave={() => setInsuranceSubmenuOpen(false)}
+                    >
+                      <button
+                        type="button"
+                        className="block w-full text-left px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      >
+                        <span className="inline-flex items-center justify-between w-full">
+                          Insurances
+                          <ChevronRight className="h-4 w-4" />
+                        </span>
+                      </button>
+                      {insuranceSubmenuOpen && (
+                        <div className="absolute left-full top-0 w-64 ml-0.5 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden z-[70]">
+                          <Link
+                            role="menuitem"
+                            to="/info/life-insurance"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Life Insurance
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/info/health-insurance"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Health Insurance
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/info/general-insurance"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            General Insurance
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                    {/* Investments Submenu */}
+                    <div
+                      className="relative"
+                      onMouseEnter={() => setInvestmentSubmenuOpen(true)}
+                      onMouseLeave={() => setInvestmentSubmenuOpen(false)}
+                    >
+                      <button
+                        type="button"
+                        className="block w-full text-left px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      >
+                        <span className="inline-flex items-center justify-between w-full">
+                          Investments
+                          <ChevronRight className="h-4 w-4" />
+                        </span>
+                      </button>
+                      {investmentSubmenuOpen && (
+                        <div className="absolute left-full top-0 w-64 ml-0.5 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden z-[70]">
+                          <Link
+                            role="menuitem"
+                            to="/info/mutual-funds"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Mutual Funds
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/info/fixed-deposit"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Fixed Deposit
+                          </Link>
+                          <Link
+                            role="menuitem"
+                            to="/info/bonds"
+                            className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            Bonds
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div
               ref={investorZoneWrapperRef}
@@ -392,7 +668,7 @@ const Navbar = ({ setLoginOpen }) => {
               {investorZoneOpen && (
                 <div
                   role="menu"
-                  className="absolute left-0 top-full pt-2"
+                  className="absolute left-0 top-full pt-2 z-[60]"
                   onMouseEnter={() => {
                     clearInvestorCloseTimeout();
                   }}
@@ -424,6 +700,17 @@ const Navbar = ({ setLoginOpen }) => {
                     >
                       Alternate Investment
                     </Link>
+                    <Link
+                      role="menuitem"
+                      to="/investor-zone/new-resale-properties"
+                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
+                      onClick={() => setInvestorZoneOpen(false)}
+                      ref={(el) => {
+                        investorZoneItemRefs.current[2] = el;
+                      }}
+                    >
+                      New / Resale Properties
+                    </Link>
                   </div>
                 </div>
               )}
@@ -454,7 +741,7 @@ const Navbar = ({ setLoginOpen }) => {
               {calculatorOpen && (
                 <div
                   role="menu"
-                  className="absolute left-0 top-full pt-2"
+                  className="absolute left-0 top-full pt-2 z-[60]"
                   onMouseEnter={() => {
                     clearCloseTimeout();
                   }}
@@ -538,7 +825,7 @@ const Navbar = ({ setLoginOpen }) => {
               {careerOpen && (
                 <div
                   role="menu"
-                  className="absolute left-0 top-full pt-2"
+                  className="absolute left-0 top-full pt-2 z-[60]"
                   onMouseEnter={() => {
                     clearCareerCloseTimeout();
                   }}
@@ -709,16 +996,249 @@ const Navbar = ({ setLoginOpen }) => {
             
             <a
               href="/services"
-              className="px-4  text-finance-charcoal hover:bg-finance-cream rounded-md"
-              onClick={() => {
-                setIsOpen(false);
-                setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
-                setMobileCareerOpen(false);
-              }}
+              className="hidden"
             >
               Services
             </a>
+
+            <button
+              type="button"
+              className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+              aria-haspopup="menu"
+              aria-expanded={mobileServicesOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileServicesOpen((prev) => !prev);
+              }}
+            >
+              <span className="flex-1 py-1">Services</span>
+
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+            {mobileServicesOpen && (
+              <div role="menu" className="pl-6 flex flex-col space-y-2">
+                {/* Loans Submenu */}
+                <button
+                  type="button"
+                  className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileLoanSubmenuOpen((prev) => !prev);
+                  }}
+                >
+                  <span className="flex-1 py-1">Loans</span>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${mobileLoanSubmenuOpen ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                {mobileLoanSubmenuOpen && (
+                  <div role="menu" className="pl-6 flex flex-col space-y-2">
+                    <Link
+                      role="menuitem"
+                      to="/info/home-loan"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileLoanSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Home Loan
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/info/loan-against-property"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileLoanSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Loan Against Property
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/info/msme-loan"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileLoanSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      MSME Loan
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/construction-finance"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileLoanSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Construction Finance
+                    </Link>
+                  </div>
+                )}
+                {/* Insurances Submenu */}
+                <button
+                  type="button"
+                  className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileInsuranceSubmenuOpen((prev) => !prev);
+                  }}
+                >
+                  <span className="flex-1 py-1">Insurances</span>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${mobileInsuranceSubmenuOpen ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                {mobileInsuranceSubmenuOpen && (
+                  <div role="menu" className="pl-6 flex flex-col space-y-2">
+                    <Link
+                      role="menuitem"
+                      to="/info/life-insurance"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileInsuranceSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Life Insurance
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/info/health-insurance"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileInsuranceSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Health Insurance
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/info/general-insurance"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileInsuranceSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      General Insurance
+                    </Link>
+                  </div>
+                )}
+                {/* Investments Submenu */}
+                <button
+                  type="button"
+                  className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileInvestmentSubmenuOpen((prev) => !prev);
+                  }}
+                >
+                  <span className="flex-1 py-1">Investments</span>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${mobileInvestmentSubmenuOpen ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+                {mobileInvestmentSubmenuOpen && (
+                  <div role="menu" className="pl-6 flex flex-col space-y-2">
+                    <Link
+                      role="menuitem"
+                      to="/info/mutual-funds"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileInvestmentSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Mutual Funds
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/info/fixed-deposit"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileInvestmentSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Fixed Deposit
+                    </Link>
+                    <Link
+                      role="menuitem"
+                      to="/info/bonds"
+                      className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileInvestmentSubmenuOpen(false);
+                        setMobileServicesOpen(false);
+                        setMobileInvestorZoneOpen(false);
+                        setMobileCalculatorOpen(false);
+                        setMobileCareerOpen(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Bonds
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               type="button"
@@ -766,6 +1286,20 @@ const Navbar = ({ setLoginOpen }) => {
                   }}
                 >
                   Alternate Investment
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/investor-zone/new-resale-properties"
+                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setMobileCareerOpen(false);
+                    setIsOpen(false);
+                  }}
+                >
+                  New / Resale Properties
                 </Link>
               </div>
             )}

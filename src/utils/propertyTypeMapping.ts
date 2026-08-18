@@ -10,16 +10,20 @@
  * - "Distress" → "Alternate Investment"
  */
 
-export type PropertyListingType = "Auction" | "Distress";
+export type PropertyListingType = "Auction" | "Distress" | "New" | "Resale";
 
 export const PROPERTY_TYPE_LABELS: Record<PropertyListingType, string> = {
   Auction: "Auction Properties",
   Distress: "Alternate Investment",
+  New: "New / Resale Properties",
+  Resale: "New / Resale Properties",
 };
 
 export const PROPERTY_TYPE_ROUTE: Record<PropertyListingType, string> = {
   Auction: "/investor-zone/auction-properties",
   Distress: "/investor-zone/alternate-investment",
+  New: "/investor-zone/new-resale-properties",
+  Resale: "/investor-zone/new-resale-properties",
 };
 
 /**

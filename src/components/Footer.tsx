@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Facebook, Instagram, Youtube, Linkedin } from "lucide-react";
 
 import Cookie from "js-cookie";
 import ToastContainerComponent from "./ToastContainerComponent";
@@ -28,7 +28,7 @@ const Footer = ({ setLoginOpen }) => {
     <footer className="bg-blue-900  text-white pt-16 pb-8">
       <ToastContainerComponent/>
       <div className="container-custom">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div>
             <a href="/" className="inline-block mb-6">
               <span className="font-playfair text-2xl font-semibold text-white">
@@ -41,25 +41,33 @@ const Footer = ({ setLoginOpen }) => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://www.facebook.com/share/1NtGvq6CMw/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/70 hover:text-finance-gold transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="#"
-                className="text-white/70 hover:text-finance-gold transition-colors"
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
+                href="https://www.instagram.com/finvestcorp?igsh=ZXh4Nnc5MmZ0N3Q="
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/70 hover:text-finance-gold transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.youtube.com/@finvestcorp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-finance-gold transition-colors"
+              >
+                <Youtube className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.linkedin.com/company/finvestcorp"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/70 hover:text-finance-gold transition-colors"
               >
                 <Linkedin className="h-5 w-5" />
@@ -131,6 +139,28 @@ const Footer = ({ setLoginOpen }) => {
           </div>
 
           <div>
+            <h4 className="text-lg font-medium mb-6">Policies</h4>
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href="/privacy-policy"
+                  className="text-white/70 hover:text-finance-gold transition-colors"
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/cookie-policy"
+                  className="text-white/70 hover:text-finance-gold transition-colors"
+                >
+                  Cookie Policy
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
             <h4 className="text-lg font-medium mb-6">Contact Us</h4>
             <ul className="space-y-3 text-base">
               <li className="text-white/70">
@@ -167,19 +197,6 @@ const Footer = ({ setLoginOpen }) => {
             © {new Date().getFullYear()} FinvestCorp. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <a
-              href="#"
-              className="text-white/70 hover:text-finance-gold transition-colors text-sm"
-            >
-              Privacy Policy
-            </a>
-
-            <a
-              href="#"
-              className="text-white/70 hover:text-finance-gold transition-colors text-sm"
-            >
-              Cookies Policy
-            </a>
           </div>
         </div>
       </div>

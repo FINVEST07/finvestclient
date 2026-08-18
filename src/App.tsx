@@ -31,15 +31,21 @@ import Blogs from "./pages/Blogs";
 import Gallery from "./pages/Gallery";
 import BlogDetail from "./pages/BlogDetail";
 import ServiceInfo from "./pages/ServiceInfo";
+import Finance from "./pages/Finance";
 import SipCalculator from "./pages/SipCalculator";
 import FDCalculator from "./pages/FdCalculator";
 import AuctionProperties from "./pages/AuctionProperties";
 import DistressProperties from "./pages/DistressProperties";
+import NewResaleProperties from "./pages/NewResaleProperties";
 import PropertyDetail from "./pages/PropertyDetail";
+import PremiumPlans from "./pages/PremiumPlans";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import AdminJobs from "./pages/AdminJobs";
+import AdminPromoCodes from "./pages/AdminPromoCodes";
 import Favourites from "./pages/Favourites";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
 import Login from "./components/Login";
 
 const queryClient = new QueryClient();
@@ -113,6 +119,7 @@ const App = () => {
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/investor-zone/auction-properties" element={<AuctionProperties />} />
             <Route path="/investor-zone/alternate-investment" element={<DistressProperties />} />
+            <Route path="/investor-zone/new-resale-properties" element={<NewResaleProperties />} />
             {/* Backward compatibility redirects */}
             <Route
               path="/investor-zone/alternate-properties"
@@ -123,9 +130,13 @@ const App = () => {
               element={<Navigate to="/investor-zone/alternate-investment" replace />}
             />
             <Route path="/investor-zone/:type/:propertyId" element={<PropertyDetail />} />
+            <Route path="/premium-plans" element={<PremiumPlans />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
             <Route path="/gallery" element={<Gallery />} />
             {/* SEO keyword info routes */}
             <Route path="/info/:slug" element={<ServiceInfo />} />
+            <Route path="/construction-finance" element={<Finance />} />
             
             <Route
               path="/admindashboard"
@@ -181,6 +192,14 @@ const App = () => {
               element={
                 <RequireSuperAdmin>
                   <AdminJobs />
+                </RequireSuperAdmin>
+              }
+            />
+            <Route
+              path="/admin/promocodes"
+              element={
+                <RequireSuperAdmin>
+                  <AdminPromoCodes />
                 </RequireSuperAdmin>
               }
             />

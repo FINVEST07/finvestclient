@@ -11,6 +11,7 @@ interface JobRecord {
   _id: string;
   title: string;
   description: string;
+  postingDateTime?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -26,6 +27,20 @@ const formatDateTime = (value?: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+const formatDateTimeForInput = (iso: string | undefined) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 const stripHtml = (html: string) => {
@@ -60,6 +75,17 @@ const AdminJobs = () => {
 
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [postingDateTime, setPostingDateTime] = useState<string>("");
+
+  const nowStr = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }, []);
 
   const quillModules = {
     toolbar: [
@@ -85,6 +111,7 @@ const AdminJobs = () => {
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setPostingDateTime("");
     setEditingId("");
   };
 
@@ -115,6 +142,7 @@ const AdminJobs = () => {
     setEditingId(job._id);
     setTitle(job.title || "");
     setDescription(job.description || "");
+    setPostingDateTime(formatDateTimeForInput(job?.postingDateTime));
     setOpen(true);
   };
 
@@ -129,6 +157,7 @@ const AdminJobs = () => {
       const payload = {
         title: title.trim(),
         description: normalizeQuillHtmlForStorage(description),
+        postingDateTime,
       };
 
       const req = editingId
@@ -346,6 +375,18 @@ const AdminJobs = () => {
                   className="hidden"
                   readOnly
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Posting Date &amp; Time</label>
+                <input
+                  type="datetime-local"
+                  value={postingDateTime}
+                  onChange={(e) => setPostingDateTime(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D6B549]"
+                  min={nowStr}
+                />
+                <p className="text-xs text-slate-500 mt-1">Leave empty to post immediately. If set, the job will be visible only after this date &amp; time.</p>
               </div>
 
             </div>

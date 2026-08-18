@@ -43,7 +43,13 @@ const Gallery = () => {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_URI}media`);
-      setMedia(res.data?.payload || []);
+      const all = res.data?.payload || [];
+      const now = Date.now();
+      setMedia(all.filter((m: any) => {
+        if (!m.postingDateTime) return true;
+        const scheduled = new Date(m.postingDateTime).getTime();
+        return Number.isNaN(scheduled) || scheduled <= now;
+      }));
     } catch (e) {
       setMedia([]);
     } finally {

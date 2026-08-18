@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { z } from "zod";
+import Cookie from "js-cookie";
 import {
   ENQUIRY_SERVICE_OPTIONS,
   ENQUIRY_SERVICE_VALUES,
@@ -8,6 +9,7 @@ import {
   inferEnquiryServiceFromContext,
   normalizeEnquiryService,
 } from "@/lib/serviceOptions";
+import { OPEN_LOGIN_MODAL_EVENT } from "@/lib/loginModal";
 
 type ServiceType = EnquiryServiceValue | "";
 
@@ -16,6 +18,8 @@ const EnquiryModal = () => {
   const reopenTimeoutRef = useRef<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string>("");
+
+  const isLoggedIn = () => Boolean(Cookie.get("finvest"));
 
   const initialFormData = {
     name: "",
@@ -40,11 +44,17 @@ const EnquiryModal = () => {
     clearReopenTimeout();
 
     reopenTimeoutRef.current = window.setTimeout(() => {
+      if (isLoggedIn()) return;
       setOpen(true);
     }, 55000);
   };
 
   useEffect(() => {
+    if (isLoggedIn()) {
+      setOpen(false);
+      return;
+    }
+
     setOpen(true);
 
     const inferred = inferEnquiryServiceFromContext(
@@ -55,14 +65,22 @@ const EnquiryModal = () => {
     }
 
     const onOpenEnquiry = () => {
+      if (isLoggedIn()) return;
       setOpen(true);
     };
 
     window.addEventListener("finvest:open-enquiry", onOpenEnquiry);
 
+    const onLoginOpen = () => {
+      setOpen(false);
+      clearReopenTimeout();
+    };
+    window.addEventListener(OPEN_LOGIN_MODAL_EVENT, onLoginOpen);
+
     return () => {
       clearReopenTimeout();
       window.removeEventListener("finvest:open-enquiry", onOpenEnquiry);
+      window.removeEventListener(OPEN_LOGIN_MODAL_EVENT, onLoginOpen);
     };
   }, []);
 
@@ -70,7 +88,9 @@ const EnquiryModal = () => {
     setOpen(false);
     setFormData(initialFormData);
     setValidationError("");
-    scheduleReopen();
+    if (!isLoggedIn()) {
+      scheduleReopen();
+    }
   };
 
   const onChange = (

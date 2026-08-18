@@ -21,7 +21,7 @@ interface PropertyItem {
   headline: string;
   createdAt?: string;
   area: string;
-  type: "Auction" | "Distress";
+  type: "Auction" | "Distress" | "New" | "Resale";
   propertyType: string;
   bhk?: string;
   offerPrice?: number;
@@ -74,7 +74,7 @@ const getStatusLabel = (property: PropertyItem) => {
     property.type === "Distress" &&
     (normalizedStatus === "sold out" || normalizedStatus === "soldout")
   ) {
-    return "Full Field";
+    return "Fulfilled";
   }
 
   return rawStatus || "-";
@@ -85,7 +85,7 @@ const isEmphasizedAvailability = (property: PropertyItem, statusLabel: string) =
 
   return (
     (property.type === "Auction" && normalizedStatus === "sold out") ||
-    (property.type === "Distress" && normalizedStatus === "full field")
+    (property.type === "Distress" && normalizedStatus === "fulfilled")
   );
 };
 
@@ -193,21 +193,31 @@ const PropertyCard = ({
             <p className="text-slate-600 line-clamp-1">
               <span className="font-semibold text-slate-800">Configuration:</span> {property.bhk || "-"}
             </p>
-            <p className="font-bold text-slate-900 line-clamp-1">
-              <span className="font-semibold text-slate-800">Offer Price:</span> {formatCurrency(property.offerPrice)}
-            </p>
-            <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Location:</span> {property.location || "-"}
-            </p>
-            <p className="font-bold text-slate-900 line-clamp-1">
-              <span className="font-semibold text-slate-800">Est. Market Value:</span> {formatCurrency(property.estimatedMarketValue)}
-            </p>
+            {(property.type === "New" || property.type === "Resale") ? (
+              <p className="font-bold text-slate-900 line-clamp-1">
+                <span className="font-semibold text-slate-800">Price:</span> {formatCurrency(property.offerPrice)}
+              </p>
+            ) : (
+              <>
+                <p className="font-bold text-slate-900 line-clamp-1">
+                  <span className="font-semibold text-slate-800">{property.type === "Distress" ? "Fund Required:" : "Offer Price:"}</span> {formatCurrency(property.offerPrice)}
+                </p>
+                <p className="text-slate-600 line-clamp-1">
+                  <span className="font-semibold text-slate-800">Location:</span> {property.location || "-"}
+                </p>
+                <p className="font-bold text-slate-900 line-clamp-1">
+                  <span className="font-semibold text-slate-800">{property.type === "Distress" ? "Collateral Value:" : "Est. Market Value:"}</span> {formatCurrency(property.estimatedMarketValue)}
+                </p>
+              </>
+            )}
             <p className="text-slate-600 line-clamp-1">
               <span className="font-semibold text-slate-800">District:</span> {property.district || "-"}
             </p>
-            <p className="text-slate-600 line-clamp-1">
-              <span className="font-semibold text-slate-800">Possession:</span> {property.possession || "-"}
-            </p>
+            {(property.type !== "New" && property.type !== "Resale") && (
+              <p className="text-slate-600 line-clamp-1">
+                <span className="font-semibold text-slate-800">Possession:</span> {property.possession || "-"}
+              </p>
+            )}
             <p className="text-slate-600 line-clamp-1">
               <span className="font-semibold text-slate-800">Status:</span>{" "}
               <span

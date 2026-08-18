@@ -112,7 +112,7 @@ const StockTicker = () => {
   }, []);
 
   return (
-    <div className="w-full z-[50] overflow-hidden border-gray-700">
+    <div className="w-full z-10 overflow-hidden border-gray-700">
       <div
         id="tradingview-ticker-container"
         className="tradingview-widget-container"

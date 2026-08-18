@@ -27,7 +27,13 @@ const Blogs = () => {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_URI}blogs`);
-      setBlogs(res.data?.payload || []);
+      const all = res.data?.payload || [];
+      const now = Date.now();
+      setBlogs(all.filter((b: any) => {
+        if (!b.postingDateTime) return true;
+        const scheduled = new Date(b.postingDateTime).getTime();
+        return Number.isNaN(scheduled) || scheduled <= now;
+      }));
     } catch (e) {
       setBlogs([]);
     } finally {

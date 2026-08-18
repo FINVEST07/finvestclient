@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import AdminSidebar from "@/components/AdminSidebar";
 import ToastContainerComponent from "@/components/ToastContainerComponent";
+import { Share2, Download, Eye, Pencil, Trash2 } from "lucide-react";
 import PostPropertyModal, {
   ExistingPropertyPdf,
   ExistingPropertyPhoto,
@@ -12,6 +13,7 @@ import PostPropertyModal, {
   PropertyListingType,
   PropertyTypeOption,
 } from "@/components/PostPropertyModal";
+import PropertyViewModal from "@/components/PropertyViewModal";
 
 interface PropertyPhoto {
   url: string;
@@ -31,18 +33,22 @@ interface PropertyRecord {
   propertyType: PropertyTypeOption;
   offerPrice: number;
   estimatedMarketValue: number;
+  price?: number;
   location: string;
   district: string;
-  possession: "Physical" | "Symbolic";
+  possession: "Physical" | "Symbolic" | "Free Hold";
   status: "Available" | "Sold Out";
   emdDate?: string;
   eoiDate?: string;
-  flatNo?: string;
-  fullAddress?: string;
-  bankName?: string;
-  contactPerson?: string;
-  contactNumber?: string;
+  flatNo: string;
+  fullAddress: string;
+  bankName: string;
+  contactPerson: string;
+  contactNumber: string;
   pdfDocument?: { url?: string; public_id?: string; original_filename?: string } | null;
+  inspectionDateTime?: string;
+  postingDateTime?: string;
+  highlights?: string;
   photos: PropertyPhoto[];
   createdAt: string;
 }
@@ -50,19 +56,45 @@ interface PropertyRecord {
 const listingTypeLabel: Record<PropertyListingType, string> = {
   Auction: "Auction",
   Distress: "Alternate Investment",
+  New: "New Property",
+  Resale: "Resale Property",
 };
 
 const formatPropertyDate = (iso: string) => {
   if (!iso) return "-";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleString("en-IN", {
+  return date.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
+};
+
+const formatDateTimeForInput = (iso: string | undefined) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const formatDateForInput = (iso: string | undefined) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 const AdminProperties = () => {
@@ -75,6 +107,10 @@ const AdminProperties = () => {
   const [existingPdfDocument, setExistingPdfDocument] = useState<ExistingPropertyPdf | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [posting, setPosting] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewingProperty, setViewingProperty] = useState<PropertyRecord | null>(null);
 
   const loadProperties = useCallback(async () => {
     try {
@@ -93,6 +129,49 @@ const AdminProperties = () => {
   useEffect(() => {
     loadProperties();
   }, [loadProperties]);
+
+  const shareOrCopyLink = async (url: string) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ url });
+        return;
+      }
+    } catch (e) {
+      // ignore and fallback to clipboard
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const downloadFile = async (url: string, filename: string) => {
+    if (!url) {
+      toast.error("No file available to download");
+      return;
+    }
+    try {
+      const response = await fetch(url, { mode: "cors" });
+      if (!response.ok) throw new Error("Download failed");
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename || "download";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      toast.success("Download started");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to download file");
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this property?")) return;
@@ -121,19 +200,23 @@ const AdminProperties = () => {
       bhk: property.bhk || "",
       offerPrice: String(property.offerPrice || ""),
       estimatedMarketValue: String(property.estimatedMarketValue || ""),
+      price: String(property.price || property.offerPrice || ""),
       location: property.location || "",
       district: property.district || "",
       possession: property.possession || "",
       status: property.status || "",
-      emdDate: property.emdDate ? String(property.emdDate).slice(0, 10) : "",
-      eoiDate: property.eoiDate ? String(property.eoiDate).slice(0, 10) : "",
+      emdDate: formatDateForInput(property.emdDate),
+      eoiDate: formatDateForInput(property.eoiDate),
       flatNo: property.flatNo || "",
       floor: property.floor || "",
       fullAddress: property.fullAddress || "",
       bankName: property.bankName || "",
       contactPerson: property.contactPerson || "",
       contactNumber: property.contactNumber || "",
+      highlights: property.highlights || "",
       propertyType: property.propertyType || "",
+      inspectionDateTime: formatDateTimeForInput(property.inspectionDateTime),
+      postingDateTime: formatDateTimeForInput(property.postingDateTime),
     });
     setExistingPhotos(
       (property.photos || [])
@@ -156,12 +239,31 @@ const AdminProperties = () => {
     setIsPostOpen(true);
   };
 
+  const filteredProperties = useMemo(() => {
+    if (!searchQuery.trim()) return properties;
+    const query = searchQuery.toLowerCase().trim();
+    return properties.filter((p) => {
+      return (
+        p.propertyId?.toLowerCase().includes(query) ||
+        p.propertyOrSocietyName?.toLowerCase().includes(query) ||
+        p.location?.toLowerCase().includes(query) ||
+        p.district?.toLowerCase().includes(query) ||
+        (listingTypeLabel[p.type] || p.type)?.toLowerCase().includes(query)
+      );
+    });
+  }, [properties, searchQuery]);
+
   const columns = useMemo(
     () => [
       {
         name: "Property ID",
         selector: (row: PropertyRecord) => row.propertyId,
         width: "160px",
+      },
+      {
+        name: "Posted On",
+        selector: (row: PropertyRecord) => formatPropertyDate(row.createdAt),
+        width: "180px",
       },
       {
         name: "Headline",
@@ -220,41 +322,102 @@ const AdminProperties = () => {
         width: "130px",
       },
       {
-        name: "Posted On",
-        selector: (row: PropertyRecord) => formatPropertyDate(row.createdAt),
-        width: "180px",
-      },
-      {
         name: "Photos",
         cell: (row: PropertyRecord) => (
-          <div className="py-2 flex gap-1.5">
-            {row.photos?.slice(0, 3).map((photo, idx) => (
-              <img
-                key={`${row.propertyId}-${idx}`}
-                src={photo?.url}
-                alt={`property-${idx + 1}`}
-                className="w-10 h-10 rounded object-cover border border-slate-300"
-              />
-            ))}
+          <div className="py-2 flex items-center gap-2">
+            <div className="flex gap-1.5">
+              {row.photos?.slice(0, 3).map((photo, idx) => (
+                <img
+                  key={`${row.propertyId}-${idx}`}
+                  src={photo?.url}
+                  alt={`property-${idx + 1}`}
+                  className="w-10 h-10 rounded object-cover border border-slate-300"
+                />
+              ))}
+            </div>
+            {row.photos?.length > 0 && (
+              <button
+                onClick={() =>
+                  downloadFile(
+                    row.photos[0].url,
+                    `${row.propertyId}-photo-1.jpg`
+                  )
+                }
+                className="p-1.5 bg-slate-700 text-white rounded hover:bg-slate-600"
+                title="Download first photo"
+                type="button"
+              >
+                <Download size={14} />
+              </button>
+            )}
           </div>
         ),
-        width: "140px",
+        width: "170px",
+      },
+      {
+        name: "Documents",
+        cell: (row: PropertyRecord) => (
+          <div className="py-2">
+            {row.pdfDocument?.url ? (
+              <button
+                onClick={() =>
+                  downloadFile(
+                    row.pdfDocument!.url,
+                    row.pdfDocument?.original_filename ||
+                      `${row.propertyId}-document.pdf`
+                  )
+                }
+                className="px-3 py-1.5 bg-emerald-600 text-white rounded flex items-center gap-2 hover:bg-emerald-500"
+                title="Download document"
+                type="button"
+              >
+                <Download size={14} />
+                <span>Download</span>
+              </button>
+            ) : (
+              <span className="text-slate-400 text-sm">-</span>
+            )}
+          </div>
+        ),
+        width: "160px",
       },
       {
         name: "Actions",
         cell: (row: PropertyRecord) => (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
-              className="px-3 py-1 bg-blue-600 text-white rounded"
-              onClick={() => handleEdit(row)}
+              className="p-2 bg-emerald-600 text-white rounded hover:bg-emerald-500 transition-colors"
+              title="View Property"
+              onClick={() => {
+                setViewingProperty(row as unknown as PropertyRecord);
+                setIsViewOpen(true);
+              }}
             >
-              Edit
+              <Eye size={16} />
             </button>
             <button
-              className="px-3 py-1 bg-red-600 text-white rounded"
+              className="p-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors"
+              title="Edit Property"
+              onClick={() => handleEdit(row)}
+            >
+              <Pencil size={16} />
+            </button>
+            <button
+              className="p-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors"
+              title="Delete Property"
               onClick={() => handleDelete(row._id)}
             >
-              Delete
+              <Trash2 size={16} />
+            </button>
+            <button
+              className="p-2 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors"
+              title="Share / Copy link"
+              onClick={() => {
+                const url = `${window.location.origin}/investor-zone/${String(row.type || "").toLowerCase()}/${row._id}`;
+                shareOrCopyLink(url);
+              }}
+            >
+              <Share2 size={16} />
             </button>
           </div>
         ),
@@ -316,6 +479,7 @@ const AdminProperties = () => {
       formData.append("bhk", payload.bhk);
       formData.append("offerPrice", String(payload.offerPrice));
       formData.append("estimatedMarketValue", String(payload.estimatedMarketValue));
+      formData.append("price", String(payload.price || 0));
       formData.append("location", payload.location);
       formData.append("district", payload.district);
       formData.append("possession", payload.possession);
@@ -329,6 +493,9 @@ const AdminProperties = () => {
       formData.append("contactPerson", payload.contactPerson);
       formData.append("contactNumber", payload.contactNumber);
       formData.append("propertyType", payload.propertyType);
+      formData.append("inspectionDateTime", payload.inspectionDateTime);
+      formData.append("postingDateTime", payload.postingDateTime);
+      formData.append("highlights", payload.highlights);
 
       payload.photos.forEach((photo) => {
         formData.append("photos", photo);
@@ -387,23 +554,44 @@ const AdminProperties = () => {
 
       <div className="ml-[22%] pt-[10vh] px-[5%]">
         <section className="bg-slate-900/50 rounded-lg border border-slate-700 p-6 shadow-lg">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <h2 className="text-white text-2xl font-semibold">Properties</h2>
-            <button
-              onClick={openCreateModal}
-              disabled={posting}
-              className="px-4 py-2 bg-[#D6B549] text-slate-900 font-medium rounded-md hover:brightness-95 disabled:opacity-70"
-            >
-              Post Property
-            </button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative w-full sm:w-72">
+                <input
+                  type="text"
+                  placeholder="Search by ID, Name, Location, District or Type..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-[#D6B549] placeholder:text-slate-500"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={openCreateModal}
+                disabled={posting}
+                className="px-4 py-2 bg-[#D6B549] text-slate-900 font-medium rounded-md hover:brightness-95 disabled:opacity-70 whitespace-nowrap"
+              >
+                Post Property
+              </button>
+            </div>
           </div>
 
           <div className="mt-5">
             <DataTable
               columns={columns as any}
-              data={properties}
+              data={filteredProperties}
               progressPending={loading}
               pagination
+              paginationPerPage={5}
+              paginationRowsPerPageOptions={[5, 10, 15, 20, 25, 30]}
               customStyles={customStyles}
               responsive
               noDataComponent={
@@ -431,6 +619,15 @@ const AdminProperties = () => {
         existingPhotos={existingPhotos}
         existingPdfDocument={existingPdfDocument}
         onSubmit={onCreateProperty}
+      />
+
+      <PropertyViewModal
+        open={isViewOpen}
+        onClose={() => {
+          setIsViewOpen(false);
+          setViewingProperty(null);
+        }}
+        property={viewingProperty as any}
       />
     </div>
   );
