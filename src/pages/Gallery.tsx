@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 
@@ -78,7 +77,6 @@ const Gallery = () => {
       <Helmet>
         <title>Gallery - FINVESTCORP</title>
       </Helmet>
-      <ToastContainerComponent />
       <div className="container mx-auto px-6">
         <div className="mb-6">
           <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">

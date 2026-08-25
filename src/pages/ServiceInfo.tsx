@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { ArrowLeft } from "lucide-react";
 
 import { infos } from "@/data/serviceInfoData";
@@ -38,7 +37,6 @@ const ServiceInfo = () => {
           })}
         </script>
       </Helmet>
-      <ToastContainerComponent />
       <div className="container mx-auto px-6">
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">

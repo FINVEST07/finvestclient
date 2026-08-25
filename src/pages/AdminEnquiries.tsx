@@ -4,7 +4,6 @@ import DataTable from "react-data-table-component";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 
 const AdminEnquiries = () => {
   const [enquiries, setEnquiries] = useState<any[]>([]);
@@ -124,7 +123,6 @@ const AdminEnquiries = () => {
 
   return (
     <div className="bg-slate-800 w-full min-h-screen">
-      <ToastContainerComponent />
       <AdminSidebar />
       <div className="ml-[22%] pt-[10vh] px-[5%]">
         <div className="flex items-center justify-between mb-5">

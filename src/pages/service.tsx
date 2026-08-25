@@ -20,7 +20,6 @@ import {
   MapPin
 } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Cookie from "js-cookie";
@@ -460,7 +459,6 @@ const Services = ({ setLoginOpen }) => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(37,99,235,0.1),transparent)] pointer-events-none"></div>
       
-      <ToastContainerComponent />
       <div className="container mx-auto px-6 relative z-10">
         <div className="mb-6">
           <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">

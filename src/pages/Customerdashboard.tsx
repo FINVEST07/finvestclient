@@ -3,7 +3,6 @@ import Cookie from "js-cookie";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import PersonalFormSection from "@/components/PersonalFormSection";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
@@ -284,7 +283,6 @@ const Customerdashboard = () => {
 
   return (
     <div className="bg-[#EBECEC] min-h-screen">
-      <ToastContainerComponent />
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
           <div className="flex items-center gap-3 bg-white px-4 py-3 rounded shadow">

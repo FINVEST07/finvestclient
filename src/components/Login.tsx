@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import ToastContainerComponent from "./ToastContainerComponent";
 import Cookie from "js-cookie";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
@@ -414,7 +413,6 @@ const Login = ({ setLoginOpen, loginopen }) => {
 
   return (
     <>
-      <ToastContainerComponent />
       {!cookieemail && loginopen && (
         <div className="fixed z-[10000] inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">

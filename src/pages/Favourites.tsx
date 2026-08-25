@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "react-toastify";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import BlogCard from "@/components/BlogCard";
 import PropertyCard from "@/components/PropertyCard";
 import JobCard from "@/components/JobCard";
@@ -288,7 +287,6 @@ const Favourites = () => {
         <title>Favourites - FINVESTCORP</title>
         <meta name="description" content="Your favourite blogs and properties on FINVESTCORP." />
       </Helmet>
-      <ToastContainerComponent />
 
       <div className="container mx-auto px-6">
         <div className="mb-6">

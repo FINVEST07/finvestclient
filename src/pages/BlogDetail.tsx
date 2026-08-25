@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
@@ -187,7 +186,6 @@ const BlogDetail = () => {
           })}
         </script>
       </Helmet>
-      <ToastContainerComponent />
       <div className="container mx-auto px-6">
         <div className="mb-6 flex items-center justify-between">
           <Link to="/blogs" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">

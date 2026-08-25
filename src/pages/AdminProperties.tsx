@@ -3,7 +3,6 @@ import DataTable from "react-data-table-component";
 import { toast } from "sonner";
 import axios from "axios";
 import AdminSidebar from "@/components/AdminSidebar";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Share2, Download, Eye, Pencil, Trash2 } from "lucide-react";
 import PostPropertyModal, {
   ExistingPropertyPdf,
@@ -549,7 +548,6 @@ const AdminProperties = () => {
 
   return (
     <div className="bg-slate-800 pb-16 w-full min-h-screen">
-      <ToastContainerComponent />
       <AdminSidebar />
 
       <div className="ml-[22%] pt-[10vh] px-[5%]">

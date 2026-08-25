@@ -1,11 +1,13 @@
 
 import { useRef, useState, useEffect } from "react";
-import { Menu, X, ChevronRight, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronRight, ChevronDown, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Cookie from "js-cookie";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import StockTicker from "@/components/Stocknews";
 import BusinessNews from "@/components/BusinessNews";
+import axios from "axios";
+import { getLoggedInEmail } from "@/lib/favourites";
 
 const Navbar = ({ setLoginOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +27,8 @@ const Navbar = ({ setLoginOpen }) => {
   const [mobileInvestorZoneOpen, setMobileInvestorZoneOpen] = useState(false);
   const [careerOpen, setCareerOpen] = useState(false);
   const [mobileCareerOpen, setMobileCareerOpen] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumExpiresAt, setPremiumExpiresAt] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const servicesCloseTimeoutRef = useRef<number | null>(null);
   const investorCloseTimeoutRef = useRef<number | null>(null);
@@ -79,6 +83,28 @@ const Navbar = ({ setLoginOpen }) => {
   };
 
   const emailcookie = Cookie.get("finvest");
+
+  useEffect(() => {
+    const email = getLoggedInEmail();
+    if (!email) {
+      setIsPremium(false);
+      setPremiumExpiresAt(null);
+      return;
+    }
+    axios
+      .get(`${import.meta.env.VITE_API_URI}payments/premium-status`, {
+        headers: { "x-user-email": email },
+        withCredentials: true,
+      })
+      .then((res) => {
+        setIsPremium(Boolean(res.data?.premium));
+        setPremiumExpiresAt(res.data?.premiumExpiresAt || null);
+      })
+      .catch(() => {
+        setIsPremium(false);
+        setPremiumExpiresAt(null);
+      });
+  }, [emailcookie]);
 
   const handleBecomePartnerClick = (e) => {
     e.preventDefault();
@@ -919,6 +945,31 @@ const Navbar = ({ setLoginOpen }) => {
                   Favourites
                 </Link>
 
+                {isPremium ? (
+                  <span className="flex items-center gap-2 cursor-default font-semibold rounded px-2 py-1.5 bg-gradient-to-r from-amber-50 to-yellow-100 border border-amber-300 text-amber-800">
+                    <Crown className="h-4 w-4 text-amber-500 fill-amber-200" />
+                    <span>
+                      Package Valid till{" "}
+                      {premiumExpiresAt
+                        ? new Date(premiumExpiresAt).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "N/A"}
+                    </span>
+                  </span>
+                ) : (
+                  <Link
+                    to="/premium-plans"
+                    className="flex items-center gap-2 cursor-pointer font-semibold rounded px-2 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 border border-amber-500 text-white hover:from-amber-500 hover:to-yellow-600 transition-colors"
+                    onClick={() => setProfiledropopen(false)}
+                  >
+                    <Crown className="h-4 w-4 text-white fill-white/30" />
+                    Premium
+                  </Link>
+                )}
+
                 <span
                   onClick={() => {
                     Cookie.remove("finvest");
@@ -993,7 +1044,39 @@ const Navbar = ({ setLoginOpen }) => {
                 Favourites
               </Link>
             )}
-            
+
+            {emailcookie && (
+              isPremium ? (
+                <span className="flex items-center gap-2 px-4 py-1.5 font-semibold rounded-md bg-gradient-to-r from-amber-50 to-yellow-100 border border-amber-300 text-amber-800">
+                  <Crown className="h-4 w-4 text-amber-500 fill-amber-200" />
+                  <span>
+                    Package Valid till{" "}
+                    {premiumExpiresAt
+                      ? new Date(premiumExpiresAt).toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "N/A"}
+                  </span>
+                </span>
+              ) : (
+                <Link
+                  className="flex items-center gap-2 px-4 py-1.5 font-semibold rounded-md bg-gradient-to-r from-amber-400 to-yellow-500 border border-amber-500 text-white hover:from-amber-500 hover:to-yellow-600 transition-colors"
+                  to="/premium-plans"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setMobileCalculatorOpen(false);
+                    setMobileInvestorZoneOpen(false);
+                    setMobileCareerOpen(false);
+                  }}
+                >
+                  <Crown className="h-4 w-4 text-white fill-white/30" />
+                  Premium
+                </Link>
+              )
+            )}
+
             <a
               href="/services"
               className="hidden"

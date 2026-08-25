@@ -3,7 +3,6 @@ import axios from "axios";
 import DataTable from "react-data-table-component";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/AdminSidebar";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 
 interface PromoCodeRecord {
   _id: string;
@@ -273,7 +272,6 @@ const AdminPromoCodes = () => {
 
   return (
     <div className="bg-slate-800 pb-16 w-full min-h-screen">
-      <ToastContainerComponent />
       <AdminSidebar />
 
       <div className="ml-[22%] pt-[10vh] px-[5%]">

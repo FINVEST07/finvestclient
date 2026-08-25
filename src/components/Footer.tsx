@@ -1,7 +1,6 @@
 import { Facebook, Instagram, Youtube, Linkedin } from "lucide-react";
 
 import Cookie from "js-cookie";
-import ToastContainerComponent from "./ToastContainerComponent";
 import {toast} from "react-toastify"
 import { useNavigate } from "react-router-dom";
 import { FaWhatsapp } from "react-icons/fa";
@@ -26,7 +25,6 @@ const Footer = ({ setLoginOpen }) => {
 
   return (
     <footer className="bg-blue-900  text-white pt-16 pb-8">
-      <ToastContainerComponent/>
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div>

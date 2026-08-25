@@ -3,7 +3,6 @@ import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { toast } from "react-toastify";
@@ -177,7 +176,6 @@ const JobDetail = () => {
         <title>{job ? `${job.title} - Careers | FINVESTCORP` : "Job Details | FINVESTCORP"}</title>
         <meta name="description" content={description} />
       </Helmet>
-      <ToastContainerComponent />
 
       <div className="container mx-auto px-6">
         <div className="mb-6">

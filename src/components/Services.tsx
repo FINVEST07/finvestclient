@@ -8,7 +8,6 @@ import {
   X, 
 } from "lucide-react";
 
-import ToastContainerComponent from "./ToastContainerComponent";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Cookie from "js-cookie";
@@ -347,7 +346,6 @@ const Services = ({ setLoginOpen }) => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(37,99,235,0.1),transparent)] pointer-events-none"></div>
       
-      <ToastContainerComponent />
       <div className="container mx-auto px-6 relative z-10">
         {/* Header Section */}
         <div className="text-center max-w-4xl mx-auto mb-20 animate-fade-in">

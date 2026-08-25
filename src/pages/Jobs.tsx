@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import JobCard from "@/components/JobCard";
@@ -166,7 +165,6 @@ const Jobs = () => {
           content="Explore current openings at FINVESTCORP and apply for roles in finance, sales, and operations."
         />
       </Helmet>
-      <ToastContainerComponent />
 
       <div className="container mx-auto px-6">
         <div className="mb-6">

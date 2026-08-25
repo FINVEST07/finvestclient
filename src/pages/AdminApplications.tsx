@@ -4,7 +4,6 @@ import DataTable from "react-data-table-component";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 
 const AdminApplications = () => {
   const [applicationList, setApplicationList] = useState([]);
@@ -478,7 +477,6 @@ const AdminApplications = () => {
 
   return (
     <div className="bg-slate-800 pb-10 w-full min-h-screen">
-      <ToastContainerComponent />
       <button
         className="fixed top-5 right-5 bg-red-700 z-50 px-4 py-2 text-white rounded-md"
         onClick={() => {

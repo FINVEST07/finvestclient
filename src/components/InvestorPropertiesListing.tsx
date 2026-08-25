@@ -3,7 +3,6 @@ import axios from "axios";
 import { ArrowLeft, ChevronDown, RotateCcw, Crown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import PropertyCard from "@/components/PropertyCard";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import { toast } from "react-toastify";
@@ -470,7 +469,6 @@ const InvestorPropertiesListing = ({
         <title>{title} - FINVESTCORP</title>
         <meta name="description" content={pageDescription} />
       </Helmet>
-      <ToastContainerComponent />
       <div className="container mx-auto px-6">
         <div className="mb-6">
           <a href="/" className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-800 font-medium transition-colors">

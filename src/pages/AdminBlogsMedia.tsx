@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
 import axios from "axios";
 import { toast } from "sonner";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { Share2 } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -455,7 +454,6 @@ const AdminBlogsMedia = () => {
 
   return (
     <div className="bg-slate-800 pb-16 w-full min-h-screen">
-      <ToastContainerComponent />
       {adminRank == 1 && <AdminSidebar />}
 
       <div className={`${adminRank == 1 ? "ml-[22%]" : ""} pt-[10vh] px-[5%]`}>

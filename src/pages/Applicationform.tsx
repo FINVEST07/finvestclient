@@ -3,7 +3,6 @@ import Cookie from "js-cookie";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import ContactFormSection from "@/components/ContactFormSection";
 import ProfessionalFormSection from "@/components/ProfessionalFormSection";
 import DocumentFormSection from "@/components/DocumentFormSection";
@@ -479,7 +478,6 @@ const Applicationform = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-[#EBECEC] min-h-screen">
-      <ToastContainerComponent />
       {fetching && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
           <div className="flex items-center gap-3 bg-white px-4 py-3 rounded shadow">

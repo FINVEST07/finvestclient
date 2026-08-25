@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ArrowLeft, Lock, Crown, Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import ToastContainerComponent from "@/components/ToastContainerComponent";
 import { toast } from "react-toastify";
 import FavouriteHeartButton from "@/components/FavouriteHeartButton";
 import ConfirmActionModal from "@/components/ConfirmActionModal";
@@ -409,7 +408,6 @@ const PropertyDetail = () => {
         <meta name="twitter:description" content={description} />
         {property?.photos?.[0]?.url && <meta name="twitter:image" content={property.photos[0].url} />}
       </Helmet>
-      <ToastContainerComponent />
 
       <div className="container mx-auto px-6">
         <div className="mb-6 flex items-center justify-between">

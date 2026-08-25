@@ -384,12 +384,58 @@ export const infos: Record<string, Info> = {
       "Staged disbursement based on project progress",
       "Flexible repayment linked to sales velocity",
       "Higher loan amounts based on project viability",
+      "Bridge the cash-flow gap between project outflows and sales inflows",
+      "Cover material, labor, and contractor costs without tying up working capital",
     ],
     benefits: [
       "Competitive interest rates for developers",
       "Quick sanction with project assessment",
       "Multiple lender options for best terms",
       "Technical and legal support throughout",
+      "Customized loan structures for residential, commercial, and industrial projects",
+      "Pre-approval facility to accelerate project launch timelines",
+    ],
+    whatWeDo: [
+      "Assess project viability including land status, approvals, and market demand.",
+      "Structure construction finance with optimal LTV, tenure, and draw schedule.",
+      "Connect with banks, NBFCs, and private lenders for the best terms.",
+      "Coordinate technical, legal, and valuation due diligence with lenders.",
+      "Manage staged disbursement tracking aligned to construction milestones.",
+      "Provide ongoing monitoring and reporting support till project completion.",
+    ],
+    howItWorks: [
+      "Initial consultation: project scope, land details, and funding requirement.",
+      "Feasibility analysis and lender shortlisting based on project profile.",
+      "Documentation: approvals, IGR, RERA, project cost sheet, and developer track record.",
+      "Lender due diligence: technical, legal, and valuation assessments.",
+      "Sanction and draw schedule finalization aligned to construction milestones.",
+      "Staged disbursal linked to project progress with ongoing monitoring.",
+    ],
+    faqs: [
+      {
+        q: "What is construction finance?",
+        a: "Construction finance is a specialized loan product for builders and developers to fund real estate construction projects. It covers land acquisition, construction costs, and project expenses with staged disbursements linked to construction milestones.",
+      },
+      {
+        q: "Who is eligible for construction finance?",
+        a: "Builders, developers, and construction companies with approved projects, clear land titles, and necessary regulatory approvals (RERA, local authority) are eligible. A strong track record and project viability are key factors.",
+      },
+      {
+        q: "How is the loan disbursed?",
+        a: "Construction loans are typically disbursed in stages linked to project milestones — foundation, slab casting, brickwork, finishing, and occupancy certificate. Each draw is released after lender-approved technical verification.",
+      },
+      {
+        q: "What is the typical loan-to-value (LTV) ratio?",
+        a: "LTV ratios generally range from 50% to 70% of the project cost, depending on the lender, project type, location, and developer profile. Higher LTV may be available for established developers with strong track records.",
+      },
+      {
+        q: "What documents are required?",
+        a: "Key documents include project approvals (RERA, building plan, environmental clearance), land title documents, developer financials, project cost breakdown, contractor agreements, and KYC documents.",
+      },
+      {
+        q: "Can I get construction finance for a residential project?",
+        a: "Yes. Construction finance is available for residential, commercial, retail, and industrial projects. Residential projects with strong pre-sales or market demand typically receive favorable terms.",
+      },
     ],
   },
   "life-insurance": {
