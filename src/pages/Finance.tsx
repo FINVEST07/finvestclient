@@ -248,7 +248,7 @@ const Finance = () => {
                 </div>
                 <div className="relative">
                   <div className="absolute left-0 right-0 top-[22px] hidden h-px sm:block" style={{ background: TOKENS.paperLine }} />
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {cumulative.map((phase, i) => (
                       <div key={phase.name} className="relative flex flex-col">
                         <div className="z-10 mx-auto mb-2 hidden h-11 w-11 items-center justify-center rounded-full border-2 sm:flex" style={{ background: TOKENS.paper, borderColor: TOKENS.blue, color: TOKENS.ink }}>
