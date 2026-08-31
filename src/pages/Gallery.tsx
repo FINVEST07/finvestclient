@@ -122,9 +122,9 @@ const Gallery = () => {
                   <p className="text-sm lg:text-base xl:text-lg 2xl:text-xl text-center text-blue-900 line-clamp-2 min-h-[2.5rem]">
                     {m.label || m.text || 'Untitled'}
                   </p>
-                  {m?.createdAt ? (
+                  {(m?.postingDateTime || m?.createdAt) ? (
                     <p className="mt-2 text-xs text-center text-gray-500 font-medium">
-                      {formatGalleryDate(m.createdAt)}
+                      {formatGalleryDate(m.postingDateTime || m.createdAt)}
                     </p>
                   ) : null}
                 </div>

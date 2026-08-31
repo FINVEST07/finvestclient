@@ -20,6 +20,7 @@ interface PropertyItem {
   _id: string;
   headline: string;
   createdAt?: string;
+  postingDateTime?: string;
   area: string;
   type: "Auction" | "Distress" | "New" | "Resale";
   propertyType: string;
@@ -55,6 +56,7 @@ const formatDate = (iso?: string) => {
 };
 
 const getPostedDate = (property: PropertyItem) => {
+  if (property.postingDateTime) return formatDate(property.postingDateTime);
   if (property.createdAt) return formatDate(property.createdAt);
   // Fallback for legacy rows where createdAt may be missing.
   if (property._id?.length >= 8) {

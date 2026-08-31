@@ -34,6 +34,7 @@ interface PropertyItem {
   _id: string;
   propertyId: string;
   createdAt?: string;
+  postingDateTime?: string;
   headline: string;
   propertyOrSocietyName: string;
   area: string;
@@ -90,6 +91,7 @@ const formatPropertyDate = (iso?: string) => {
 
 const derivePostedDate = (property: PropertyItem | null) => {
   if (!property) return "-";
+  if (property.postingDateTime) return formatPropertyDate(property.postingDateTime);
   if (property.createdAt) return formatPropertyDate(property.createdAt);
   if (property._id?.length >= 8) {
     const seconds = parseInt(property._id.slice(0, 8), 16);
