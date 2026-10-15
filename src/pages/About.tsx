@@ -6,10 +6,10 @@ const About = () => (
   <section id="about" className="section-padding pt-6 bg-white">
     <div className="container-custom">
       <Helmet>
-        <title>About FINVESTCORP - Trusted Financial Advisors</title>
+        <title>About FINVESTCORP - Trusted Financial Solution Providers</title>
         <meta
           name="description"
-          content="Learn about FINVESTCORP, trusted financial advisors since 2013, offering personalized loan solutions, insurance advisory, and investment opportunities."
+          content="Learn about FINVESTCORP, trusted financial solution providers since 2013, offering personalized loan solutions and investment options."
         />
         {/* BreadcrumbList JSON-LD */}
         <script type="application/ld+json">
@@ -54,7 +54,7 @@ const About = () => (
             About Us
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6 font-playfair text-blue-900">
-            Trusted Financial Advisors
+            Trusted Financial & Investment Solutions
             <br /> Since 2013
           </h2>
 
@@ -62,8 +62,7 @@ const About = () => (
             FINVESTCORPCONSULTANCY PVT. LTD was founded with a simple
             mission: to provide personalized, transparent financial guidance
             that helps our clients achieve their goals. For over many years,
-            we've been dedicated to creating tailored loan solutions & insurance
-            advisory and best investment opportunity that work for real people.
+            we've been dedicated to creating tailored loan solutions & investment options that work for real people.
           </p>
 
           <p className="text-finance-slate mb-6">

@@ -30,16 +30,14 @@ const About = () => (
             About Us
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6 font-playfair text-blue-900">
-            Trusted Financial Advisors
-            <br /> Since 2013
+            Trusted Financial & Investment Solutions Since 2013
           </h2>
 
           <p className="text-finance-slate mb-4">
             RISEHIGH FINCON CONSULTANCY PVT. LTD was founded with a simple
             mission: to provide personalized, transparent financial guidance
             that helps our clients achieve their goals. For over many years,
-            we've been dedicated to creating tailored loan solutions & insurance
-            advisory and best investment opportunity that work for real people.
+            we've been dedicated to creating tailored loan solutions & investment options that work for real people.
           </p>
 
           <p className="text-finance-slate mb-6">

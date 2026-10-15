@@ -223,7 +223,7 @@ export default function LoanEligibilityGuide() {
       {/* Disclaimer */}
       <p className="text-sm text-gray-500 mt-8">
         Disclaimer: This article is for educational purposes only. Loan eligibility calculations are indicative
-        and may vary by lender, credit policy, and applicant profile. Consult a financial advisor before making
+        and may vary by lender, credit policy, and applicant profile. Consult a financial solution provider before making
         borrowing decisions.
       </p>
 

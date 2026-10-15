@@ -167,7 +167,7 @@ const ContactForm = () => {
             Get Personalized Financial Advice
           </h2>
           <p className="text-finance-slate text-lg">
-            Schedule a consultation with our financial advisors to discuss your
+            Schedule a consultation with our financial expert to discuss your
             investment goals and loan options.
           </p>
         </div>

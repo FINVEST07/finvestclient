@@ -23,15 +23,12 @@ const Navbar = ({ setLoginOpen }) => {
   const [mobileInvestmentSubmenuOpen, setMobileInvestmentSubmenuOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [mobileCalculatorOpen, setMobileCalculatorOpen] = useState(false);
-  const [investorZoneOpen, setInvestorZoneOpen] = useState(false);
-  const [mobileInvestorZoneOpen, setMobileInvestorZoneOpen] = useState(false);
   const [careerOpen, setCareerOpen] = useState(false);
   const [mobileCareerOpen, setMobileCareerOpen] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [premiumExpiresAt, setPremiumExpiresAt] = useState<string | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const servicesCloseTimeoutRef = useRef<number | null>(null);
-  const investorCloseTimeoutRef = useRef<number | null>(null);
   const careerCloseTimeoutRef = useRef<number | null>(null);
   const servicesWrapperRef = useRef<HTMLDivElement | null>(null);
   const servicesButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -39,9 +36,6 @@ const Navbar = ({ setLoginOpen }) => {
   const calculatorWrapperRef = useRef<HTMLDivElement | null>(null);
   const calculatorButtonRef = useRef<HTMLButtonElement | null>(null);
   const calculatorItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
-  const investorZoneWrapperRef = useRef<HTMLDivElement | null>(null);
-  const investorZoneButtonRef = useRef<HTMLButtonElement | null>(null);
-  const investorZoneItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const careerWrapperRef = useRef<HTMLDivElement | null>(null);
   const careerButtonRef = useRef<HTMLButtonElement | null>(null);
   const careerItemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
@@ -55,13 +49,9 @@ const Navbar = ({ setLoginOpen }) => {
 
   const isServicesActive = location.pathname === "/services";
 
-  const isInvestorZoneActive =
+  const isAuctionPropertiesActive =
     location.pathname === "/investor-zone/auction-properties" ||
-    location.pathname === "/investor-zone/alternate-investment" ||
-    location.pathname === "/investor-zone/new-resale-properties" ||
-    location.pathname === "/investor-zone/alternate-properties" ||
-    location.pathname === "/investor-zone/distress-properties" ||
-    location.pathname.startsWith("/investor-zone/");
+    location.pathname.startsWith("/investor-zone/auction/");
 
   const isCareerActive =
     location.pathname === "/refer" ||
@@ -163,20 +153,6 @@ const Navbar = ({ setLoginOpen }) => {
     }, 150);
   };
 
-  const clearInvestorCloseTimeout = () => {
-    if (investorCloseTimeoutRef.current) {
-      window.clearTimeout(investorCloseTimeoutRef.current);
-      investorCloseTimeoutRef.current = null;
-    }
-  };
-
-  const scheduleInvestorClose = () => {
-    clearInvestorCloseTimeout();
-    investorCloseTimeoutRef.current = window.setTimeout(() => {
-      setInvestorZoneOpen(false);
-    }, 300);
-  };
-
   const clearCareerCloseTimeout = () => {
     if (careerCloseTimeoutRef.current) {
       window.clearTimeout(careerCloseTimeoutRef.current);
@@ -222,22 +198,6 @@ const Navbar = ({ setLoginOpen }) => {
       document.removeEventListener("mousedown", onMouseDown);
     };
   }, [servicesOpen]);
-
-  useEffect(() => {
-    const onMouseDown = (e: MouseEvent) => {
-      if (!investorZoneOpen) return;
-      const wrapper = investorZoneWrapperRef.current;
-      if (!wrapper) return;
-      if (!wrapper.contains(e.target as Node)) {
-        setInvestorZoneOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onMouseDown);
-    return () => {
-      document.removeEventListener("mousedown", onMouseDown);
-    };
-  }, [investorZoneOpen]);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -356,59 +316,6 @@ const Navbar = ({ setLoginOpen }) => {
 
     if (e.key === "ArrowUp") {
       return focusCalculatorItem(activeIndex === 0 ? lastIndex : activeIndex - 1);
-    }
-  };
-
-  const focusInvestorZoneItem = (index: number) => {
-    const el = investorZoneItemRefs.current[index];
-    if (el) el.focus();
-  };
-
-  const onInvestorZoneButtonKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>
-  ) => {
-    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setInvestorZoneOpen(true);
-      window.setTimeout(() => focusInvestorZoneItem(0), 0);
-    }
-
-    if (e.key === "Escape") {
-      e.preventDefault();
-      setInvestorZoneOpen(false);
-    }
-  };
-
-  const onInvestorZoneMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      setInvestorZoneOpen(false);
-      investorZoneButtonRef.current?.focus();
-      return;
-    }
-
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") {
-      return;
-    }
-
-    e.preventDefault();
-    const items = investorZoneItemRefs.current;
-    const activeIndex = items.findIndex((n) => n === document.activeElement);
-
-    const lastIndex = items.length - 1;
-    if (e.key === "Home") return focusInvestorZoneItem(0);
-    if (e.key === "End") return focusInvestorZoneItem(lastIndex);
-
-    if (activeIndex === -1) {
-      return focusInvestorZoneItem(0);
-    }
-
-    if (e.key === "ArrowDown") {
-      return focusInvestorZoneItem(activeIndex === lastIndex ? 0 : activeIndex + 1);
-    }
-
-    if (e.key === "ArrowUp") {
-      return focusInvestorZoneItem(activeIndex === 0 ? lastIndex : activeIndex - 1);
     }
   };
 
@@ -576,7 +483,7 @@ const Navbar = ({ setLoginOpen }) => {
                         </div>
                       )}
                     </div>
-                    {/* Insurances Submenu */}
+                    {/* Insurances Submenu (temporarily hidden)
                     <div
                       className="relative"
                       onMouseEnter={() => setInsuranceSubmenuOpen(true)}
@@ -620,7 +527,8 @@ const Navbar = ({ setLoginOpen }) => {
                         </div>
                       )}
                     </div>
-                    {/* Investments Submenu */}
+                    */}
+                    {/* Investments Submenu (temporarily hidden)
                     <div
                       className="relative"
                       onMouseEnter={() => setInvestmentSubmenuOpen(true)}
@@ -664,83 +572,18 @@ const Navbar = ({ setLoginOpen }) => {
                         </div>
                       )}
                     </div>
+                    */}
                   </div>
                 </div>
               )}
             </div>
 
-            <div
-              ref={investorZoneWrapperRef}
-              className="relative"
-              onMouseEnter={() => {
-                clearInvestorCloseTimeout();
-                setInvestorZoneOpen(true);
-              }}
-              onMouseLeave={() => {
-                scheduleInvestorClose();
-              }}
+            <Link
+              to="/investor-zone/auction-properties"
+              className={`nav-link ${isAuctionPropertiesActive ? "text-blue-900" : ""}`}
             >
-              <button
-                ref={investorZoneButtonRef}
-                type="button"
-                className={`nav-link ${isInvestorZoneActive ? "text-blue-900" : ""}`}
-                aria-haspopup="menu"
-                aria-expanded={investorZoneOpen}
-                onClick={() => setInvestorZoneOpen((v) => !v)}
-                onKeyDown={onInvestorZoneButtonKeyDown}
-              >
-                Investor Zone
-              </button>
-              {investorZoneOpen && (
-                <div
-                  role="menu"
-                  className="absolute left-0 top-full pt-2 z-[60]"
-                  onMouseEnter={() => {
-                    clearInvestorCloseTimeout();
-                  }}
-                  onMouseLeave={() => {
-                    scheduleInvestorClose();
-                  }}
-                  onKeyDown={onInvestorZoneMenuKeyDown}
-                >
-                  <div className="w-56 rounded-xl border border-blue-100 bg-white shadow-lg overflow-hidden">
-                    <Link
-                      role="menuitem"
-                      to="/investor-zone/auction-properties"
-                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
-                      onClick={() => setInvestorZoneOpen(false)}
-                      ref={(el) => {
-                        investorZoneItemRefs.current[0] = el;
-                      }}
-                    >
-                      Auction Properties
-                    </Link>
-                    <Link
-                      role="menuitem"
-                      to="/investor-zone/alternate-investment"
-                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
-                      onClick={() => setInvestorZoneOpen(false)}
-                      ref={(el) => {
-                        investorZoneItemRefs.current[1] = el;
-                      }}
-                    >
-                      Alternate Investment
-                    </Link>
-                    <Link
-                      role="menuitem"
-                      to="/investor-zone/new-resale-properties"
-                      className="block px-4 py-3 text-sm text-blue-900 hover:bg-blue-50"
-                      onClick={() => setInvestorZoneOpen(false)}
-                      ref={(el) => {
-                        investorZoneItemRefs.current[2] = el;
-                      }}
-                    >
-                      New / Resale Properties
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
+              Auction Properties
+            </Link>
 
             <div
               ref={calculatorWrapperRef}
@@ -1037,7 +880,6 @@ const Navbar = ({ setLoginOpen }) => {
                 onClick={() => {
                   setIsOpen(false);
                   setMobileCalculatorOpen(false);
-                  setMobileInvestorZoneOpen(false);
                   setMobileCareerOpen(false);
                 }}
               >
@@ -1067,7 +909,6 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={() => {
                     setIsOpen(false);
                     setMobileCalculatorOpen(false);
-                    setMobileInvestorZoneOpen(false);
                     setMobileCareerOpen(false);
                   }}
                 >
@@ -1128,7 +969,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileLoanSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1144,7 +984,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileLoanSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1160,7 +999,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileLoanSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1176,7 +1014,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileLoanSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1186,7 +1023,7 @@ const Navbar = ({ setLoginOpen }) => {
                     </Link>
                   </div>
                 )}
-                {/* Insurances Submenu */}
+                {/* Insurances Submenu (temporarily hidden)
                 <button
                   type="button"
                   className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
@@ -1211,7 +1048,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileInsuranceSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1227,7 +1063,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileInsuranceSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1243,7 +1078,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileInsuranceSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1253,7 +1087,8 @@ const Navbar = ({ setLoginOpen }) => {
                     </Link>
                   </div>
                 )}
-                {/* Investments Submenu */}
+                */}
+                {/* Investments Submenu (temporarily hidden)
                 <button
                   type="button"
                   className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
@@ -1278,7 +1113,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileInvestmentSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1294,7 +1128,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileInvestmentSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1310,7 +1143,6 @@ const Navbar = ({ setLoginOpen }) => {
                         e.stopPropagation();
                         setMobileInvestmentSubmenuOpen(false);
                         setMobileServicesOpen(false);
-                        setMobileInvestorZoneOpen(false);
                         setMobileCalculatorOpen(false);
                         setMobileCareerOpen(false);
                         setIsOpen(false);
@@ -1320,72 +1152,21 @@ const Navbar = ({ setLoginOpen }) => {
                     </Link>
                   </div>
                 )}
+                */}
               </div>
             )}
 
-            <button
-              type="button"
-              className="px-4 w-full flex items-center justify-between text-left text-finance-charcoal hover:bg-finance-cream rounded-md"
-              aria-haspopup="menu"
-              aria-expanded={mobileInvestorZoneOpen}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMobileInvestorZoneOpen((prev) => !prev);
+            <Link
+              to="/investor-zone/auction-properties"
+              className="px-4"
+              onClick={() => {
+                setIsOpen(false);
+                setMobileCalculatorOpen(false);
+                setMobileCareerOpen(false);
               }}
             >
-              <span className="flex-1 py-1">Investor Zone</span>
-
-              <ChevronDown
-                className={`h-4 w-4 transition-transform ${mobileInvestorZoneOpen ? "rotate-180" : ""}`}
-                aria-hidden="true"
-              />
-            </button>
-            {mobileInvestorZoneOpen && (
-              <div role="menu" className="pl-6 flex flex-col space-y-2">
-                <Link
-                  role="menuitem"
-                  to="/investor-zone/auction-properties"
-                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMobileInvestorZoneOpen(false);
-                    setMobileCalculatorOpen(false);
-                    setMobileCareerOpen(false);
-                    setIsOpen(false);
-                  }}
-                >
-                  Auction Properties
-                </Link>
-                <Link
-                  role="menuitem"
-                  to="/investor-zone/alternate-investment"
-                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMobileInvestorZoneOpen(false);
-                    setMobileCalculatorOpen(false);
-                    setMobileCareerOpen(false);
-                    setIsOpen(false);
-                  }}
-                >
-                  Alternate Investment
-                </Link>
-                <Link
-                  role="menuitem"
-                  to="/investor-zone/new-resale-properties"
-                  className="px-4 text-finance-charcoal hover:bg-finance-cream rounded-md"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMobileInvestorZoneOpen(false);
-                    setMobileCalculatorOpen(false);
-                    setMobileCareerOpen(false);
-                    setIsOpen(false);
-                  }}
-                >
-                  New / Resale Properties
-                </Link>
-              </div>
-            )}
+              Auction Properties
+            </Link>
 
             <button
               type="button"
@@ -1487,7 +1268,6 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCareerOpen(false);
-                    setMobileInvestorZoneOpen(false);
                     setMobileCalculatorOpen(false);
                     setIsOpen(false);
                   }}
@@ -1504,7 +1284,6 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCareerOpen(false);
-                    setMobileInvestorZoneOpen(false);
                     setMobileCalculatorOpen(false);
                     setIsOpen(false);
                   }}
@@ -1518,7 +1297,6 @@ const Navbar = ({ setLoginOpen }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setMobileCareerOpen(false);
-                    setMobileInvestorZoneOpen(false);
                     setMobileCalculatorOpen(false);
                     setIsOpen(false);
                   }}
@@ -1534,7 +1312,6 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
                 setMobileCareerOpen(false);
               }}
             >
@@ -1546,7 +1323,6 @@ const Navbar = ({ setLoginOpen }) => {
               onClick={() => {
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
                 setMobileCareerOpen(false);
               }}
             >
@@ -1560,7 +1336,6 @@ const Navbar = ({ setLoginOpen }) => {
                 setLoginOpen(true);
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
                 setMobileCareerOpen(false);
               }}
               className="w-full flex justify-center py-2 rounded-md text-[#fff] bg-blue-900"
@@ -1573,7 +1348,6 @@ const Navbar = ({ setLoginOpen }) => {
                 Cookie.remove("finvest"); // Fixed: was "email", should be "finvest"
                 setIsOpen(false);
                 setMobileCalculatorOpen(false);
-                setMobileInvestorZoneOpen(false);
                 setMobileCareerOpen(false);
                 window.location.reload();
               }}

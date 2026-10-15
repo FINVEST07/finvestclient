@@ -343,11 +343,8 @@ const PropertyDetail = () => {
   }, [lightboxOpen, property?.photos?.length]);
 
   const normalizedType = (type || "").toLowerCase();
-  const isAuctionPath = normalizedType === "auction";
-  const listingTitle = isAuctionPath ? "Auction Properties" : "Alternate Investment";
-  const listingPath = isAuctionPath
-    ? "/investor-zone/auction-properties"
-    : "/investor-zone/alternate-investment";
+  const listingTitle = "Auction Properties";
+  const listingPath = "/investor-zone/auction-properties";
 
   const description = useMemo(() => {
     if (!property) return "Investor zone property details on FINVESTCORP.";

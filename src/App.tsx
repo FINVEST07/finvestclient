@@ -36,8 +36,6 @@ import Finance from "./pages/Finance";
 import SipCalculator from "./pages/SipCalculator";
 import FDCalculator from "./pages/FdCalculator";
 import AuctionProperties from "./pages/AuctionProperties";
-import DistressProperties from "./pages/DistressProperties";
-import NewResaleProperties from "./pages/NewResaleProperties";
 import PropertyDetail from "./pages/PropertyDetail";
 import PremiumPlans from "./pages/PremiumPlans";
 import Jobs from "./pages/Jobs";
@@ -120,17 +118,6 @@ const App = () => {
             <Route path="/blogs/:slug" element={<BlogDetail />} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/investor-zone/auction-properties" element={<AuctionProperties />} />
-            <Route path="/investor-zone/alternate-investment" element={<DistressProperties />} />
-            <Route path="/investor-zone/new-resale-properties" element={<NewResaleProperties />} />
-            {/* Backward compatibility redirects */}
-            <Route
-              path="/investor-zone/alternate-properties"
-              element={<Navigate to="/investor-zone/alternate-investment" replace />}
-            />
-            <Route
-              path="/investor-zone/distress-properties"
-              element={<Navigate to="/investor-zone/alternate-investment" replace />}
-            />
             <Route path="/investor-zone/:type/:propertyId" element={<PropertyDetail />} />
             <Route path="/premium-plans" element={<PremiumPlans />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

@@ -6,10 +6,10 @@ const Hero = () => {
   return (
     <>
       <Helmet>
-        <title>Home - FinvestCorp is a trusted Financial Advisors for Loans & Investments</title>
+        <title>Home - FinvestCorp is a trusted Financial Solution Provider for Loans & Investments</title>
         <meta
           name="description"
-          content="FINVESTCORP offers expert financial advice on loans, insurance, and investments. Trusted by 1,500+ clients across India since 2013."
+          content="FINVESTCORP offers expert financial solutions on loans, insurance, and investments. Trusted by 1,500+ clients across India since 2013."
         />
       </Helmet>
       <section className=" xl:mt-[33vh] mt-[28vh] md:pt-4 pb-16 2xl:pb-20 relative 2xl:mt-[25vh] overflow-hidden">

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  BarChart4, 
-  Shield, 
-  Briefcase, 
-  X, 
+import {
+  // BarChart4,
+  // Shield,
+  Briefcase,
+  X,
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
@@ -320,20 +320,20 @@ const Services = ({ setLoginOpen }) => {
       gradient: "from-blue-50 to-blue-100/50",
       iconBg: "from-blue-600 to-blue-700"
     },
-    {
-      title: "Insurance Products", 
-      icon: <Shield className="h-7 w-7" />,
-      services: services.slice(3, 6),
-      gradient: "from-blue-50 to-blue-100/50",
-      iconBg: "from-blue-600 to-blue-700"
-    },
-    {
-      title: "Investment Products",
-      icon: <BarChart4 className="h-7 w-7" />,
-      services: services.slice(6, 9),
-      gradient: "from-blue-50 to-blue-100/50", 
-      iconBg: "from-blue-600 to-blue-700"
-    }
+    // {
+    //   title: "Insurance Products",
+    //   icon: <Shield className="h-7 w-7" />,
+    //   services: services.slice(3, 6),
+    //   gradient: "from-blue-50 to-blue-100/50",
+    //   iconBg: "from-blue-600 to-blue-700"
+    // },
+    // {
+    //   title: "Investment Products",
+    //   icon: <BarChart4 className="h-7 w-7" />,
+    //   services: services.slice(6, 9),
+    //   gradient: "from-blue-50 to-blue-100/50",
+    //   iconBg: "from-blue-600 to-blue-700"
+    // }
   ];
 
   return (

@@ -132,7 +132,12 @@ interface PostPropertyModalProps {
 
 type FieldErrors = Partial<Record<keyof Omit<PropertyRecord, "propertyId" | "createdAt" | "photos"> | "photos" | "pdfDocument", string>>;
 
-const listingTypeOptions: PropertyListingType[] = ["Auction", "Distress", "New", "Resale"];
+const listingTypeOptions: PropertyListingType[] = [
+  "Auction",
+  // "Distress",
+  // "New",
+  // "Resale",
+];
 const listingTypeLabel: Record<PropertyListingType, string> = {
   Auction: "Auction",
   Distress: "Alternate Investment",

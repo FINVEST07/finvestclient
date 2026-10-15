@@ -438,6 +438,7 @@ export const infos: Record<string, Info> = {
       },
     ],
   },
+  /* Insurance & Investment service pages (temporarily hidden)
   "life-insurance": {
     title: "Life Insurance",
     description:
@@ -680,6 +681,7 @@ export const infos: Record<string, Info> = {
       },
     ],
   },
+  */
 };
 
 export const slugTitleMap: Record<string, string> = Object.fromEntries(

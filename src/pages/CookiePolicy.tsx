@@ -184,7 +184,7 @@ const CookiePolicy = () => (
       <title>Cookie Policy - FINVESTCORP</title>
       <meta
         name="description"
-        content="Read the FINVESTCORP Cookie Policy to understand how we use cookies and local storage on our financial advisory website."
+        content="Read the FINVESTCORP Cookie Policy to understand how we use cookies and local storage on our financial services website."
       />
     </Helmet>
 

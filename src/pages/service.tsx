@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  BarChart4, 
-  Shield, 
-  Briefcase, 
+import {
+  // BarChart4,
+  // Shield,
+  Briefcase,
   ArrowRight, 
   ArrowLeft,
   X, 
@@ -380,18 +380,18 @@ const Services = ({ setLoginOpen }) => {
       services: services.slice(0, 3),
       iconBg: "from-blue-600 to-blue-700"
     },
-    {
-      title: "Insurance Products",
-      icon: <Shield className="h-7 w-7" />,
-      services: services.slice(3, 6),
-      iconBg: "from-green-600 to-emerald-500"
-    },
-    {
-      title: "Investment Products",
-      icon: <BarChart4 className="h-7 w-7" />,
-      services: services.slice(6, 9),
-      iconBg: "from-purple-600 to-indigo-500"
-    }
+    // {
+    //   title: "Insurance Products",
+    //   icon: <Shield className="h-7 w-7" />,
+    //   services: services.slice(3, 6),
+    //   iconBg: "from-green-600 to-emerald-500"
+    // },
+    // {
+    //   title: "Investment Products",
+    //   icon: <BarChart4 className="h-7 w-7" />,
+    //   services: services.slice(6, 9),
+    //   iconBg: "from-purple-600 to-indigo-500"
+    // }
   ];
 
   return (

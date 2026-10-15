@@ -7,7 +7,7 @@ const sections = [
     title: "1. Introduction",
     body: (
       <p className="text-slate-600 leading-relaxed">
-        FINVESTCORP (operated by RISEHIGH FINCON CONSULTANCY PVT. LTD), referred to as ("we", "us", or "our"), is a financial advisory firm based in Andheri West, Mumbai, offering personalized loan solutions, insurance advisory, investment opportunities, and an Investor Zone for property listings (Auction, Alternate Investment, New, and Resale properties). This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you use our website and services. By accessing or using our website, you consent to the practices described in this policy.
+        FINVESTCORP (operated by RISEHIGH FINCON CONSULTANCY PVT. LTD), referred to as ("we", "us", or "our"), is a financial solution firm based in Andheri West, Mumbai, offering personalized loan solutions, insurance solutions, investment options, and an Investor Zone for property listings (Auction, Alternate Investment, New, and Resale properties). This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you use our website and services. By accessing or using our website, you consent to the practices described in this policy.
       </p>
     ),
   },
@@ -222,7 +222,7 @@ const PrivacyPolicy = () => (
       <title>Privacy Policy - FINVESTCORP</title>
       <meta
         name="description"
-        content="Read the FINVESTCORP Privacy Policy to understand how we collect, use, and protect your personal information across our financial advisory, loan, insurance, investment, and property listing services."
+        content="Read the FINVESTCORP Privacy Policy to understand how we collect, use, and protect your personal information across our financial, loan, insurance, investment, and property listing services."
       />
     </Helmet>
 

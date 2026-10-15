@@ -94,7 +94,7 @@ const BecomePartner = () => {
         <section className="mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-blue-900 font-playfair mb-4">Who can join?</h2>
           <p className="text-finance-slate max-w-3xl">
-            Financial advisors, real estate agents, chartered accountants, insurance agents,
+            Financial experts, real estate agents, chartered accountants, insurance agents,
             bankers, freelancers, and anyone with a client network interested in financial
             solutions. Whether you’re an individual or a company, we welcome you.
           </p>

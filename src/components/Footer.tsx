@@ -34,7 +34,7 @@ const Footer = ({ setLoginOpen }) => {
               </span>
             </a>
             <p className="text-white/70 mb-6">
-              Providing expert financial advisory services and loan solutions
+              Providing expert financial solutions and loan solutions
               since 2013. Your trusted partner for a secure financial future.
             </p>
             <div className="flex space-x-4">
